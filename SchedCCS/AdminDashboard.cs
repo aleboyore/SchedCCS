@@ -64,24 +64,92 @@ namespace SchedCCS
         // Executes the scheduling algorithm and updates the UI
         private void RunScheduleGeneration()
         {
-            // 1. Reset State: Clear 'Busy' flags for all resources (7 days x 13 hours)
+            Cursor.Current = Cursors.WaitCursor;
+
+            // 1. SETUP THE "CHAMPION" (Current Best)
+            // We assume the worst case (Infinite conflicts) initially.
+            int lowestConflictCount = int.MaxValue;
+            List<ScheduleItem> bestSchedule = new List<ScheduleItem>();
+            List<FailedEntry> bestFailures = new List<FailedEntry>();
+
+            // 2. SAFETY NET LOGIC:
+            // If the data hasn't changed (isDataDirty == false) AND we have an existing schedule,
+            // we make that existing schedule the "Defending Champion".
+            if (!isDataDirty && DataManager.MasterSchedule.Count > 0)
+            {
+                // Keep the current one as the one to beat
+                lowestConflictCount = DataManager.FailedAssignments.Count;
+                bestSchedule = new List<ScheduleItem>(DataManager.MasterSchedule);
+                bestFailures = new List<FailedEntry>(DataManager.FailedAssignments);
+            }
+
+            // 3. THE TOURNAMENT (50 Challengers)
+            int attempts = 50;
+            ScheduleGenerator generator = new ScheduleGenerator(DataManager.Rooms, DataManager.Teachers, DataManager.Sections);
+
+            for (int i = 0; i < attempts; i++)
+            {
+                generator.Generate();
+
+                int score = generator.FailedAssignments.Count;
+
+                // CHALLENGER CHECK:
+                // Does this new schedule have FEWER conflicts than the current best?
+                if (score < lowestConflictCount)
+                {
+                    // We found a new winner!
+                    lowestConflictCount = score;
+                    bestSchedule = new List<ScheduleItem>(generator.GeneratedSchedule);
+                    bestFailures = new List<FailedEntry>(generator.FailedAssignments);
+                }
+
+                // Optimization: If we hit 0 conflicts, we can't get better than perfection.
+                if (score == 0) break;
+            }
+
+            // 4. APPLY THE WINNER
+            // Whether it's the old Champion or a new Challenger, apply the best one we found.
+            DataManager.MasterSchedule = bestSchedule;
+            DataManager.FailedAssignments = bestFailures;
+
+            // 5. HOUSEKEEPING
+            RebuildBusyArrays(bestSchedule); // Re-lock the busy slots
+            UpdateMasterGrid();
+            UpdateTimetableView();
+
+            // (Uncomment if you have this method)
+            // LoadPendingList(); 
+
+            isDataDirty = false; // Mark data as "Clean" and saved
+            Cursor.Current = Cursors.Default;
+        }
+
+        private void RebuildBusyArrays(List<ScheduleItem> acceptedSchedule)
+        {
+            // 1. Wipe everything clean first (Reset all to false)
             foreach (var r in DataManager.Rooms) r.IsBusy = new bool[7, 13];
             foreach (var t in DataManager.Teachers) t.IsBusy = new bool[7, 13];
             foreach (var s in DataManager.Sections) s.IsBusy = new bool[7, 13];
 
-            // 2. Execute Algorithm
-            ScheduleGenerator generator = new ScheduleGenerator(DataManager.Rooms, DataManager.Teachers, DataManager.Sections);
-            generator.Generate(); // Single-pass generation
+            // 2. Mark slots from the Best Schedule as busy
+            foreach (var slot in acceptedSchedule)
+            {
+                // Find the actual objects in memory
+                var room = DataManager.Rooms.FirstOrDefault(r => r.Name == slot.Room);
+                var teacher = DataManager.Teachers.FirstOrDefault(t => t.Name == slot.Teacher);
+                var section = DataManager.Sections.FirstOrDefault(s => s.Name == slot.Section);
 
-            // 3. Persist Data
-            DataManager.MasterSchedule = generator.GeneratedSchedule;
-            DataManager.FailedAssignments = generator.FailedAssignments;
+                // Mark them busy if they exist
+                if (room != null && teacher != null && section != null)
+                {
+                    room.IsBusy[slot.DayIndex, slot.TimeIndex] = true;
+                    teacher.IsBusy[slot.DayIndex, slot.TimeIndex] = true;
+                    section.IsBusy[slot.DayIndex, slot.TimeIndex] = true;
 
-            // 4. UI Synchronization
-            UpdateMasterGrid();
-            UpdateTimetableView();
-
-            isDataDirty = false;
+                    // Re-link the object in the schedule item to ensure consistency
+                    slot.RoomObj = room;
+                }
+            }
         }
 
         private void UpdateMasterGrid()
@@ -118,8 +186,21 @@ namespace SchedCCS
 
         private void button1_Click(object sender, EventArgs e)
         {
+            // Extra Check: If we already have perfection, ask before running the CPU hard.
+            if (!isDataDirty && DataManager.FailedAssignments.Count == 0 && DataManager.MasterSchedule.Count > 0)
+            {
+                var result = MessageBox.Show("You already have a Perfect Schedule!\n\nRe-generating will try to find another one, but won't lose this one.\n\nContinue anyway?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result == DialogResult.No) return;
+            }
+
             RunScheduleGeneration();
-            MessageBox.Show("Schedule Generated Successfully!");
+
+            // Optional: Show how many conflicts remain (if any)
+            int conflicts = DataManager.FailedAssignments.Count;
+            if (conflicts == 0)
+                MessageBox.Show("Perfect Schedule Generated Successfully!");
+            else
+                MessageBox.Show($"Schedule Generated. Note: {conflicts} subjects could not be placed (check Pending tab).");
         }
 
         #endregion
