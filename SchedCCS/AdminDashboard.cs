@@ -182,6 +182,7 @@ namespace SchedCCS
                 string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
                 DisplayTimetable(comboBox1.SelectedItem.ToString(), mode);
             }
+            dataGridView1.Refresh();
         }
 
         private void btnGenerate_Click(object sender, EventArgs e)
@@ -292,19 +293,19 @@ namespace SchedCCS
             }
         }
 
+        // UPDATE THIS METHOD in AdminDashboard.cs
         private int GetDayColumnIndex(string day)
         {
-            switch (day)
-            {
-                case "Mon": return 1;
-                case "Tue": return 2;
-                case "Wed": return 3;
-                case "Thu": return 4;
-                case "Fri": return 5;
-                case "Sat": return 6;
-                case "Sun": return 7;
-                default: return 0;
-            }
+            // Handle both Long and Short names just in case
+            if (day.StartsWith("Mon")) return 1;
+            if (day.StartsWith("Tue")) return 2;
+            if (day.StartsWith("Wed")) return 3;
+            if (day.StartsWith("Thu")) return 4;
+            if (day.StartsWith("Fri")) return 5;
+            if (day.StartsWith("Sat")) return 6;
+            if (day.StartsWith("Sun")) return 7;
+
+            return 0; // Error/Unknown
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -955,6 +956,503 @@ namespace SchedCCS
             if (r != null) r.IsBusy[item.DayIndex, item.TimeIndex] = false;
         }
 
+        // 1. EVENT: Handles the Right-Click on the Grid
+        // Updated Right-Click Logic to handle SWAPPING/UNASSIGNING
+        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            // 1. Basic Validation (Right click on a valid cell)
+            if (e.Button != MouseButtons.Right || e.RowIndex < 0 || e.ColumnIndex <= 0) return;
+
+            // 2. CRITICAL FIX: Force selection to the cell you clicked
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = dataGridView1[e.ColumnIndex, e.RowIndex];
+            dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Selected = true;
+
+            // 3. Calculate Indices
+            int dayIndex = e.ColumnIndex;
+            int timeIndex = e.RowIndex;
+
+            // 4. Identify Context (What is currently in this slot?)
+            string currentSectionName = comboBox1.SelectedItem?.ToString();
+
+            // Find the class in this slot (if any)
+            // Note: We search the MasterSchedule to get the REAL object, not just the text in the grid.
+            var existingClass = DataManager.MasterSchedule.FirstOrDefault(s =>
+                (s.Section == currentSectionName || cmbFilterType.Text != "Section") &&
+                s.DayIndex == dayIndex &&
+                s.TimeIndex == timeIndex &&
+                (s.Room == dataGridView1.Rows[timeIndex].Cells[e.ColumnIndex].Value?.ToString().Split('\n').LastOrDefault()
+                 || cmbFilterType.Text == "Section") // Logic varies slightly based on view, assuming Section view for now
+            );
+
+            // If viewing by Section, specific logic to find the exact class item
+            if (cmbFilterType.Text == "Section" && !string.IsNullOrEmpty(currentSectionName))
+            {
+                existingClass = DataManager.MasterSchedule.FirstOrDefault(s =>
+                    s.Section == currentSectionName && s.DayIndex == dayIndex && s.TimeIndex == timeIndex);
+            }
+
+            // 5. Build the Menu
+            ctxMenuSchedule.Items.Clear();
+            ctxMenuSchedule.Items.Add(new ToolStripMenuItem($"Slot: {GetDayName(dayIndex)} @ {ToSimple12Hour(GetTimeLabel(timeIndex))}") { Enabled = false, BackColor = System.Drawing.Color.LightGray });
+            ctxMenuSchedule.Items.Add(new ToolStripSeparator());
+
+            // === SCENARIO A: SLOT IS FULL (Options: Unassign or Swap) ===
+            if (existingClass != null)
+            {
+                ctxMenuSchedule.Items.Add(new ToolStripMenuItem($"Current: {existingClass.Subject} ({existingClass.Room})") { Enabled = false });
+
+                // OPTION 1: UNASSIGN (Removes ALL units of this block)
+                var unassignItem = new ToolStripMenuItem("Unassign Entire Block (Move to Pending)");
+                unassignItem.Click += (s, args) => UnassignSubject(existingClass);
+                ctxMenuSchedule.Items.Add(unassignItem);
+
+                ctxMenuSchedule.Items.Add(new ToolStripSeparator());
+
+                // OPTION 2: SWAP (Replace this class with a Pending one)
+                // Only show Pending subjects that MATCH the type (Lab/Lec)
+                bool isLabSlot = existingClass.Subject.Contains("(Lab)");
+                var validSwaps = DataManager.FailedAssignments
+                    .Where(f => f.Section.Name == existingClass.Section && f.Subject.IsLab == isLabSlot)
+                    .ToList();
+
+                if (validSwaps.Count > 0)
+                {
+                    var swapRoot = new ToolStripMenuItem("Swap With...");
+                    foreach (var pending in validSwaps)
+                    {
+                        var swapItem = new ToolStripMenuItem($"{pending.Subject.Code} ({pending.Subject.Units} units)");
+                        swapItem.Click += (s, args) => PerformSwap(existingClass, pending);
+                        swapRoot.DropDownItems.Add(swapItem);
+                    }
+                    ctxMenuSchedule.Items.Add(swapRoot);
+                }
+            }
+            // === SCENARIO B: SLOT IS EMPTY (Option: Place Pending) ===
+            else
+            {
+                string currentMode = cmbFilterType.SelectedItem?.ToString();
+                var relevantPending = new List<FailedEntry>();
+
+                // LOGIC FIX: Handle different views (Section vs Room vs Teacher)
+                if (currentMode == "Section")
+                {
+                    // Only show pending items for THIS section
+                    relevantPending = DataManager.FailedAssignments
+                        .Where(f => f.Section.Name == currentSectionName)
+                        .ToList();
+                }
+                else if (currentMode == "Teacher")
+                {
+                    // Show subjects this teacher can actually teach
+                    relevantPending = DataManager.FailedAssignments
+                        .Where(f =>
+                        {
+                            var t = DataManager.Teachers.FirstOrDefault(teacher => teacher.Name == currentSectionName);
+                            return t != null && t.QualifiedSubjects.Contains(CleanSubjectName(f.Subject.Code));
+                        })
+                        .ToList();
+                }
+                else // View is "Room"
+                {
+                    // Show ALL pending items (because any section *could* potentially use this room)
+                    // Optional: You could filter to only show "Lab" subjects if the room is a Laboratory
+                    relevantPending = DataManager.FailedAssignments.ToList();
+                }
+
+                if (relevantPending.Count == 0)
+                {
+                    ctxMenuSchedule.Items.Add("No pending subjects found.");
+                }
+                else
+                {
+                    // Sort them so the menu isn't a mess
+                    foreach (var fail in relevantPending.OrderBy(f => f.Section.Name))
+                    {
+                        string label = $"Place {fail.Section.Name} - {fail.Subject.Code} ({fail.Subject.Units}u)";
+                        var item = new ToolStripMenuItem(label);
+
+                        item.Tag = new { FailEntry = fail, Day = dayIndex, Time = timeIndex };
+                        item.Click += ContextMenu_PlaceClick;
+
+                        ctxMenuSchedule.Items.Add(item);
+                    }
+                }
+            }
+
+            // Show Menu
+            Rectangle cellRect = dataGridView1.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+            ctxMenuSchedule.Show(dataGridView1, cellRect.Left + e.X, cellRect.Top + e.Y);
+        }
+
+        private void UnassignSubject(ScheduleItem item)
+        {
+            // 1. Identify the Target Type (Lec or Lab?)
+            // We only want to remove the matching type. If unassigning Lab, keep the Lecture.
+            bool isLabTarget = item.Subject.Contains("(Lab)");
+
+            // 2. Find ALL slots for this specific Section + Subject + Type
+            var relatedItems = DataManager.MasterSchedule
+                .Where(s => s.Section == item.Section &&
+                            s.Subject.Contains("(Lab)") == isLabTarget &&
+                            CleanSubjectName(s.Subject) == CleanSubjectName(item.Subject))
+                .ToList();
+
+            if (relatedItems.Count == 0) return;
+
+            // 3. Clear Busy Flags for ALL of them
+            foreach (var part in relatedItems)
+            {
+                ClearBusyFlag(part);
+            }
+
+            // 4. Remove ALL of them from the schedule
+            DataManager.MasterSchedule.RemoveAll(x => relatedItems.Contains(x));
+
+            // 5. Create ONE Pending Entry for the WHOLE subject
+            var sec = DataManager.Sections.First(x => x.Name == item.Section);
+            // Find the subject definition to get the correct Total Units
+            var sub = sec.SubjectsToTake.First(x =>
+                CleanSubjectName(x.Code) == CleanSubjectName(item.Subject) && x.IsLab == isLabTarget);
+
+            // Only add to pending if not already there
+            if (!DataManager.FailedAssignments.Any(f => f.Section == sec && f.Subject == sub))
+            {
+                DataManager.FailedAssignments.Add(new FailedEntry
+                {
+                    Section = sec,
+                    Subject = sub,
+                    Reason = "Manually Unassigned"
+                });
+            }
+
+            // 6. Refresh UI
+            RebuildBusyArrays(DataManager.MasterSchedule);
+            UpdateMasterGrid();
+            UpdateTimetableView();
+            LoadPendingList();
+        }
+
+        private void PerformSwap(ScheduleItem oldClass, FailedEntry newClass)
+        {
+            // 1. Validate: Does the new class fit?
+            // The new class might have different units (e.g. swapping a 3-unit Lab with a 3-unit Major is easy. 
+            // Swapping 3-unit Lab with 1-unit Lec is messy but allowed).
+
+            // 2. Unassign the OLD class (Move it to pending)
+            UnassignSubject(oldClass);
+
+            // 3. Assign the NEW class (Move it from pending to schedule)
+            // We try to place it starting at the same time index.
+            bool success = PlaceBlockManual(newClass, oldClass.DayIndex, oldClass.TimeIndex, oldClass.Room);
+
+            if (!success)
+            {
+                MessageBox.Show("Swap failed: The new subject requires more time/units than available, or the teacher/room is busy for the full duration.");
+                // OPTIONAL: Undo the unassign if you want to be fancy, 
+                // but for now, the old class just stays in Pending, which is safe.
+            }
+
+            // 4. Refresh
+            UpdateMasterGrid();
+            UpdateTimetableView();
+            LoadPendingList();
+        }
+
+        // Event Handler for "Place Here" menu item
+        private void ContextMenu_PlaceClick(object sender, EventArgs e)
+        {
+            // 1. Retrieve Data from the Menu Item
+            var menuItem = (ToolStripMenuItem)sender;
+            dynamic data = menuItem.Tag; // Unpack the anonymous object
+
+            FailedEntry failEntry = data.FailEntry;
+            int targetDay = data.Day;
+            int targetTime = data.Time;
+
+            // 2. Validation: We need a Room and Teacher
+            // Since "Place Here" relies on the FailedEntry, we check if we have a teacher capable.
+            // For the Room, we use the one associated with the "Slot" (if viewing by Room)
+            // OR we pick the first available valid room.
+
+            string targetRoom = null;
+
+            // Smart Room Finder
+            if (cmbFilterType.SelectedItem?.ToString() == "Room")
+            {
+                // If viewing a specific room, assume we want to place it in THAT room.
+                targetRoom = comboBox1.SelectedItem.ToString();
+            }
+            else
+            {
+                // Otherwise, find the first free room that fits the type (Lab/Lec)
+                var roomType = failEntry.Subject.IsLab ? RoomType.Laboratory : RoomType.Lecture;
+                var validRoom = DataManager.Rooms.FirstOrDefault(r =>
+                    r.Type == roomType &&
+                    !r.IsBusy[targetDay, targetTime]); // Simple check for start time
+
+                if (validRoom == null)
+                {
+                    MessageBox.Show($"No {roomType} rooms are free at this time.");
+                    return;
+                }
+                targetRoom = validRoom.Name;
+            }
+
+            // 3. Execute the Placement
+            // We use the same helper we wrote for Swapping
+            bool success = PlaceBlockManual(failEntry, targetDay, targetTime, targetRoom);
+
+            if (success)
+            {
+                UpdateMasterGrid();
+                UpdateTimetableView();
+                LoadPendingList();
+            }
+            else
+            {
+                MessageBox.Show("Cannot place here. The teacher is busy, the room is occupied for the full duration, or the class exceeds the day's hours.");
+            }
+        }
+
+        // Helper to place a multi-hour block manually
+        // Update this method in AdminDashboard.cs
+        private bool PlaceBlockManual(FailedEntry fail, int day, int startInfo, string roomName)
+        {
+            int duration = fail.Subject.Units;
+            var teacher = DataManager.Teachers.FirstOrDefault(t => t.QualifiedSubjects.Contains(CleanSubjectName(fail.Subject.Code)));
+            var room = DataManager.Rooms.First(r => r.Name == roomName);
+
+            if (teacher == null) return false;
+
+            // 1. COLLISION SCANNING (The Fix)
+            // We must check if the Teacher OR the Room is occupied for the FULL duration.
+            // AND we must check if there are existing classes in the way (to move to pending).
+
+            List<ScheduleItem> obstacles = new List<ScheduleItem>();
+
+            for (int i = 0; i < duration; i++)
+            {
+                int t = startInfo + i;
+                if (t > 12) return false; // Exceeds day limits
+
+                // A. Check Teacher Availability (Hard Constraint)
+                // If the teacher is busy elsewhere, we CANNOT proceed.
+                // We exclude the current slot if we are swapping, but for "Place" we just check strict busy-ness.
+                // Note: We perform a deeper check against MasterSchedule to ignore the class we are currently replacing if needed.
+                if (teacher.IsBusy[day, t])
+                {
+                    // Check if the teacher is busy because of a class we are about to overwrite?
+                    // If yes, that's fine. If no (busy elsewhere), return false.
+                    bool busyWithOthers = DataManager.MasterSchedule.Any(s =>
+                        s.Teacher == teacher.Name && s.DayIndex == day && s.TimeIndex == t &&
+                        s.Section != fail.Section.Name); // Busy with a DIFFERENT section
+
+                    if (busyWithOthers) return false;
+                }
+
+                // B. Identify Obstacles (Classes currently sitting in this slot)
+                // We look for anything in this Room OR anything this Section is doing.
+                var existing = DataManager.MasterSchedule.FirstOrDefault(s =>
+                    s.DayIndex == day && s.TimeIndex == t &&
+                    (s.Room == roomName || s.Section == fail.Section.Name));
+
+                if (existing != null)
+                {
+                    obstacles.Add(existing);
+                }
+            }
+
+            // 2. BULLDOZER PHASE (Move obstacles to Pending)
+            foreach (var obstacle in obstacles)
+            {
+                // Avoid duplicate logic if the obstacle takes up 2 slots (don't unassign twice)
+                if (DataManager.MasterSchedule.Contains(obstacle))
+                {
+                    UnassignSubject(obstacle); // Use the Helper we wrote earlier!
+                }
+            }
+
+            // 3. COMMIT PLACEMENT
+            for (int i = 0; i < duration; i++)
+            {
+                int t = startInfo + i;
+                ScheduleItem newItem = new ScheduleItem
+                {
+                    Section = fail.Section.Name,
+                    Subject = fail.Subject.Code,
+                    Teacher = teacher.Name,
+                    Room = room.Name,
+                    Day = GetDayName(day), // Ensure this uses your fixed 1=Mon helper
+                    Time = GetTimeLabel(t),
+                    DayIndex = day,
+                    TimeIndex = t,
+                    RoomObj = room
+                };
+                DataManager.MasterSchedule.Add(newItem);
+
+                // Update flags
+                teacher.IsBusy[day, t] = true;
+                fail.Section.IsBusy[day, t] = true;
+                room.IsBusy[day, t] = true;
+            }
+
+            // Remove the one we just placed from Pending
+            if (DataManager.FailedAssignments.Contains(fail))
+                DataManager.FailedAssignments.Remove(fail);
+
+            return true;
+        }
+
+        // 2. LOGIC: Executes when you click a menu item
+        private void ContextMenu_AssignClick(object sender, EventArgs e)
+        {
+            // Retrieve the data we attached to the tag
+            var menuItem = (ToolStripMenuItem)sender;
+            dynamic data = menuItem.Tag;
+            FailedEntry fail = data.FailEntry;
+            int day = data.Day;
+            int time = data.Time;
+
+            // Smart Validation: Do we need a Room or Teacher?
+            // Since we are forcing, we might need to Auto-Assign a room if one isn't specified.
+            // For this basic version, we will try to find the *first available* room/teacher for this slot.
+
+            // 1. Find a Teacher (If not already defined in the pending entry, pick one who is free)
+            // Note: In your current logic, Pending subjects don't store a "Teacher", so we pick one capable.
+            var teacher = DataManager.Teachers.FirstOrDefault(t =>
+                t.QualifiedSubjects.Contains(CleanSubjectName(fail.Subject.Code)) &&
+                !t.IsBusy[day, time]);
+
+            if (teacher == null)
+            {
+                MessageBox.Show("Cannot place here: No qualified teachers are free at this time.");
+                return;
+            }
+
+            // 2. Find a Room
+            var roomType = fail.Subject.IsLab ? RoomType.Laboratory : RoomType.Lecture;
+            var room = DataManager.Rooms.FirstOrDefault(r =>
+                r.Type == roomType &&
+                !r.IsBusy[day, time]);
+
+            if (room == null)
+            {
+                MessageBox.Show($"Cannot place here: No {roomType} rooms are free at this time.");
+                return;
+            }
+
+            // 3. Check if Section is free (Don't double book the students!)
+            if (fail.Section.IsBusy[day, time])
+            {
+                if (MessageBox.Show("Students already have a class here. Overwrite?", "Conflict", MessageBoxButtons.YesNo) == DialogResult.No)
+                    return;
+
+                // (Optional: Code to remove the conflicting class goes here if needed)
+            }
+
+            // 4. COMMIT THE ASSIGNMENT
+            ScheduleItem newItem = new ScheduleItem
+            {
+                Section = fail.Section.Name,
+                Subject = fail.Subject.Code,
+                Teacher = teacher.Name,
+                Room = room.Name,
+                Day = GetDayName(day),
+                Time = GetTimeLabel(time),
+                DayIndex = day,
+                TimeIndex = time,
+                RoomObj = room
+            };
+
+            // Update Data
+            DataManager.MasterSchedule.Add(newItem);
+            DataManager.FailedAssignments.Remove(fail);
+
+            // Update Flags
+            teacher.IsBusy[day, time] = true;
+            fail.Section.IsBusy[day, time] = true;
+            room.IsBusy[day, time] = true;
+
+            // Refresh UI
+            UpdateMasterGrid();
+            UpdateTimetableView();
+            LoadPendingList();
+        }
+
+        // 3. HELPERS (Add these if missing)
+        // CHANGE THIS METHOD at the bottom of AdminDashboard.cs
+        private string GetDayName(int d)
+        {
+            // Fix: Make Index 1 = Monday to match the Grid Column Index
+            string[] shortNames = { "", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+
+            if (d >= 1 && d <= 7) return shortNames[d];
+            return "Err";
+        }
+        private string GetTimeLabel(int t) => $"{7 + t}:00 - {8 + t}:00";
+        private string CleanSubjectName(string s) => s.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
         #endregion
+
+        private void btnFindSlots_Click(object sender, EventArgs e)
+        {
+            // 1. Validation
+            if (dgvPending.SelectedRows.Count == 0) return;
+
+            var failEntry = (FailedEntry)dgvPending.SelectedRows[0].Tag;
+            string subjectName = CleanSubjectName(failEntry.Subject.Code);
+
+            // Find the teacher responsible for this subject
+            var teacher = DataManager.Teachers.FirstOrDefault(t => t.QualifiedSubjects.Contains(subjectName));
+
+            if (teacher == null)
+            {
+                MessageBox.Show("No qualified teacher found in the database for " + subjectName);
+                return;
+            }
+
+            // 2. Scan for Openings
+            string report = $"-- Valid Slots for {failEntry.Subject.Code} ({failEntry.Subject.Units} hrs) --\n";
+            report += $"Teacher: {teacher.Name}\n\n";
+
+            int optionsFound = 0;
+
+            // Loop Days (1=Mon to 6=Sat)
+            for (int d = 1; d <= 6; d++)
+            {
+                // Loop Hours (Stop early enough so the block fits)
+                for (int t = 0; t <= 11 - failEntry.Subject.Units; t++)
+                {
+                    bool isFree = true;
+
+                    // Check the whole block (e.g. 3 hours)
+                    for (int i = 0; i < failEntry.Subject.Units; i++)
+                    {
+                        // Conflict Check: Teacher Busy OR Section Busy
+                        if (teacher.IsBusy[d, t + i] || failEntry.Section.IsBusy[d, t + i])
+                        {
+                            isFree = false;
+                            break;
+                        }
+                    }
+
+                    if (isFree)
+                    {
+                        // Optional: Find which room is free here
+                        var roomType = failEntry.Subject.IsLab ? RoomType.Laboratory : RoomType.Lecture;
+                        var freeRoom = DataManager.Rooms.FirstOrDefault(r => r.Type == roomType && !r.IsBusy[d, t]);
+                        string roomNote = freeRoom != null ? $"({freeRoom.Name})" : "(No Rooms)";
+
+                        report += $"• {GetDayName(d)} @ {GetTimeLabel(t)} {roomNote}\n";
+                        optionsFound++;
+                    }
+                }
+            }
+
+            if (optionsFound == 0)
+                MessageBox.Show($"Impossible to place. {teacher.Name} and Section {failEntry.Section.Name} have no common free time.");
+            else
+                MessageBox.Show(report, "Availability Cheat Sheet");
+        }
     }
 }

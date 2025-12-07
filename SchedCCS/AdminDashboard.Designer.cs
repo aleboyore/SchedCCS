@@ -28,7 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            components = new System.ComponentModel.Container();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             btnLogout = new Button();
@@ -106,6 +107,8 @@
             Section = new DataGridViewTextBoxColumn();
             Subject = new DataGridViewTextBoxColumn();
             Reason = new DataGridViewTextBoxColumn();
+            ctxMenuSchedule = new ContextMenuStrip(components);
+            btnFindSlots = new Button();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
@@ -196,18 +199,19 @@
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Window;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle4.BackColor = SystemColors.Window;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridView1.Location = new Point(6, 36);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.Size = new Size(1244, 571);
             dataGridView1.TabIndex = 8;
+            dataGridView1.CellMouseClick += dataGridView1_CellMouseClick;
             dataGridView1.Resize += dataGridView1_Resize;
             // 
             // btnExport
@@ -884,6 +888,7 @@
             // 
             // tabPending
             // 
+            tabPending.Controls.Add(btnFindSlots);
             tabPending.Controls.Add(dgvPending);
             tabPending.Location = new Point(4, 24);
             tabPending.Name = "tabPending";
@@ -901,7 +906,7 @@
             dgvPending.Location = new Point(8, 9);
             dgvPending.Name = "dgvPending";
             dgvPending.ReadOnly = true;
-            dgvPending.Size = new Size(1240, 636);
+            dgvPending.Size = new Size(1240, 561);
             dgvPending.TabIndex = 0;
             // 
             // Section
@@ -921,6 +926,21 @@
             Reason.HeaderText = "Reason";
             Reason.Name = "Reason";
             Reason.ReadOnly = true;
+            // 
+            // ctxMenuSchedule
+            // 
+            ctxMenuSchedule.Name = "ctxMenuSchedule";
+            ctxMenuSchedule.Size = new Size(61, 4);
+            // 
+            // btnFindSlots
+            // 
+            btnFindSlots.Location = new Point(578, 606);
+            btnFindSlots.Name = "btnFindSlots";
+            btnFindSlots.Size = new Size(100, 23);
+            btnFindSlots.TabIndex = 1;
+            btnFindSlots.Text = "Find Valid Slots";
+            btnFindSlots.UseVisualStyleBackColor = true;
+            btnFindSlots.Click += btnFindSlots_Click;
             // 
             // AdminDashboard
             // 
@@ -1037,5 +1057,7 @@
         private DataGridViewTextBoxColumn Section;
         private DataGridViewTextBoxColumn Subject;
         private DataGridViewTextBoxColumn Reason;
+        private ContextMenuStrip ctxMenuSchedule;
+        private Button btnFindSlots;
     }
 }
