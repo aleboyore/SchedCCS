@@ -630,7 +630,7 @@
             Controls.Add(pnlContent);
             Controls.Add(pnlSidebar);
             Name = "StudentDashboard";
-            Text = "StudentDashboard";
+            Text = "Student Dashboard";
             pnlSidebar.ResumeLayout(false);
             pnlSidebar.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)picProfile).EndInit();

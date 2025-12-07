@@ -101,7 +101,7 @@
             Controls.Add(txtStudentID);
             Controls.Add(label1);
             Name = "LoginForm";
-            Text = "LoginForm";
+            Text = "Login Form";
             ResumeLayout(false);
             PerformLayout();
         }

@@ -963,7 +963,7 @@
             ClientSize = new Size(1264, 681);
             Controls.Add(tabControl1);
             Name = "AdminDashboard";
-            Text = "Form1";
+            Text = "Admin Dashboard";
             Load += Form1_Load_1;
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);

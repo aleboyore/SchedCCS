@@ -194,7 +194,7 @@
             Controls.Add(label2);
             Controls.Add(label1);
             Name = "RegisterForm";
-            Text = "RegisterForm";
+            Text = "Register Form";
             ResumeLayout(false);
             PerformLayout();
         }

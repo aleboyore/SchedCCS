@@ -74,7 +74,7 @@
             Controls.Add(dgvRoomSchedule);
             Controls.Add(lblRoomName);
             Name = "RoomScheduleForm";
-            Text = "RoomScheduleForm";
+            Text = "Room Schedule Form";
             ((System.ComponentModel.ISupportInitialize)dgvRoomSchedule).EndInit();
             ResumeLayout(false);
             PerformLayout();
