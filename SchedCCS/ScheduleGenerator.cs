@@ -6,16 +6,14 @@ namespace SchedCCS
 {
     public class ScheduleGenerator
     {
-        // 1. Data Fields
         private List<Room> rooms;
         private List<Teacher> teachers;
         private List<Section> sections;
 
-        // 2. Output
+        // Output Lists
         public List<ScheduleItem> GeneratedSchedule { get; private set; } = new List<ScheduleItem>();
         public List<FailedEntry> FailedAssignments { get; private set; } = new List<FailedEntry>();
 
-        // 3. Constructor
         public ScheduleGenerator(List<Room> r, List<Teacher> t, List<Section> s)
         {
             rooms = r;
@@ -23,21 +21,18 @@ namespace SchedCCS
             sections = s;
         }
 
-        // =============================================================
-        // MAIN ALGORITHM
-        // =============================================================
-
         public void Generate()
         {
-            // Reset State
             GeneratedSchedule.Clear();
             FailedAssignments.Clear();
             ResetResourceStates();
 
-            // Loop Sections
-            foreach (var section in sections)
+            // 1. Sort Sections: Process 1st years/Heavy loads first
+            var sortedSections = sections.OrderByDescending(s => s.SubjectsToTake.Count).ToList();
+
+            foreach (var section in sortedSections)
             {
-                // Prioritize Labs first (harder to fit), then Lectures
+                // 2. Sort Subjects: Labs first, then Major subjects
                 var sortedSubjects = section.SubjectsToTake
                     .OrderByDescending(s => s.IsLab)
                     .ThenByDescending(s => s.Units)
@@ -47,13 +42,9 @@ namespace SchedCCS
                 {
                     bool success = false;
                     if (subject.IsLab)
-                    {
                         success = AssignLabSlot(section, subject);
-                    }
                     else
-                    {
                         success = AssignLectureSlot(section, subject);
-                    }
 
                     if (!success)
                     {
@@ -61,7 +52,7 @@ namespace SchedCCS
                         {
                             Section = section,
                             Subject = subject,
-                            Reason = "Conflict: No Teacher/Room available for all units."
+                            Reason = "Optimization Conflict: No suitable slot found."
                         });
                     }
                 }
@@ -69,39 +60,52 @@ namespace SchedCCS
         }
 
         // =============================================================
-        // ASSIGNMENT STRATEGIES (ATOMIC & CONSTRAINT-AWARE)
+        // STRATEGY A: LAB ASSIGNMENT (Now with HOUR SHUFFLING)
         // =============================================================
-
-        // Strategy A: Assign Contiguous Blocks (e.g. 3 hours straight for Lab)
-        // REPLACE YOUR 'AssignLabSlot' METHOD WITH THIS:
-
         private bool AssignLabSlot(Section section, Subject subject)
         {
-            // 1. Find valid teachers & Shuffle them
             var qualifiedTeachers = teachers
                 .Where(t => t.QualifiedSubjects.Contains(CleanSubjectName(subject.Code)))
                 .OrderBy(x => Guid.NewGuid())
                 .ToList();
 
-            // 2. DEFINE THE SEARCH ORDER
-            // PRIORITIZE SATURDAY (6), then check Weekdays (1-5)
-            int[] daysToCheck = { 6, 1, 2, 3, 4, 5 };
+            // Search Order: Saturday First, then Random Weekdays
+            List<int> daysToCheck = new List<int> { 6 };
+            var weekdays = new List<int> { 1, 2, 3, 4, 5 };
+            var rng = new Random();
+            daysToCheck.AddRange(weekdays.OrderBy(x => rng.Next())); // Shuffle Weekdays
 
             foreach (var teacher in qualifiedTeachers)
             {
-                // Iterate through days based on our priority list
                 foreach (int d in daysToCheck)
                 {
-                    // For Saturday (6), we often allow 7am-6pm. 
-                    // For Weekdays, the logic remains the same.
+                    // --- NEW FIX: SHUFFLE START TIMES ---
+                    // Instead of starting at 7am (0) every time, we create a list of valid 
+                    // start times (e.g., 7am, 8am, 9am... 2pm) and shuffle them.
+                    // This creates the "Variation" you wanted.
+                    List<int> possibleStartHours = new List<int>();
+                    for (int h = 0; h <= 11 - subject.Units; h++) possibleStartHours.Add(h);
 
-                    // Check hours 0 (7am) to (11 - units)
-                    for (int startH = 0; startH <= 11 - subject.Units; startH++)
+                    possibleStartHours = possibleStartHours.OrderBy(x => rng.Next()).ToList(); // SHUFFLE!
+
+                    foreach (int startH in possibleStartHours)
                     {
-                        // Check Constraints for the WHOLE block
                         if (IsBlockAvailable(section, teacher, d, startH, subject.Units, subject.IsLab, out Room foundRoom))
                         {
-                            // SUCCESS: Book the block
+                            // --- GAP RULE (IMPROVED) ---
+                            // Check AFTER the lab
+                            int endHour = startH + subject.Units;
+                            if (endHour < 11)
+                            {
+                                if (section.IsBusy[d, endHour]) continue; // Force gap after
+                            }
+
+                            // Check BEFORE the lab (New!)
+                            if (startH > 0)
+                            {
+                                if (section.IsBusy[d, startH - 1]) continue; // Force gap before
+                            }
+
                             BookSlot(section, subject, d, startH, subject.Units, foundRoom, teacher);
                             return true;
                         }
@@ -111,43 +115,39 @@ namespace SchedCCS
             return false;
         }
 
-        // Strategy B: Assign Distributed Hours (e.g. 1 hr Mon, 1 hr Wed, 1 hr Fri)
+        // =============================================================
+        // STRATEGY B: LECTURE ASSIGNMENT
+        // =============================================================
         private bool AssignLectureSlot(Section section, Subject subject)
         {
             int unitsNeeded = subject.Units;
 
-            // 1. Find valid teachers
             var qualifiedTeachers = teachers
                 .Where(t => t.QualifiedSubjects.Contains(CleanSubjectName(subject.Code)))
-                .OrderBy(x => Guid.NewGuid()) // Shuffle
+                .OrderBy(x => Guid.NewGuid())
                 .ToList();
 
             foreach (var teacher in qualifiedTeachers)
             {
                 List<(int day, int hour, Room room)> proposedSlots = new List<(int day, int hour, Room room)>();
 
-                // 2. Generate ALL possible random slots
+                // This is already fully randomized (Day + Hour)
                 var randomSlots = GetRandomizedSlots();
 
                 foreach (var slot in randomSlots)
                 {
                     if (proposedSlots.Count >= unitsNeeded) break;
 
-                    // CHECK CONSTRAINTS (Human & Physical)
                     if (IsSingleSlotAvailable(section, teacher, slot.day, slot.hour, subject.IsLab, out Room foundRoom))
                     {
                         proposedSlots.Add((slot.day, slot.hour, foundRoom));
                     }
                 }
 
-                // 3. ATOMIC CHECK: Did this teacher fit ALL units?
                 if (proposedSlots.Count == unitsNeeded)
                 {
-                    // Yes -> Book them all
                     foreach (var s in proposedSlots)
-                    {
                         BookSlot(section, subject, s.day, s.hour, 1, s.room, teacher);
-                    }
                     return true;
                 }
             }
@@ -155,35 +155,30 @@ namespace SchedCCS
         }
 
         // =============================================================
-        // HELPERS & VALIDATION
+        // HELPERS (Least Used Room Logic)
         // =============================================================
 
-        // Checks if a contiguous block (duration > 1) is free
         private bool IsBlockAvailable(Section section, Teacher teacher, int day, int startHour, int duration, bool isLab, out Room foundRoom)
         {
             foundRoom = null;
 
-            // 1. Scan the whole block for basic conflicts
+            // 1. Constraint Checks
             for (int i = 0; i < duration; i++)
             {
                 int h = startHour + i;
-
-                // Lunch Break Rule (No classes 12:00-1:00)
-                if (h == 5) return false;
-
-                // Basic Busy Checks
                 if (section.IsBusy[day, h]) return false;
                 if (teacher.IsBusy[day, h]) return false;
             }
 
-            // 2. Teacher Fatigue Check (Daily Limit)
-            int currentLoad = GetTeacherDailyLoad(teacher, day);
-            if (currentLoad + duration > 9) return false;
+            if (GetTeacherDailyLoad(teacher, day) + duration > 9) return false;
 
-            // 3. Find a Room that is free for the ENTIRE block
+            // 2. ROOM BALANCER: Pick the room with the FEWEST bookings so far
+            var correctRoomType = isLab ? RoomType.Laboratory : RoomType.Lecture;
+
             var candidateRooms = rooms
-                .Where(r => r.Type == (isLab ? RoomType.Laboratory : RoomType.Lecture))
-                .OrderBy(x => Guid.NewGuid())
+                .Where(r => r.Type == correctRoomType)
+                .OrderBy(r => CountRoomUsage(r)) // Use emptiest rooms first
+                .ThenBy(x => Guid.NewGuid())
                 .ToList();
 
             foreach (var room in candidateRooms)
@@ -208,31 +203,32 @@ namespace SchedCCS
             return false;
         }
 
-        // Checks if a single 1-hour slot is free
         private bool IsSingleSlotAvailable(Section section, Teacher teacher, int day, int hour, bool isLab, out Room foundRoom)
         {
             foundRoom = null;
 
-            // 1. Lunch Break Constraint
-            if (hour == 5) return false;
-
-            // 2. Busy Checks
             if (section.IsBusy[day, hour]) return false;
             if (teacher.IsBusy[day, hour]) return false;
-
-            // 3. Teacher Fatigue (Daily)
             if (GetTeacherDailyLoad(teacher, day) >= 9) return false;
-
-            // 4. Teacher Fatigue (Continuous 4-hour limit)
             if (IsTeacherFatigued(teacher, day, hour)) return false;
-
-            // 5. Student Fatigue (Spread out majors)
             if (IsSectionFatigued(section, day, hour)) return false;
 
-            // 6. Room Check
-            foundRoom = rooms.FirstOrDefault(r =>
-                r.Type == (isLab ? RoomType.Laboratory : RoomType.Lecture) &&
-                !r.IsBusy[day, hour]);
+            // ROOM BALANCER
+            var correctRoomType = isLab ? RoomType.Laboratory : RoomType.Lecture;
+            var candidateRooms = rooms
+                .Where(r => r.Type == correctRoomType)
+                .OrderBy(r => CountRoomUsage(r))
+                .ThenBy(x => Guid.NewGuid())
+                .ToList();
+
+            foreach (var room in candidateRooms)
+            {
+                if (!room.IsBusy[day, hour])
+                {
+                    foundRoom = room;
+                    return true;
+                }
+            }
 
             return foundRoom != null;
         }
@@ -242,13 +238,10 @@ namespace SchedCCS
             for (int i = 0; i < duration; i++)
             {
                 int h = startHour + i;
-
-                // Update Arrays
                 section.IsBusy[day, h] = true;
                 teacher.IsBusy[day, h] = true;
                 room.IsBusy[day, h] = true;
 
-                // Add to List
                 GeneratedSchedule.Add(new ScheduleItem
                 {
                     Section = section.Name,
@@ -268,6 +261,15 @@ namespace SchedCCS
         // UTILITIES
         // =============================================================
 
+        private int CountRoomUsage(Room r)
+        {
+            int count = 0;
+            for (int d = 0; d < 7; d++)
+                for (int h = 0; h < 13; h++)
+                    if (r.IsBusy[d, h]) count++;
+            return count;
+        }
+
         private List<(int day, int hour)> GetRandomizedSlots()
         {
             var slots = new List<(int, int)>();
@@ -275,7 +277,6 @@ namespace SchedCCS
                 for (int h = 0; h < 11; h++)
                     slots.Add((d, h));
 
-            // Shuffle to prevent "Packing"
             var rng = new Random();
             return slots.OrderBy(x => rng.Next()).ToList();
         }
@@ -289,7 +290,6 @@ namespace SchedCCS
 
         private bool IsTeacherFatigued(Teacher t, int day, int hour)
         {
-            // Check previous 4 hours for continuous work
             int consecutive = 0;
             for (int i = 1; i <= 4; i++)
             {
@@ -301,7 +301,6 @@ namespace SchedCCS
 
         private bool IsSectionFatigued(Section s, int day, int hour)
         {
-            // Avoid more than 4 hours straight for students too
             int consecutive = 0;
             for (int i = 1; i <= 4; i++)
             {
@@ -324,7 +323,6 @@ namespace SchedCCS
         }
 
         private string GetDayName(int d) => d >= 0 && d < 8 ? new[] { "", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }[d] : "Err";
-
         private string GetTimeLabel(int t) => $"{7 + t}:00 - {8 + t}:00";
     }
 }
