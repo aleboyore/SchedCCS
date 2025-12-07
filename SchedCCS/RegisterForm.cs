@@ -23,7 +23,6 @@ namespace SchedCCS
         {
             cmbSection.Items.Clear();
 
-            // Validate if data exists before attempting to load
             if (DataManager.Sections.Count > 0)
             {
                 foreach (var s in DataManager.Sections)
@@ -40,7 +39,7 @@ namespace SchedCCS
         // Validates input fields and creates a new Student entity.
         private void RegisterStudent()
         {
-            // Validate required text fields
+            // 1. Validate required text fields
             if (string.IsNullOrWhiteSpace(txtFirstName.Text) ||
                 string.IsNullOrWhiteSpace(txtLastName.Text) ||
                 string.IsNullOrWhiteSpace(txtStudentID.Text))
@@ -49,21 +48,21 @@ namespace SchedCCS
                 return;
             }
 
-            // Validate section selection
+            // 2. Validate section selection
             if (cmbSection.SelectedItem == null)
             {
                 MessageBox.Show("Please select a section.");
                 return;
             }
 
-            // Validate password matching
+            // 3. Validate password matching
             if (txtPassword.Text != txtConfirm.Text)
             {
                 MessageBox.Show("Passwords do not match.");
                 return;
             }
 
-            // Check for duplicate Student ID in the data source
+            // 4. Check for duplicate Student ID
             bool userExists = DataManager.Users.Any(u => u.Username == txtStudentID.Text);
             if (userExists)
             {
@@ -71,7 +70,7 @@ namespace SchedCCS
                 return;
             }
 
-            // Create and persist new User object [OOP: Object Instantiation]
+            // 5. Create and persist new User object
             User newUser = new User
             {
                 Username = txtStudentID.Text,

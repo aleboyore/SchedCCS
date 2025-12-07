@@ -1,3 +1,6 @@
+using System;
+using System.Windows.Forms;
+
 namespace SchedCCS
 {
     internal static class Program
@@ -8,12 +11,13 @@ namespace SchedCCS
         [STAThread]
         static void Main()
         {
+            // Initialize Windows Forms application settings
             ApplicationConfiguration.Initialize();
 
-            // START THE DATABASE
+            // Initialize the in-memory database and seed data
             DataManager.Initialize();
 
-            // Launch Login Screen
+            // Launch the application starting with the Login Form
             Application.Run(new LoginForm());
         }
     }

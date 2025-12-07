@@ -7,7 +7,7 @@ namespace SchedCCS
 {
     public partial class RoomScheduleForm : Form
     {
-        // [Encapsulation] Use readonly to ensure this value is immutable after initialization.
+        // Immutable field for the room being viewed
         private readonly string _targetRoom;
 
         #region 1. Initialization
@@ -92,7 +92,7 @@ namespace SchedCCS
         // Retrieves data from the DataManager and populates the grid cells.
         private void LoadRoomSchedule()
         {
-            // [Abstraction] Accessing global data without exposing internal list implementation
+            // Accessing global data without exposing internal list implementation
             var roomClasses = DataManager.MasterSchedule
                 .Where(x => x.Room == _targetRoom).ToList();
 

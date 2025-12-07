@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using System.IO; // Needed for File IO (CSV)
-using iText.Kernel.Pdf; // Needed for PDF
+using System.IO;
+using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
@@ -14,43 +14,38 @@ namespace SchedCCS
 {
     public partial class AdminDashboard : Form
     {
-        // =============================================================
-        // 1. FIELDS & STATE MANAGEMENT (Encapsulation)
-        // =============================================================
+        #region 1. Fields & Properties
 
-        // Flags for sorting logic in the Master Schedule Grid
+        // Grid Sorting Flags
         private string currentSortColumn = "";
         private bool isAscending = true;
 
-        // Tracking IDs for the "Edit/Update" functionality
+        // Edit Tracking IDs
         private int editingTeacherId = -1;
         private int editingRoomId = -1;
         private int editingSectionId = -1;
         private string editingSubjectCode = "";
 
-        // Optimization flag to prevent unnecessary schedule regeneration
+        // State Flags
         private bool isDataDirty = true;
-
-        // Role property to manage access control (Admin vs Student view)
         public bool IsAdmin { get; set; } = true;
 
-        // =============================================================
-        // 2. CONSTRUCTOR & FORM LOAD
-        // =============================================================
+        #endregion
+
+        #region 2. Constructor & Initialization
 
         public AdminDashboard()
         {
             InitializeComponent();
-            // Initialize the Admin Lists immediately upon creation to ensure data visibility
             RefreshAdminLists();
         }
 
         private void Form1_Load_1(object sender, EventArgs e)
         {
             // Apply role-based UI restrictions
-            if (IsAdmin == false)
+            if (!IsAdmin)
             {
-                button1.Visible = false; // Hide Generate button
+                button1.Visible = false;
                 this.Text = "Student Schedule Viewer";
                 MessageBox.Show("Student View: Please select your section from the dropdown.");
             }
@@ -62,66 +57,75 @@ namespace SchedCCS
             RefreshSectionDropdown();
         }
 
-        // =============================================================
-        // 3. CORE SCHEDULING LOGIC
-        // =============================================================
+        #endregion
 
-        // Centralized method to execute the scheduling algorithm and update all views.
+        #region 3. Core Scheduling Logic
+
+        // Executes the scheduling algorithm and updates the UI
         private void RunScheduleGeneration()
         {
-            // 1. State Reset: Clear previous 'Busy' flags for all resources
-            foreach (var r in DataManager.Rooms) r.IsBusy = new bool[6, 13];
-            foreach (var t in DataManager.Teachers) t.IsBusy = new bool[6, 13];
-            foreach (var s in DataManager.Sections) s.IsBusy = new bool[6, 13];
+            // 1. Reset State: Clear 'Busy' flags for all resources (7 days x 13 hours)
+            foreach (var r in DataManager.Rooms) r.IsBusy = new bool[7, 13];
+            foreach (var t in DataManager.Teachers) t.IsBusy = new bool[7, 13];
+            foreach (var s in DataManager.Sections) s.IsBusy = new bool[7, 13];
 
-            // 2. Algorithm Execution: Instantiate and run the Greedy Algorithm
+            // 2. Execute Algorithm
             ScheduleGenerator generator = new ScheduleGenerator(DataManager.Rooms, DataManager.Teachers, DataManager.Sections);
-            generator.Generate();
+            generator.Generate(); // Single-pass generation
 
-            // 3. Data Persistence: Save result to the Shared DataManager
+            // 3. Persist Data
             DataManager.MasterSchedule = generator.GeneratedSchedule;
+            DataManager.FailedAssignments = generator.FailedAssignments;
 
-            // 4. UI Synchronization: Refresh Dropdowns and Grids
+            // 4. UI Synchronization
+            UpdateMasterGrid();
+            UpdateTimetableView();
+
+            isDataDirty = false;
+        }
+
+        private void UpdateMasterGrid()
+        {
+            dgvMaster.DataSource = null;
+            dgvMaster.DataSource = DataManager.MasterSchedule;
+            dgvMaster.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        }
+
+        private void UpdateTimetableView()
+        {
+            // Refresh dropdown items
             string currentSelection = comboBox1.SelectedItem?.ToString();
             comboBox1.Items.Clear();
             foreach (var section in DataManager.Sections) comboBox1.Items.Add(section.Name);
 
+            // Restore selection if possible, or select first item
             if (currentSelection != null && comboBox1.Items.Contains(currentSelection))
             {
                 comboBox1.SelectedItem = currentSelection;
             }
-
-            // Update Master List Grid
-            if (dgvMaster != null)
+            else if (comboBox1.Items.Count > 0)
             {
-                dgvMaster.DataSource = null;
-                dgvMaster.DataSource = DataManager.MasterSchedule;
-                dgvMaster.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                comboBox1.SelectedIndex = 0;
             }
 
-            // Update Calendar View Grid
+            // Trigger grid redraw
             if (comboBox1.SelectedItem != null)
             {
                 string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
                 DisplayTimetable(comboBox1.SelectedItem.ToString(), mode);
             }
-
-            // Reset dirty flag as data is now synchronized
-            isDataDirty = false;
         }
 
-        // Manual trigger for schedule generation
         private void button1_Click(object sender, EventArgs e)
         {
             RunScheduleGeneration();
             MessageBox.Show("Schedule Generated Successfully!");
         }
 
-        // =============================================================
-        // 4. VISUALIZATION & GRID RENDERING
-        // =============================================================
+        #endregion
 
-        // Renders the schedule into a readable timetable format (Calendar View).
+        #region 4. Visualization & Grid Rendering
+
         private void DisplayTimetable(string filterValue, string filterMode)
         {
             // Reset Grid
@@ -129,145 +133,165 @@ namespace SchedCCS
             dataGridView1.Rows.Clear();
             dataGridView1.Columns.Clear();
 
-            // Setup Columns (Time + 7 Days)
+            // Setup Columns
             dataGridView1.Columns.Add("Time", "TIME");
             string[] days = { "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" };
             foreach (var day in days) dataGridView1.Columns.Add(day, day);
 
-            // Styling configuration
+            // Style Configuration
+            ConfigureGridStyles();
+
+            // Populate Time Rows (7:00 AM - 6:00 PM)
+            int exactRowHeight = CalculateRowHeight();
+            for (int hour = 7; hour < 18; hour++)
+            {
+                string niceTime = ToSimple12Hour($"{hour}:00 - {hour + 1}:00");
+                int rowIndex = dataGridView1.Rows.Add(niceTime, "", "", "", "", "", "", "");
+                dataGridView1.Rows[rowIndex].Height = exactRowHeight;
+            }
+
+            // Filter Data
+            List<ScheduleItem> filteredList = new List<ScheduleItem>();
+            if (filterMode == "Section") filteredList = DataManager.MasterSchedule.Where(x => x.Section == filterValue).ToList();
+            else if (filterMode == "Teacher") filteredList = DataManager.MasterSchedule.Where(x => x.Teacher == filterValue).ToList();
+            else if (filterMode == "Room") filteredList = DataManager.MasterSchedule.Where(x => x.Room == filterValue).ToList();
+
+            // Render Cells
+            RenderScheduleItems(filteredList, filterMode);
+
+            dataGridView1.ClearSelection();
+        }
+
+        private void ConfigureGridStyles()
+        {
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridView1.Columns["Time"].FillWeight = 50;
-            dataGridView1.ScrollBars = ScrollBars.None; // Fixed layout (No scroll)
-
+            dataGridView1.ScrollBars = ScrollBars.None;
             dataGridView1.DefaultCellStyle.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular);
             dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             dataGridView1.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridView1.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-
-            // Dynamic Height Calculation: Fits rows to screen height
-            int availableHeight = dataGridView1.Height - dataGridView1.ColumnHeadersHeight;
-            int exactRowHeight = availableHeight / 11;
-
-            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
-            dataGridView1.RowTemplate.Height = exactRowHeight;
-
-            // Cleanup UI
-            foreach (DataGridViewColumn col in dataGridView1.Columns) col.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.RowHeadersVisible = false;
+            foreach (DataGridViewColumn col in dataGridView1.Columns) col.SortMode = DataGridViewColumnSortMode.NotSortable;
+        }
 
-            // Setup Rows (7:00 AM - 6:00 PM)
-            for (int hour = 7; hour < 18; hour++)
-            {
-                string rawTime = $"{hour}:00 - {hour + 1}:00";
-                string niceTime = ToSimple12Hour(rawTime);
+        private int CalculateRowHeight()
+        {
+            int availableHeight = dataGridView1.Height - dataGridView1.ColumnHeadersHeight;
+            int height = availableHeight / 11;
+            return height < 20 ? 20 : height;
+        }
 
-                int rowIndex = dataGridView1.Rows.Add(niceTime, "", "", "", "", "", "", "");
-                dataGridView1.Rows[rowIndex].Height = exactRowHeight;
-            }
-
-            // Data Filtering based on Admin Selection
-            List<ScheduleItem> filteredList = new List<ScheduleItem>();
-            if (filterMode == "Section")
-                filteredList = DataManager.MasterSchedule.Where(x => x.Section == filterValue).ToList();
-            else if (filterMode == "Teacher")
-                filteredList = DataManager.MasterSchedule.Where(x => x.Teacher == filterValue).ToList();
-            else if (filterMode == "Room")
-                filteredList = DataManager.MasterSchedule.Where(x => x.Room == filterValue).ToList();
-
-            // Populate Cells
-            foreach (var item in filteredList)
+        private void RenderScheduleItems(List<ScheduleItem> items, string filterMode)
+        {
+            foreach (var item in items)
             {
                 int startHour = int.Parse(item.Time.Split(':')[0]);
                 int rowIndex = startHour - 7;
+                int colIndex = GetDayColumnIndex(item.Day);
 
-                int colIndex = 0;
-                switch (item.Day)
-                {
-                    case "Mon": colIndex = 1; break;
-                    case "Tue": colIndex = 2; break;
-                    case "Wed": colIndex = 3; break;
-                    case "Thu": colIndex = 4; break;
-                    case "Fri": colIndex = 5; break;
-                    case "Sat": colIndex = 6; break;
-                    case "Sun": colIndex = 7; break;
-                }
-
-                if (rowIndex >= 0 && rowIndex < dataGridView1.Rows.Count)
+                if (rowIndex >= 0 && rowIndex < dataGridView1.Rows.Count && colIndex > 0)
                 {
                     string cellText = "";
                     if (filterMode == "Section") cellText = $"{item.Subject}\n{item.Teacher}\n{item.Room}";
                     else if (filterMode == "Teacher") cellText = $"{item.Subject}\n{item.Section}\n{item.Room}";
                     else if (filterMode == "Room") cellText = $"{item.Subject}\n{item.Section}\n{item.Teacher}";
 
-                    dataGridView1.Rows[rowIndex].Cells[colIndex].Value = cellText;
+                    var cell = dataGridView1.Rows[rowIndex].Cells[colIndex];
+                    cell.Value = cellText;
 
-                    // --- THE FIX: Use 'System.Drawing.Color' explicitly ---
                     if (item.Subject.Contains("(Lab)"))
-                        dataGridView1.Rows[rowIndex].Cells[colIndex].Style.BackColor = System.Drawing.Color.LightSalmon;
+                        cell.Style.BackColor = System.Drawing.Color.LightSalmon;
                     else
-                        dataGridView1.Rows[rowIndex].Cells[colIndex].Style.BackColor = GetSubjectColor(item.Subject);
+                        cell.Style.BackColor = GetSubjectColor(item.Subject);
                 }
             }
-            dataGridView1.ClearSelection();
         }
 
-        // Handles Tab Switching logic for Smart Updates
+        private int GetDayColumnIndex(string day)
+        {
+            switch (day)
+            {
+                case "Mon": return 1;
+                case "Tue": return 2;
+                case "Wed": return 3;
+                case "Thu": return 4;
+                case "Fri": return 5;
+                case "Sat": return 6;
+                case "Sun": return 7;
+                default: return 0;
+            }
+        }
+
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (tabControl1.SelectedTab == tabControl1.TabPages["tabSchedule"] ||
-                tabControl1.SelectedTab == tabControl1.TabPages["tabMaster"])
+            if (tabControl1.SelectedTab == tabControl1.TabPages["tabSchedule"])
             {
+                // Ensure dropdowns are populated to prevent blank screens
+                if (cmbFilterType.SelectedIndex == -1) cmbFilterType.SelectedIndex = 0; // Default to Section
+
+                if (comboBox1.Items.Count == 0) UpdateTimetableView();
+
+                if (DataManager.MasterSchedule != null && DataManager.MasterSchedule.Count > 0)
+                {
+                    if (comboBox1.SelectedItem != null)
+                    {
+                        string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
+                        DisplayTimetable(comboBox1.SelectedItem.ToString(), mode);
+                    }
+                }
+            }
+            else if (tabControl1.SelectedTab == tabControl1.TabPages["tabMaster"])
+            {
+                UpdateMasterGrid();
                 if (isDataDirty) RunScheduleGeneration();
             }
             else if (tabControl1.SelectedTab == tabControl1.TabPages["tabManage"])
             {
                 RefreshAdminLists();
             }
+            else if (tabControl1.SelectedTab.Text == "Pending Subjects")
+            {
+                LoadPendingList();
+            }
         }
 
-        // Handle Grid Resizing (Responsive Design)
         private void dataGridView1_Resize(object sender, EventArgs e)
         {
             if (dataGridView1.Rows.Count == 0 || !dataGridView1.Visible) return;
             try
             {
-                int availableHeight = dataGridView1.Height - dataGridView1.ColumnHeadersHeight;
-                int newRowHeight = availableHeight / 11;
-                if (newRowHeight < 20) newRowHeight = 20;
-
+                int newRowHeight = CalculateRowHeight();
                 foreach (DataGridViewRow row in dataGridView1.Rows) row.Height = newRowHeight;
             }
             catch { }
         }
 
-        // =============================================================
-        // 5. DATA MANAGEMENT (CRUD OPERATIONS)
-        // =============================================================
+        #endregion
 
-        #region Teacher Management
+        #region 5. Data Management (CRUD)
+
+        // Teacher Management
         private void btnAddTeacher_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtTeacherName.Text)) { MessageBox.Show("Please enter a teacher name."); return; }
 
-            Teacher newTeacher = new Teacher();
-            newTeacher.Id = DataManager.Teachers.Count + 1;
-            newTeacher.Name = txtTeacherName.Text;
+            Teacher newTeacher = new Teacher
+            {
+                Id = DataManager.Teachers.Count + 1,
+                Name = txtTeacherName.Text
+            };
 
             if (!string.IsNullOrWhiteSpace(txtTeacherSubjects.Text))
             {
-                string[] subs = txtTeacherSubjects.Text.Split(',');
-                foreach (var s in subs) newTeacher.QualifiedSubjects.Add(s.Trim());
+                foreach (var s in txtTeacherSubjects.Text.Split(',')) newTeacher.QualifiedSubjects.Add(s.Trim());
             }
 
             DataManager.Teachers.Add(newTeacher);
             MessageBox.Show($"Teacher {newTeacher.Name} added!");
-
-            txtTeacherName.Clear();
-            txtTeacherSubjects.Clear();
-            RefreshAdminLists();
-            isDataDirty = true;
+            ResetTeacherForm();
         }
 
         private void btnUpdateTeacher_Click(object sender, EventArgs e)
@@ -277,335 +301,259 @@ namespace SchedCCS
             {
                 teacher.Name = txtTeacherName.Text;
                 teacher.QualifiedSubjects.Clear();
-
                 if (!string.IsNullOrWhiteSpace(txtTeacherSubjects.Text))
                 {
-                    string[] subs = txtTeacherSubjects.Text.Split(',');
-                    foreach (var s in subs) teacher.QualifiedSubjects.Add(s.Trim());
+                    foreach (var s in txtTeacherSubjects.Text.Split(',')) teacher.QualifiedSubjects.Add(s.Trim());
                 }
 
-                RefreshAdminLists();
                 MessageBox.Show("Teacher Updated!");
-
-                // Reset
-                txtTeacherName.Clear();
-                txtTeacherSubjects.Clear();
-                editingTeacherId = -1;
-                btnUpdateTeacher.Enabled = false;
-                btnAddTeacher.Enabled = true;
+                ResetTeacherForm();
             }
-            isDataDirty = true;
         }
 
         private void btnDeleteTeacher_Click(object sender, EventArgs e)
         {
             if (lstTeachers.SelectedItem == null) return;
+            string name = lstTeachers.SelectedItem.ToString().Split('(')[0].Trim();
+            var teacher = DataManager.Teachers.FirstOrDefault(t => t.Name == name);
 
-            string selectedText = lstTeachers.SelectedItem.ToString();
-            string name = selectedText.Split('(')[0].Trim();
-
-            var teacherToRemove = DataManager.Teachers.FirstOrDefault(t => t.Name == name);
-            if (teacherToRemove != null)
+            if (teacher != null)
             {
-                DataManager.Teachers.Remove(teacherToRemove);
-                RefreshAdminLists();
+                DataManager.Teachers.Remove(teacher);
                 MessageBox.Show("Teacher removed.");
+                RefreshAdminLists();
             }
-            isDataDirty = true;
         }
 
-        private void btnCancelTeacher_Click(object sender, EventArgs e)
+        private void btnCancelTeacher_Click(object sender, EventArgs e) => ResetTeacherForm();
+
+        private void ResetTeacherForm()
         {
             txtTeacherName.Clear();
             txtTeacherSubjects.Clear();
             editingTeacherId = -1;
             btnUpdateTeacher.Enabled = false;
             btnAddTeacher.Enabled = true;
-        }
-        #endregion
-
-        #region Room Management
-        private void btnAddRoom_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(txtRoomName.Text)) { MessageBox.Show("Please enter a room name."); return; }
-            if (cmbRoomType.SelectedItem == null) { MessageBox.Show("Please select a room type."); return; }
-
-            Room newRoom = new Room();
-            newRoom.Id = DataManager.Rooms.Count + 1;
-            newRoom.Name = txtRoomName.Text;
-            newRoom.Type = cmbRoomType.SelectedItem.ToString() == "Laboratory" ? RoomType.Laboratory : RoomType.Lecture;
-
-            DataManager.Rooms.Add(newRoom);
-            MessageBox.Show($"Room '{newRoom.Name}' added successfully!");
-
-            txtRoomName.Clear();
-            cmbRoomType.SelectedIndex = -1;
             RefreshAdminLists();
             isDataDirty = true;
         }
 
+        // Room Management
+        private void btnAddRoom_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtRoomName.Text) || cmbRoomType.SelectedItem == null)
+            {
+                MessageBox.Show("Please enter valid room details.");
+                return;
+            }
+
+            Room newRoom = new Room
+            {
+                Id = DataManager.Rooms.Count + 1,
+                Name = txtRoomName.Text,
+                Type = cmbRoomType.SelectedItem.ToString() == "Laboratory" ? RoomType.Laboratory : RoomType.Lecture
+            };
+
+            DataManager.Rooms.Add(newRoom);
+            MessageBox.Show($"Room '{newRoom.Name}' added!");
+            ResetRoomForm();
+        }
+
         private void btnUpdateRoom_Click(object sender, EventArgs e)
         {
-            if (editingRoomId == -1) return;
             var room = DataManager.Rooms.FirstOrDefault(r => r.Id == editingRoomId);
-
             if (room != null)
             {
                 room.Name = txtRoomName.Text;
                 room.Type = cmbRoomType.SelectedItem.ToString() == "Laboratory" ? RoomType.Laboratory : RoomType.Lecture;
-
-                RefreshAdminLists();
                 MessageBox.Show("Room Updated!");
-
-                txtRoomName.Clear();
-                cmbRoomType.SelectedIndex = -1;
-                editingRoomId = -1;
-                btnUpdateRoom.Enabled = false;
-                btnAddRoom.Enabled = true;
+                ResetRoomForm();
             }
-            isDataDirty = true;
         }
 
         private void btnDeleteRoom_Click(object sender, EventArgs e)
         {
-            if (lstRooms.SelectedItem == null) { MessageBox.Show("Please select a room to delete."); return; }
+            if (lstRooms.SelectedItem == null) return;
+            string name = lstRooms.SelectedItem.ToString().Split('|')[0].Trim();
+            var room = DataManager.Rooms.FirstOrDefault(r => r.Name == name);
 
-            string selectedText = lstRooms.SelectedItem.ToString();
-            string name = selectedText.Split('|')[0].Trim(); // Split by Pipe
-
-            var roomToRemove = DataManager.Rooms.FirstOrDefault(r => r.Name == name);
-            if (roomToRemove != null)
+            if (room != null)
             {
-                DataManager.Rooms.Remove(roomToRemove);
-                RefreshAdminLists();
-
-                txtRoomName.Clear();
-                editingRoomId = -1;
-                btnUpdateRoom.Enabled = false;
-                btnAddRoom.Enabled = true;
+                DataManager.Rooms.Remove(room);
                 MessageBox.Show("Room deleted.");
+                ResetRoomForm();
             }
-            isDataDirty = true;
         }
 
-        private void btnCancelRoom_Click(object sender, EventArgs e)
+        private void btnCancelRoom_Click(object sender, EventArgs e) => ResetRoomForm();
+
+        private void ResetRoomForm()
         {
             txtRoomName.Clear();
             cmbRoomType.SelectedIndex = -1;
             editingRoomId = -1;
             btnUpdateRoom.Enabled = false;
             btnAddRoom.Enabled = true;
+            RefreshAdminLists();
+            isDataDirty = true;
         }
-        #endregion
 
-        #region Section & Subject Management
+        // Section & Subject Management
         private void btnCreateSection_Click(object sender, EventArgs e)
         {
-            // 1. Validation
-            if (string.IsNullOrWhiteSpace(txtSectionName.Text))
+            if (string.IsNullOrWhiteSpace(txtSectionName.Text) || cmbSectionProgram.SelectedItem == null || cmbSectionYear.SelectedItem == null)
             {
-                MessageBox.Show("Please enter a Section Name.");
-                return;
-            }
-            if (cmbSectionProgram.SelectedItem == null || cmbSectionYear.SelectedItem == null)
-            {
-                MessageBox.Show("Please select a Program and Year Level.");
+                MessageBox.Show("Please complete all section fields.");
                 return;
             }
 
-            // 2. Capture Inputs
             string program = cmbSectionProgram.SelectedItem.ToString();
             int yearLevel = int.Parse(cmbSectionYear.SelectedItem.ToString());
 
-            // SCENARIO A: UPDATE EXISTING SECTION
             if (editingSectionId != -1)
             {
                 var section = DataManager.Sections.FirstOrDefault(s => s.Id == editingSectionId);
                 if (section != null)
                 {
                     section.Name = txtSectionName.Text;
-                    section.Program = program;     // Update Program
-                    section.YearLevel = yearLevel; // Update Year
+                    section.Program = program;
+                    section.YearLevel = yearLevel;
                     MessageBox.Show("Section Updated!");
                 }
-
-                // Reset Mode
                 editingSectionId = -1;
                 btnCreateSection.Text = "Create";
             }
-            // SCENARIO B: CREATE NEW SECTION
             else
             {
-                Section newSection = new Section();
-                newSection.Id = DataManager.Sections.Count + 1;
-                newSection.Name = txtSectionName.Text;
-                newSection.Program = program;      // Save Program
-                newSection.YearLevel = yearLevel;  // Save Year
-
+                Section newSection = new Section
+                {
+                    Id = DataManager.Sections.Count + 1,
+                    Name = txtSectionName.Text,
+                    Program = program,
+                    YearLevel = yearLevel
+                };
                 DataManager.Sections.Add(newSection);
                 MessageBox.Show($"Section {newSection.Name} created!");
             }
 
-            // 3. Cleanup
-            txtSectionName.Clear();
-            cmbSectionProgram.SelectedIndex = -1;
-            cmbSectionYear.SelectedIndex = -1;
-
-            RefreshAdminLists();
-            RefreshSectionDropdown();
-            isDataDirty = true;
+            ResetSectionForm();
         }
 
         private void btnSaveChanges_Click(object sender, EventArgs e)
         {
-            Section targetSection = null;
-
-            // 1. Update Section Name
             if (editingSectionId != -1)
             {
-                targetSection = DataManager.Sections.FirstOrDefault(s => s.Id == editingSectionId);
-                if (targetSection != null && !string.IsNullOrWhiteSpace(txtSectionName.Text))
+                var section = DataManager.Sections.FirstOrDefault(s => s.Id == editingSectionId);
+                if (section != null)
                 {
-                    targetSection.Name = txtSectionName.Text;
+                    section.Name = txtSectionName.Text;
+
+                    if (!string.IsNullOrEmpty(editingSubjectCode))
+                    {
+                        var subject = section.SubjectsToTake.FirstOrDefault(s => s.Code.Contains(editingSubjectCode));
+                        if (subject != null)
+                        {
+                            string newCode = txtSubjCode.Text.Trim();
+                            subject.Code = chkIsLab.Checked && !newCode.Contains("(Lab)") ? newCode + " (Lab)" : newCode;
+                            int.TryParse(txtUnits.Text, out int u);
+                            subject.Units = u;
+                            subject.IsLab = chkIsLab.Checked;
+                        }
+                    }
+
+                    cmbSectionList.SelectedItem = section.Name;
+                    MessageBox.Show("Changes Saved!");
                 }
             }
-
-            // 2. Update Subject Details
-            if (targetSection != null && !string.IsNullOrEmpty(editingSubjectCode))
-            {
-                var subject = targetSection.SubjectsToTake.FirstOrDefault(s => s.Code.Contains(editingSubjectCode));
-
-                if (subject != null)
-                {
-                    string newCode = txtSubjCode.Text.Trim();
-
-                    // Logic to maintain suffix
-                    if (chkIsLab.Checked && !newCode.Contains("(Lab)")) subject.Code = newCode + " (Lab)";
-                    else if (!chkIsLab.Checked && !newCode.Contains("(Lec)")) subject.Code = newCode;
-                    else subject.Code = newCode;
-
-                    int.TryParse(txtUnits.Text, out int u);
-                    subject.Units = u;
-                    subject.IsLab = chkIsLab.Checked;
-                }
-            }
-
             RefreshAdminLists();
-            RefreshSectionDropdown();
-
-            if (targetSection != null)
-            {
-                cmbSectionList.SelectedItem = targetSection.Name;
-                RefreshSubjectList();
-            }
-
-            MessageBox.Show("Changes Saved Successfully!");
+            RefreshSubjectList();
             isDataDirty = true;
         }
 
         private void btnAddSubject_Click(object sender, EventArgs e)
         {
-            if (cmbSectionList.SelectedItem == null) { MessageBox.Show("Please select a Section first!"); return; }
-            if (!int.TryParse(txtUnits.Text, out int inputUnits) || string.IsNullOrWhiteSpace(txtSubjCode.Text))
-            {
-                MessageBox.Show("Invalid Code or Units.");
-                return;
-            }
+            if (cmbSectionList.SelectedItem == null) return;
+            if (!int.TryParse(txtUnits.Text, out int inputUnits) || string.IsNullOrWhiteSpace(txtSubjCode.Text)) return;
 
-            string selectedSectionName = cmbSectionList.SelectedItem.ToString();
-            Section targetSection = DataManager.Sections.FirstOrDefault(s => s.Name == selectedSectionName);
-
-            if (targetSection == null) return;
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
+            if (section == null) return;
 
             if (chkIsLab.Checked)
             {
-                Subject lecPart = new Subject { Code = txtSubjCode.Text + " (Lec)", IsLab = false, Units = inputUnits - 1 };
-                Subject labPart = new Subject { Code = txtSubjCode.Text + " (Lab)", IsLab = true, Units = 3 };
-
-                targetSection.SubjectsToTake.Add(lecPart);
-                targetSection.SubjectsToTake.Add(labPart);
-                MessageBox.Show($"Added {txtSubjCode.Text} as:\n- Lecture ({lecPart.Units} hrs)\n- Lab ({labPart.Units} hrs)");
+                section.SubjectsToTake.Add(new Subject { Code = txtSubjCode.Text + " (Lec)", IsLab = false, Units = inputUnits - 1 });
+                section.SubjectsToTake.Add(new Subject { Code = txtSubjCode.Text + " (Lab)", IsLab = true, Units = 3 });
+                MessageBox.Show($"Added {txtSubjCode.Text} (Lec/Lab split).");
             }
             else
             {
-                Subject newSub = new Subject { Code = txtSubjCode.Text, IsLab = false, Units = inputUnits };
-                targetSection.SubjectsToTake.Add(newSub);
-                MessageBox.Show($"Added {newSub.Code} ({newSub.Units} hrs)");
+                section.SubjectsToTake.Add(new Subject { Code = txtSubjCode.Text, IsLab = false, Units = inputUnits });
+                MessageBox.Show($"Added {txtSubjCode.Text}.");
             }
 
-            txtSubjCode.Clear();
-            txtUnits.Clear();
-            chkIsLab.Checked = false;
-
+            ResetSubjectInputs();
             RefreshSubjectList();
             isDataDirty = true;
         }
 
         private void btnRemoveSubject_Click(object sender, EventArgs e)
         {
-            if (cmbSectionList.SelectedItem == null || lstSectionSubjects.SelectedItem == null)
+            if (cmbSectionList.SelectedItem == null || lstSectionSubjects.SelectedItem == null) return;
+
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
+            string selectedText = lstSectionSubjects.SelectedItem.ToString();
+            var subject = section?.SubjectsToTake.FirstOrDefault(s => selectedText.Contains(s.Code));
+
+            if (subject != null)
             {
-                MessageBox.Show("Please select a subject to remove.");
-                return;
+                section.SubjectsToTake.Remove(subject);
+                MessageBox.Show("Subject removed.");
+                RefreshSubjectList();
+                isDataDirty = true;
             }
-
-            string sectionName = cmbSectionList.SelectedItem.ToString();
-            Section selectedSection = DataManager.Sections.FirstOrDefault(s => s.Name == sectionName);
-
-            if (selectedSection != null)
-            {
-                string selectedText = lstSectionSubjects.SelectedItem.ToString();
-                string subjectCode = selectedText.Split('-')[0].Trim();
-
-                var subjectToRemove = selectedSection.SubjectsToTake.FirstOrDefault(s => selectedText.Contains(s.Code));
-
-                if (subjectToRemove != null)
-                {
-                    selectedSection.SubjectsToTake.Remove(subjectToRemove);
-                    RefreshSubjectList();
-                    MessageBox.Show("Subject removed.");
-                }
-            }
-            isDataDirty = true;
         }
 
         private void btnDeleteSection_Click(object sender, EventArgs e)
         {
             if (lstSections.SelectedItem == null) return;
             string name = lstSections.SelectedItem.ToString();
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == name);
 
-            var sectionToRemove = DataManager.Sections.FirstOrDefault(s => s.Name == name);
-            if (sectionToRemove != null)
+            if (section != null && MessageBox.Show($"Delete {name}?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                if (MessageBox.Show($"Delete {name} and all subjects?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                {
-                    DataManager.Sections.Remove(sectionToRemove);
-                    RefreshAdminLists();
-                    MessageBox.Show("Section deleted.");
-                }
+                DataManager.Sections.Remove(section);
+                MessageBox.Show("Section deleted.");
+                RefreshAdminLists();
+                isDataDirty = true;
             }
-            isDataDirty = true;
         }
 
         private void btnCancelSubject_Click(object sender, EventArgs e)
+        {
+            ResetSubjectInputs();
+            ResetSectionForm();
+        }
+
+        private void ResetSectionForm()
+        {
+            txtSectionName.Clear();
+            cmbSectionProgram.SelectedIndex = -1;
+            cmbSectionYear.SelectedIndex = -1;
+            RefreshAdminLists();
+            RefreshSectionDropdown();
+        }
+
+        private void ResetSubjectInputs()
         {
             txtSubjCode.Clear();
             txtUnits.Clear();
             chkIsLab.Checked = false;
             editingSubjectCode = "";
             btnAddSubject.Enabled = true;
-
-            txtSectionName.Clear();
-            cmbSectionProgram.SelectedIndex = -1; // Clear Program
-            cmbSectionYear.SelectedIndex = -1;    // Clear Year
-            editingSectionId = -1;
-            btnCreateSection.Text = "Create";
         }
+
         #endregion
 
-        // =============================================================
-        // 6. HELPER FUNCTIONS
-        // =============================================================
+        #region 6. Helper Functions
 
         private void RefreshSectionDropdown()
         {
@@ -616,31 +564,29 @@ namespace SchedCCS
         private void RefreshAdminLists()
         {
             lstTeachers.Items.Clear();
-            foreach (var t in DataManager.Teachers)
-                lstTeachers.Items.Add($"{t.Name} ({string.Join(", ", t.QualifiedSubjects)})");
+            foreach (var t in DataManager.Teachers) lstTeachers.Items.Add($"{t.Name} ({string.Join(", ", t.QualifiedSubjects)})");
 
             lstRooms.Items.Clear();
-            foreach (var r in DataManager.Rooms)
-                lstRooms.Items.Add($"{r.Name} | {r.Type}");
+            foreach (var r in DataManager.Rooms) lstRooms.Items.Add($"{r.Name} | {r.Type}");
 
             lstSections.Items.Clear();
-            foreach (var s in DataManager.Sections)
-                lstSections.Items.Add(s.Name);
+            foreach (var s in DataManager.Sections) lstSections.Items.Add(s.Name);
+
+            cmbManualTeacher.Items.Clear();
+            foreach (var t in DataManager.Teachers) cmbManualTeacher.Items.Add(t.Name);
 
             RefreshSectionDropdown();
         }
 
         private void RefreshSubjectList()
         {
-            if (cmbSectionList.SelectedItem == null) { lstSectionSubjects.Items.Clear(); return; }
-
-            string sectionName = cmbSectionList.SelectedItem.ToString();
-            Section selectedSection = DataManager.Sections.FirstOrDefault(s => s.Name == sectionName);
-
             lstSectionSubjects.Items.Clear();
-            if (selectedSection != null)
+            if (cmbSectionList.SelectedItem == null) return;
+
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
+            if (section != null)
             {
-                foreach (var sub in selectedSection.SubjectsToTake)
+                foreach (var sub in section.SubjectsToTake)
                 {
                     string type = sub.IsLab ? "Lab" : "Lec";
                     lstSectionSubjects.Items.Add($"{sub.Code} - {type} ({sub.Units} units)");
@@ -665,17 +611,12 @@ namespace SchedCCS
             string baseName = subjectName.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
             int seed = baseName.GetHashCode();
             Random r = new Random(seed);
-
-            int red = r.Next(160, 255);
-            int green = r.Next(160, 255);
-            int blue = r.Next(160, 255);
-
-            return System.Drawing.Color.FromArgb(red, green, blue);
+            return System.Drawing.Color.FromArgb(r.Next(160, 255), r.Next(160, 255), r.Next(160, 255));
         }
 
-        // =============================================================
-        // 7. EVENT LISTENERS (List Selections & Sorting)
-        // =============================================================
+        #endregion
+
+        #region 7. Event Listeners (UI Interaction)
 
         private void cmbFilterType_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -700,10 +641,9 @@ namespace SchedCCS
         private void lstTeachers_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lstTeachers.SelectedItem == null) return;
-            string selectedText = lstTeachers.SelectedItem.ToString();
-            string name = selectedText.Split('(')[0].Trim();
-
+            string name = lstTeachers.SelectedItem.ToString().Split('(')[0].Trim();
             var teacher = DataManager.Teachers.FirstOrDefault(t => t.Name == name);
+
             if (teacher != null)
             {
                 editingTeacherId = teacher.Id;
@@ -717,10 +657,9 @@ namespace SchedCCS
         private void lstRooms_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lstRooms.SelectedItem == null) return;
-            string selectedText = lstRooms.SelectedItem.ToString();
-            string name = selectedText.Split('|')[0].Trim();
-
+            string name = lstRooms.SelectedItem.ToString().Split('|')[0].Trim();
             var room = DataManager.Rooms.FirstOrDefault(r => r.Name == name);
+
             if (room != null)
             {
                 editingRoomId = room.Id;
@@ -735,12 +674,10 @@ namespace SchedCCS
         {
             if (lstSectionSubjects.SelectedItem == null || cmbSectionList.SelectedItem == null) return;
 
-            string selectedText = lstSectionSubjects.SelectedItem.ToString();
-            string code = selectedText.Split('-')[0].Trim();
+            string code = lstSectionSubjects.SelectedItem.ToString().Split('-')[0].Trim();
             editingSubjectCode = code;
 
-            string sectionName = cmbSectionList.SelectedItem.ToString();
-            var section = DataManager.Sections.FirstOrDefault(s => s.Name == sectionName);
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
             var subject = section?.SubjectsToTake.FirstOrDefault(s => s.Code.Contains(code));
 
             if (subject != null)
@@ -755,42 +692,27 @@ namespace SchedCCS
         private void lstSections_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lstSections.SelectedItem == null) return;
-
             string name = lstSections.SelectedItem.ToString();
             var section = DataManager.Sections.FirstOrDefault(s => s.Name == name);
 
             if (section != null)
             {
-                // 1. Load ID and Name
                 editingSectionId = section.Id;
                 txtSectionName.Text = section.Name;
-
-                // 2. Load Program and Year into Dropdowns
-                if (cmbSectionProgram.Items.Contains(section.Program))
-                    cmbSectionProgram.SelectedItem = section.Program;
-
-                if (cmbSectionYear.Items.Contains(section.YearLevel.ToString()))
-                    cmbSectionYear.SelectedItem = section.YearLevel.ToString();
-
-                // 3. Switch Button Mode
+                if (cmbSectionProgram.Items.Contains(section.Program)) cmbSectionProgram.SelectedItem = section.Program;
+                if (cmbSectionYear.Items.Contains(section.YearLevel.ToString())) cmbSectionYear.SelectedItem = section.YearLevel.ToString();
                 btnCreateSection.Text = "Update Section";
-
-                // 4. Sync with middle dropdown
-                if (cmbSectionList.Items.Contains(section.Name))
-                    cmbSectionList.SelectedItem = section.Name;
+                if (cmbSectionList.Items.Contains(section.Name)) cmbSectionList.SelectedItem = section.Name;
             }
         }
 
-        private void cmbSectionList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            RefreshSubjectList();
-        }
+        private void cmbSectionList_SelectedIndexChanged(object sender, EventArgs e) => RefreshSubjectList();
 
         private void dgvMaster_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             string columnClicked = dgvMaster.Columns[e.ColumnIndex].Name;
-            if (currentSortColumn == columnClicked) isAscending = !isAscending;
-            else { currentSortColumn = columnClicked; isAscending = true; }
+            isAscending = (currentSortColumn == columnClicked) ? !isAscending : true;
+            currentSortColumn = columnClicked;
 
             if (columnClicked == "Day")
                 DataManager.MasterSchedule = isAscending ? DataManager.MasterSchedule.OrderBy(x => GetDayIndex(x.Day)).ToList() : DataManager.MasterSchedule.OrderByDescending(x => GetDayIndex(x.Day)).ToList();
@@ -798,7 +720,6 @@ namespace SchedCCS
                 DataManager.MasterSchedule = isAscending ? DataManager.MasterSchedule.OrderBy(x => GetTimeIndex(x.Time)).ToList() : DataManager.MasterSchedule.OrderByDescending(x => GetTimeIndex(x.Time)).ToList();
             else
             {
-                // Default sorting logic
                 switch (columnClicked)
                 {
                     case "Section": DataManager.MasterSchedule = isAscending ? DataManager.MasterSchedule.OrderBy(x => x.Section).ToList() : DataManager.MasterSchedule.OrderByDescending(x => x.Section).ToList(); break;
@@ -808,8 +729,7 @@ namespace SchedCCS
                 }
             }
 
-            dgvMaster.DataSource = null;
-            dgvMaster.DataSource = DataManager.MasterSchedule;
+            UpdateMasterGrid();
         }
 
         private int GetDayIndex(string day)
@@ -820,40 +740,33 @@ namespace SchedCCS
         private int GetTimeIndex(string timeRange)
         {
             string startHour = timeRange.Split(':')[0];
-            if (int.TryParse(startHour, out int h)) return h;
-            return 0;
+            return int.TryParse(startHour, out int h) ? h : 0;
         }
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Log out and return to Login screen?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
                 this.Close();
-            }
         }
 
         private void btnExport_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.Rows.Count == 0 || DataManager.MasterSchedule.Count == 0)
+            if (DataManager.MasterSchedule.Count == 0)
             {
                 MessageBox.Show("No schedule to export! Please generate one first.");
                 return;
             }
 
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "CSV File|*.csv";
-            saveFileDialog.Title = "Save Schedule";
-            saveFileDialog.FileName = "Schedule.csv";
-
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            SaveFileDialog sfd = new SaveFileDialog { Filter = "CSV File|*.csv", FileName = "Schedule.csv" };
+            if (sfd.ShowDialog() == DialogResult.OK)
             {
                 try
                 {
-                    using (StreamWriter writer = new StreamWriter(saveFileDialog.FileName))
+                    using (StreamWriter sw = new StreamWriter(sfd.FileName))
                     {
-                        writer.WriteLine("Section,Subject,Teacher,Room,Day,Time");
+                        sw.WriteLine("Section,Subject,Teacher,Room,Day,Time");
                         foreach (var item in DataManager.MasterSchedule)
-                            writer.WriteLine($"{item.Section},{item.Subject},{item.Teacher},{item.Room},{item.Day},{item.Time}");
+                            sw.WriteLine($"{item.Section},{item.Subject},{item.Teacher},{item.Room},{item.Day},{item.Time}");
                     }
                     MessageBox.Show("Export Successful!");
                 }
@@ -863,72 +776,112 @@ namespace SchedCCS
 
         private void btnBatchAdd_Click(object sender, EventArgs e)
         {
-            // 1. Validation
-            if (cmbBatchProgram.SelectedItem == null || cmbBatchYear.SelectedItem == null)
+            if (cmbBatchProgram.SelectedItem == null || cmbBatchYear.SelectedItem == null || string.IsNullOrWhiteSpace(txtBatchCode.Text))
             {
-                MessageBox.Show("Please select a Program and Year Level.");
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(txtBatchCode.Text) || string.IsNullOrWhiteSpace(txtBatchUnits.Text))
-            {
-                MessageBox.Show("Please enter subject details.");
+                MessageBox.Show("Please enter all subject details.");
                 return;
             }
 
-            // 2. Get Target Criteria
-            string targetProgram = cmbBatchProgram.SelectedItem.ToString();
-            int targetYear = int.Parse(cmbBatchYear.SelectedItem.ToString());
-
-            // 3. Parse Subject Details
-            string baseCode = txtBatchCode.Text.Trim();
+            string program = cmbBatchProgram.SelectedItem.ToString();
+            int year = int.Parse(cmbBatchYear.SelectedItem.ToString());
+            string code = txtBatchCode.Text.Trim();
             int.TryParse(txtBatchUnits.Text, out int units);
             bool isLab = chkBatchLab.Checked;
 
-            // 4. FIND MATCHING SECTIONS (The Algorithm)
-            // We look for all sections that match the Program AND Year
-            var targetSections = DataManager.Sections
-                .Where(s => s.Program == targetProgram && s.YearLevel == targetYear)
-                .ToList();
+            var targetSections = DataManager.Sections.Where(s => s.Program == program && s.YearLevel == year).ToList();
 
             if (targetSections.Count == 0)
             {
-                MessageBox.Show($"No sections found for {targetProgram} Year {targetYear}.");
+                MessageBox.Show("No sections found.");
                 return;
             }
 
-            // 5. LOOP AND ADD
             int count = 0;
-            foreach (var section in targetSections)
+            foreach (var s in targetSections)
             {
-                // Check if subject already exists to prevent duplicates
-                if (section.SubjectsToTake.Any(sub => sub.Code.Contains(baseCode)))
-                    continue; // Skip this section
+                if (s.SubjectsToTake.Any(sub => sub.Code.Contains(code))) continue;
 
                 if (isLab)
                 {
-                    // Split Logic (2 Units Lec + 3 Units Lab)
-                    section.SubjectsToTake.Add(new Subject { Code = baseCode + " (Lec)", Units = units - 1, IsLab = false });
-                    section.SubjectsToTake.Add(new Subject { Code = baseCode + " (Lab)", Units = 3, IsLab = true });
+                    s.SubjectsToTake.Add(new Subject { Code = code + " (Lec)", Units = units - 1, IsLab = false });
+                    s.SubjectsToTake.Add(new Subject { Code = code + " (Lab)", Units = 3, IsLab = true });
                 }
                 else
                 {
-                    // Regular Logic
-                    section.SubjectsToTake.Add(new Subject { Code = baseCode, Units = units, IsLab = false });
+                    s.SubjectsToTake.Add(new Subject { Code = code, Units = units, IsLab = false });
                 }
                 count++;
             }
 
-            // 6. Success Message
-            MessageBox.Show($"Success! Added {baseCode} to {count} sections.");
-
-            // Clear inputs
-            txtBatchCode.Clear();
-            txtBatchUnits.Clear();
-            chkBatchLab.Checked = false;
-
-            // Refresh lists to show changes
+            MessageBox.Show($"Added {code} to {count} sections.");
+            ResetSubjectInputs();
             RefreshSubjectList();
             isDataDirty = true;
         }
+
+        private void LoadPendingList()
+        {
+            dgvPending.DataSource = null;
+            dgvPending.Rows.Clear();
+            dgvPending.Columns.Clear();
+            dgvPending.Columns.Add("Section", "Section");
+            dgvPending.Columns.Add("Subject", "Subject");
+            dgvPending.Columns.Add("Reason", "Reason");
+            dgvPending.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            if (DataManager.FailedAssignments != null)
+            {
+                foreach (var fail in DataManager.FailedAssignments)
+                {
+                    int rowIndex = dgvPending.Rows.Add(fail.Section.Name, fail.Subject.Code, fail.Reason);
+                    dgvPending.Rows[rowIndex].Tag = fail;
+                }
+            }
+        }
+
+        private void btnForceAssign_Click(object sender, EventArgs e)
+        {
+            if (dgvPending.SelectedRows.Count == 0 || cmbManualTeacher.SelectedItem == null)
+            {
+                MessageBox.Show("Select a subject and a teacher.");
+                return;
+            }
+
+            string newTeacher = cmbManualTeacher.SelectedItem.ToString();
+            string section = dgvPending.SelectedRows[0].Cells["Section"].Value.ToString();
+            string subject = dgvPending.SelectedRows[0].Cells["Subject"].Value.ToString();
+
+            var teacherObj = DataManager.Teachers.FirstOrDefault(t => t.Name == newTeacher);
+            if (teacherObj == null) return;
+
+            int count = 0;
+            foreach (var slot in DataManager.MasterSchedule)
+            {
+                if (slot.Section == section && slot.Subject == subject && slot.Teacher == "Professor XYZ")
+                {
+                    slot.Teacher = newTeacher;
+                    int d = GetDayIndex(slot.Day) - 1;
+                    int t = int.Parse(slot.Time.Split(':')[0]) - 7;
+                    if (d >= 0 && t >= 0) teacherObj.IsBusy[d, t] = true;
+                    count++;
+                }
+            }
+
+            if (count > 0)
+            {
+                string cleanCode = subject.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
+                if (!teacherObj.QualifiedSubjects.Contains(cleanCode)) teacherObj.QualifiedSubjects.Add(cleanCode);
+
+                dgvPending.Rows.Remove(dgvPending.SelectedRows[0]);
+                UpdateTimetableView();
+                MessageBox.Show($"Assigned {newTeacher} to {count} slots.");
+            }
+            else
+            {
+                MessageBox.Show("Slots already fixed or not found.");
+            }
+        }
+
+        #endregion
     }
 }

@@ -6,19 +6,23 @@ namespace SchedCCS
 {
     public partial class LoginForm : Form
     {
+        #region 1. Constructor
+
         public LoginForm()
         {
             InitializeComponent();
         }
 
-        #region Event Handlers
+        #endregion
+
+        #region 2. Event Handlers
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
             string inputID = txtStudentID.Text;
             string inputPass = txtPassword.Text;
 
-            // [Encapsulation] Delegate authentication logic to a specific method
+            // Attempt to retrieve user from DataManager
             var user = AuthenticateUser(inputID, inputPass);
 
             if (user != null)
@@ -27,7 +31,8 @@ namespace SchedCCS
             }
             else
             {
-                MessageBox.Show("Invalid Student ID or Password.", "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Invalid Student ID or Password.", "Login Failed",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -38,50 +43,49 @@ namespace SchedCCS
 
         #endregion
 
-        #region Helper Methods (Logic Encapsulation)
+        #region 3. Helper Methods
 
-        // Queries the DataManager to validate credentials.
+        // Validates credentials against the in-memory user list
         private User AuthenticateUser(string username, string password)
         {
             return DataManager.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
         }
 
-        // Handles the navigation flow based on User Role.
+        // Directs the user to the appropriate dashboard based on role
         private void ProceedToDashboard(User user)
         {
-            this.Hide(); // Hide Login Form
+            this.Hide();
 
             if (user.Role == "Admin")
             {
                 MessageBox.Show("Welcome, Admin!");
 
-                // Launch Admin Dashboard
                 using (AdminDashboard adminPage = new AdminDashboard())
                 {
-                    adminPage.ShowDialog(); // Execution pauses here until AdminDashboard closes
+                    // ShowDialog pauses execution here until the dashboard closes
+                    adminPage.ShowDialog();
                 }
 
-                // Admin Logout Logic: Full Wipe for security
+                // Security: Wipe all fields on Admin logout
                 ClearFields(wipeUsername: true);
             }
             else
             {
                 MessageBox.Show($"Welcome, {user.FullName}!");
 
-                // Launch Student Dashboard with User Context
+                // Pass the specific User object to the Student Dashboard context
                 using (StudentDashboard studentPage = new StudentDashboard(user))
                 {
-                    studentPage.ShowDialog(); // Execution pauses here until StudentDashboard closes
+                    studentPage.ShowDialog();
                 }
 
-                // Student Logout Logic: Keep ID for convenience, wipe password
+                // UX: Keep Student ID populated for convenience on logout
                 ClearFields(wipeUsername: false);
             }
 
-            this.Show(); // Re-show Login Form
+            this.Show(); // Re-open Login window
         }
 
-        // Opens the registration dialog.
         private void OpenRegistration()
         {
             this.Hide();
@@ -92,7 +96,6 @@ namespace SchedCCS
             this.Show();
         }
 
-        // Resets input fields based on security needs.
         private void ClearFields(bool wipeUsername)
         {
             txtPassword.Clear();
@@ -100,7 +103,7 @@ namespace SchedCCS
             if (wipeUsername)
             {
                 txtStudentID.Clear();
-                txtStudentID.Focus(); // Reset cursor focus to top box
+                txtStudentID.Focus();
             }
         }
 

@@ -4,20 +4,29 @@ using System.Linq;
 
 namespace SchedCCS
 {
-    // The core scheduling engine responsible for assigning time slots.
-    // [OOP Concept: Encapsulation of Logic]
     public class ScheduleGenerator
     {
-        // Private fields encapsulated to prevent external modification.
+        #region 1. Fields & Properties
+
         private List<Room> rooms;
         private List<Teacher> teachers;
         private List<Section> sections;
+        private Dictionary<string, Teacher> assignedTeachers = new Dictionary<string, Teacher>();
 
-        // Public properties expose the results safely.
+        // Public properties to expose results to the dashboard
         public List<ScheduleItem> GeneratedSchedule { get; private set; } = new List<ScheduleItem>();
-        public List<string> FailedAssignments { get; private set; } = new List<string>();
+        public List<FailedEntry> FailedAssignments { get; private set; } = new List<FailedEntry>();
 
-        // Constructor for dependency injection of data.
+        private class ScheduleTask
+        {
+            public Section Section;
+            public Subject Subject;
+        }
+
+        #endregion
+
+        #region 2. Constructor
+
         public ScheduleGenerator(List<Room> r, List<Teacher> t, List<Section> s)
         {
             rooms = r;
@@ -25,139 +34,189 @@ namespace SchedCCS
             sections = s;
         }
 
-        // =============================================================
-        // MAIN ALGORITHM
-        // =============================================================
+        #endregion
 
-        // Executes the scheduling process using a Greedy Algorithm with Constraints.
+        #region 3. Main Algorithm
+
         public void Generate()
         {
+            // Reset internal state
             GeneratedSchedule.Clear();
             FailedAssignments.Clear();
+            assignedTeachers.Clear();
 
+            // 1. Flatten all tasks
+            var allTasks = new List<ScheduleTask>();
             foreach (var section in sections)
             {
                 foreach (var subject in section.SubjectsToTake)
                 {
-                    bool success = false;
+                    allTasks.Add(new ScheduleTask { Section = section, Subject = subject });
+                }
+            }
 
-                    if (subject.IsLab)
+            // 2. Prioritize Tasks
+            // Order: Labs (Hardest) -> PE/Block -> High Year Levels -> Random Shuffle
+            var sortedTasks = allTasks
+                .OrderByDescending(t => t.Subject.IsLab)
+                .ThenByDescending(t => IsPE(t.Subject))
+                .ThenByDescending(t => t.Section.YearLevel)
+                .ThenBy(t => Guid.NewGuid()) // Randomness ensures different results per run
+                .ToList();
+
+            // 3. Allocation Loop
+            foreach (var task in sortedTasks)
+            {
+                bool success = false;
+
+                if (task.Subject.IsLab || IsPE(task.Subject))
+                {
+                    // Block Scheduling: Assign as a single continuous block
+                    success = AssignSlot(task.Section, task.Subject);
+
+                    if (!success)
+                        RecordFailure(task.Section, task.Subject, "Block/PE Conflict");
+                }
+                else
+                {
+                    // Lecture Scheduling: Split into 1-hour chunks
+                    int hoursNeeded = task.Subject.Units;
+                    for (int i = 0; i < hoursNeeded; i++)
                     {
-                        // Strategy A: Schedule Laboratory (Block)
-                        success = AssignLabSlot(section, subject);
+                        success = AssignSlot(task.Section, task.Subject);
                         if (!success)
-                            FailedAssignments.Add($"{section.Name}: {subject.Code} (Lab Block Conflict)");
-                    }
-                    else
-                    {
-                        // Strategy B: Schedule Lecture (Distributed Hours)
-                        int hoursNeeded = subject.Units;
-                        for (int i = 0; i < hoursNeeded; i++)
-                        {
-                            success = AssignLectureSlot(section, subject);
-                            if (!success)
-                                FailedAssignments.Add($"{section.Name}: {subject.Code} (Lec Hour Conflict)");
-                        }
+                            RecordFailure(task.Section, task.Subject, "Lec Conflict");
                     }
                 }
             }
         }
 
-        // =============================================================
-        // ASSIGNMENT STRATEGIES
-        // =============================================================
+        #endregion
 
-        // Logic for assigning contiguous laboratory blocks (e.g., 3 hours straight).
-        private bool AssignLabSlot(Section section, Subject subject)
+        #region 4. Slot Allocation Logic
+
+        private bool AssignSlot(Section section, Subject subject)
         {
-            // Randomize days (Mon-Sat) for distribution variation.
-            var preferredDays = new List<int> { 0, 1, 2, 3, 4, 5 }
-                                .OrderBy(x => Guid.NewGuid()).ToList();
+            string code = subject.Code.ToUpper();
+            bool isPE = IsPE(subject);
+
+            // Define preferred days based on subject type
+            List<int> preferredDays;
+            if (isPE)
+            {
+                preferredDays = new List<int> { 0, 1, 2, 3, 4, 5, 6 }.OrderBy(x => Guid.NewGuid()).ToList();
+            }
+            else if (subject.IsLab)
+            {
+                var days = new List<int> { 5 }; // Prefer Saturday
+                days.AddRange(new List<int> { 0, 1, 2, 3, 4 }.OrderBy(x => Guid.NewGuid()));
+                preferredDays = days;
+            }
+            else
+            {
+                var weekdays = new List<int> { 0, 1, 2, 3, 4 }.OrderBy(x => Guid.NewGuid()).ToList();
+                weekdays.Add(5);
+                preferredDays = weekdays;
+            }
 
             var randomRoomOrder = rooms.OrderBy(x => Guid.NewGuid()).ToList();
+            Teacher requiredTeacher = GetAssignedTeacher(section, subject.Code);
 
             foreach (int dayIndex in preferredDays)
             {
-                int duration = subject.Units;
+                // Validate array bounds to prevent index errors (e.g., Sunday index 6 vs Array size 6)
+                if (dayIndex >= section.IsBusy.GetLength(0)) continue;
 
-                // Constraint: Must finish by 6:00 PM (Index 11).
+                // Constraint: Only one Lab per day per section
+                if (subject.IsLab && HasLabToday(section, dayIndex)) continue;
+
+                // Constraint: Daily hour cap (7 hours max)
+                int duration = (subject.IsLab || isPE) ? subject.Units : 1;
+                if (GetSectionDailyHours(section, dayIndex) + duration > 7) continue;
+
+                // Search for time slots
                 for (int startHour = 0; startHour <= 11 - duration; startHour++)
                 {
-                    if (IsBlockAvailable(section, dayIndex, startHour, duration, randomRoomOrder, subject.Code, out Room foundRoom, out Teacher foundTeacher))
+                    if (!IsSectionFree(section, dayIndex, startHour, duration)) continue;
+
+                    // Fatigue Check: Avoid creating > 4 hour continuous blocks (except for Labs/PE)
+                    if (!subject.IsLab && !isPE && IsSectionFatigued(section, dayIndex, startHour, duration)) continue;
+
+                    // Find Room
+                    Room availableRoom = null;
+                    if (!isPE)
                     {
-                        BookSlot(section, subject, dayIndex, startHour, duration, foundRoom, foundTeacher);
+                        availableRoom = FindAvailableRoom(randomRoomOrder, subject.IsLab, dayIndex, startHour, duration);
+                        if (availableRoom == null) continue;
+                    }
+
+                    // Find Teacher
+                    Teacher finalTeacher = null;
+                    if (requiredTeacher != null)
+                    {
+                        if (IsTeacherAvailable(requiredTeacher, dayIndex, startHour, duration))
+                            finalTeacher = requiredTeacher;
+                    }
+                    else
+                    {
+                        finalTeacher = FindNewAvailableTeacher(subject.Code, dayIndex, startHour, duration);
+                    }
+
+                    // Book the Slot if all resources are found
+                    if (finalTeacher != null)
+                    {
+                        SetAssignedTeacher(section, subject.Code, finalTeacher);
+                        BookSlot(section, subject, dayIndex, startHour, duration, availableRoom, finalTeacher, isPE);
                         return true;
                     }
                 }
             }
-            return false;
+
+            return AssignFallbackSlot(section, subject, preferredDays, isPE);
         }
 
-        // Logic for assigning single lecture hours with fatigue and distribution checks.
-        private bool AssignLectureSlot(Section section, Subject subject)
+        private bool AssignFallbackSlot(Section section, Subject subject, List<int> days, bool isPE)
         {
-            // Lectures prefer Mon-Fri, Saturday is fallback.
-            var weekdays = new List<int> { 0, 1, 2, 3, 4 }.OrderBy(x => Guid.NewGuid()).ToList();
-            weekdays.Add(5); // Saturday
-
             var randomRoomOrder = rooms.OrderBy(x => Guid.NewGuid()).ToList();
+            int duration = (isPE || subject.IsLab) ? subject.Units : 1;
 
-            foreach (int dayIndex in weekdays)
+            foreach (int day in days)
             {
-                // Constraint: Max 1 hour of this subject per day.
-                int hoursToday = GeneratedSchedule.Count(x => x.Section == section.Name && x.Subject == subject.Code && x.Day == ((Day)dayIndex).ToString());
-                if (hoursToday >= 1) continue;
+                if (day >= 6 && section.IsBusy.GetLength(0) < 7) continue;
+                if (subject.IsLab && HasLabToday(section, day)) continue;
 
-                // Variation: Random start time to avoid always filling 7am first.
-                Random rnd = new Random();
-                int startOffset = (rnd.Next(1, 10) > 6) ? 2 : 0;
-
-                for (int hourIndex = startOffset; hourIndex < 11; hourIndex++)
+                for (int startHour = 0; startHour <= 11 - duration; startHour++)
                 {
-                    // Constraints: No Sat afternoon, No Lunch (12pm), No Fatigue.
-                    if (dayIndex == 5 && hourIndex > 6) continue;
-                    if (hourIndex == 5) continue;
-                    if (section.IsBusy[dayIndex, hourIndex]) continue;
-                    if (IsSectionFatigued(section, dayIndex, hourIndex)) continue;
-
-                    // Resource Finding
-                    var availableRoom = randomRoomOrder.FirstOrDefault(r =>
-                        r.Type == RoomType.Lecture && !r.IsBusy[dayIndex, hourIndex]);
-
-                    var availableTeacher = teachers.FirstOrDefault(t =>
-                        (t.QualifiedSubjects.Contains(subject.Code) || t.QualifiedSubjects.Contains(CleanSubjectName(subject.Code))) &&
-                        !t.IsBusy[dayIndex, hourIndex]);
-
-                    // Constraint: Teacher Vacant Gap (prevent back-to-back burnout).
-                    if (availableTeacher != null && hourIndex > 0)
+                    if (IsSectionFree(section, day, startHour, duration))
                     {
-                        if (availableTeacher.IsBusy[dayIndex, hourIndex - 1]) continue;
-                    }
+                        // Fallback: Book without a teacher (Professor XYZ) if room is found
+                        Room r = isPE ? null : FindAvailableRoom(randomRoomOrder, subject.IsLab, day, startHour, duration);
 
-                    BookSlot(section, subject, dayIndex, hourIndex, 1, availableRoom, availableTeacher);
-                    return true;
+                        if (r != null || isPE)
+                        {
+                            BookSlot(section, subject, day, startHour, duration, r, null, isPE);
+                            return true;
+                        }
+                    }
                 }
             }
             return false;
         }
 
-        // =============================================================
-        // HELPERS & VALIDATION
-        // =============================================================
-
-        private void BookSlot(Section section, Subject subject, int day, int startHour, int duration, Room room, Teacher teacher)
+        private void BookSlot(Section section, Subject subject, int day, int startHour, int duration, Room room, Teacher teacher, bool isPE)
         {
-            string tName = teacher?.Name ?? "Professor XYZ"; // Fallback for nulls
-            string rName = room?.Name ?? "Room TBA";
+            string tName = teacher?.Name ?? "Professor XYZ";
+            string rName = isPE ? "GYM / FIELD" : (room?.Name ?? "Room TBA");
+
+            if (teacher == null)
+                RecordFailure(section, subject, "Teacher Unavailable (Assigned to XYZ)");
 
             for (int i = 0; i < duration; i++)
             {
-                int currentHour = startHour + i;
-
-                // Update State (Encapsulation of State)
-                section.IsBusy[day, currentHour] = true;
-                if (room != null) room.IsBusy[day, currentHour] = true;
-                if (teacher != null) teacher.IsBusy[day, currentHour] = true;
+                int h = startHour + i;
+                section.IsBusy[day, h] = true;
+                if (room != null) room.IsBusy[day, h] = true;
+                if (teacher != null) teacher.IsBusy[day, h] = true;
 
                 GeneratedSchedule.Add(new ScheduleItem
                 {
@@ -166,74 +225,115 @@ namespace SchedCCS
                     Teacher = tName,
                     Room = rName,
                     Day = ((Day)day).ToString(),
-                    Time = $"{7 + currentHour}:00 - {8 + currentHour}:00"
+                    Time = $"{7 + h}:00 - {8 + h}:00"
                 });
             }
         }
 
-        private bool IsBlockAvailable(Section section, int day, int startHour, int duration, List<Room> shuffledRooms, string subjectCode, out Room foundRoom, out Teacher foundTeacher)
+        #endregion
+
+        #region 5. Helper Methods (Validation & Lookups)
+
+        private bool IsPE(Subject s)
         {
-            foundRoom = null;
-            foundTeacher = null;
+            string c = s.Code.ToUpper();
+            return c.Contains("PE") || c.Contains("PATHFIT") || c.Contains("NSTP");
+        }
 
-            // Check Section Availability
+        private bool IsTeacherAvailable(Teacher teacher, int day, int startHour, int duration)
+        {
             for (int i = 0; i < duration; i++)
-            {
-                if (startHour + i >= 13) return false;
-                if (section.IsBusy[day, startHour + i]) return false;
-            }
+                if (teacher.IsBusy[day, startHour + i]) return false;
 
-            // Find Room
-            foreach (var room in shuffledRooms.Where(r => r.Type == RoomType.Laboratory))
-            {
-                bool roomIsGood = true;
-                for (int i = 0; i < duration; i++)
-                {
-                    if (room.IsBusy[day, startHour + i]) { roomIsGood = false; break; }
-                }
-                if (roomIsGood) { foundRoom = room; break; }
-            }
+            if (GetTeacherDailyHours(teacher, day) + duration > 9) return false;
 
-            // Find Teacher
-            foreach (var teacher in teachers)
-            {
-                if (teacher.QualifiedSubjects.Contains(subjectCode) || teacher.QualifiedSubjects.Contains(CleanSubjectName(subjectCode)))
-                {
-                    bool teacherIsGood = true;
-                    for (int i = 0; i < duration; i++)
-                    {
-                        if (teacher.IsBusy[day, startHour + i]) { teacherIsGood = false; break; }
-                    }
-
-                    // Check Teacher Gap (Prevent continuous load)
-                    if (teacherIsGood && startHour > 0)
-                    {
-                        if (teacher.IsBusy[day, startHour - 1]) teacherIsGood = false;
-                    }
-
-                    if (teacherIsGood) { foundTeacher = teacher; break; }
-                }
-            }
             return true;
         }
 
-        private bool IsSectionFatigued(Section section, int day, int currentHour)
+        private Teacher FindNewAvailableTeacher(string subjectCode, int day, int startHour, int duration)
         {
-            // Rule: Students need a break after 3 consecutive hours.
-            if (currentHour < 3) return false;
-
-            if (section.IsBusy[day, currentHour - 1] &&
-                section.IsBusy[day, currentHour - 2] &&
-                section.IsBusy[day, currentHour - 3])
+            string baseCode = CleanSubjectName(subjectCode);
+            foreach (var teacher in teachers)
             {
-                return true;
+                // Check qualifications (exact match or base name match)
+                if (!teacher.QualifiedSubjects.Contains(subjectCode) && !teacher.QualifiedSubjects.Contains(baseCode)) continue;
+
+                if (IsTeacherAvailable(teacher, day, startHour, duration)) return teacher;
             }
-            return false;
+            return null;
         }
 
-        private string CleanSubjectName(string rawName)
+        private Room FindAvailableRoom(List<Room> shuffledRooms, bool isLab, int day, int startHour, int duration)
         {
-            return rawName.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
+            RoomType type = isLab ? RoomType.Laboratory : RoomType.Lecture;
+            return shuffledRooms.FirstOrDefault(r => r.Type == type && IsRoomFree(r, day, startHour, duration));
         }
+
+        private bool IsRoomFree(Room r, int d, int s, int dur)
+        {
+            for (int i = 0; i < dur; i++)
+                if (r.IsBusy[d, s + i]) return false;
+            return true;
+        }
+
+        private bool IsSectionFree(Section s, int d, int h, int dur)
+        {
+            for (int i = 0; i < dur; i++)
+                if (h + i >= 12 || s.IsBusy[d, h + i]) return false;
+            return true;
+        }
+
+        private bool HasLabToday(Section section, int day)
+        {
+            return GeneratedSchedule.Any(s => s.Section == section.Name &&
+                                              s.Day == ((Day)day).ToString() &&
+                                              (s.Subject.Contains("(Lab)") || s.Room.Contains("LAB")));
+        }
+
+        private bool IsSectionFatigued(Section section, int day, int startHour, int duration)
+        {
+            int before = 0;
+            for (int h = startHour - 1; h >= 0; h--) { if (section.IsBusy[day, h]) before++; else break; }
+
+            int after = 0;
+            for (int h = startHour + duration; h < 12; h++) { if (section.IsBusy[day, h]) after++; else break; }
+
+            return (before + duration + after) > 4;
+        }
+
+        private int GetSectionDailyHours(Section section, int day)
+        {
+            int count = 0;
+            for (int h = 0; h < 12; h++) if (section.IsBusy[day, h]) count++;
+            return count;
+        }
+
+        private int GetTeacherDailyHours(Teacher t, int d)
+        {
+            int count = 0;
+            for (int h = 0; h < 12; h++) if (t.IsBusy[d, h]) count++;
+            return count;
+        }
+
+        private Teacher GetAssignedTeacher(Section s, string sub)
+        {
+            string key = $"{s.Name}_{CleanSubjectName(sub)}";
+            return assignedTeachers.ContainsKey(key) ? assignedTeachers[key] : null;
+        }
+
+        private void SetAssignedTeacher(Section s, string sub, Teacher t)
+        {
+            string key = $"{s.Name}_{CleanSubjectName(sub)}";
+            if (!assignedTeachers.ContainsKey(key)) assignedTeachers[key] = t;
+        }
+
+        private void RecordFailure(Section s, Subject sub, string r)
+        {
+            FailedAssignments.Add(new FailedEntry { Section = s, Subject = sub, Reason = r });
+        }
+
+        private string CleanSubjectName(string raw) => raw.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
+
+        #endregion
     }
 }

@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             btnLogout = new Button();
@@ -84,6 +84,10 @@
             lstSections = new ListBox();
             btnDeleteSection = new Button();
             groupBox3 = new GroupBox();
+            cmbSectionYear = new ComboBox();
+            label14 = new Label();
+            cmbSectionProgram = new ComboBox();
+            label13 = new Label();
             btnSaveChanges = new Button();
             btnCancelSubject = new Button();
             btnAddSubject = new Button();
@@ -97,10 +101,14 @@
             btnCreateSection = new Button();
             txtSectionName = new TextBox();
             label5 = new Label();
-            label13 = new Label();
-            cmbSectionProgram = new ComboBox();
-            label14 = new Label();
-            cmbSectionYear = new ComboBox();
+            tabPending = new TabPage();
+            btnForceAssign = new Button();
+            cmbManualTeacher = new ComboBox();
+            label15 = new Label();
+            dgvPending = new DataGridView();
+            Section = new DataGridViewTextBoxColumn();
+            Subject = new DataGridViewTextBoxColumn();
+            Reason = new DataGridViewTextBoxColumn();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
@@ -119,6 +127,8 @@
             groupBox6.SuspendLayout();
             groupBox7.SuspendLayout();
             groupBox3.SuspendLayout();
+            tabPending.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvPending).BeginInit();
             SuspendLayout();
             // 
             // tabControl1
@@ -126,6 +136,7 @@
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabMaster);
             tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tabPending);
             tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
@@ -188,14 +199,14 @@
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.BackColor = SystemColors.Window;
-            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Window;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle1;
             dataGridView1.Location = new Point(6, 36);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.Size = new Size(1244, 571);
@@ -720,6 +731,44 @@
             groupBox3.TabStop = false;
             groupBox3.Text = "Add Section & Subjects";
             // 
+            // cmbSectionYear
+            // 
+            cmbSectionYear.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbSectionYear.FormattingEnabled = true;
+            cmbSectionYear.Items.AddRange(new object[] { "1", "2", "3", "4" });
+            cmbSectionYear.Location = new Point(74, 99);
+            cmbSectionYear.Name = "cmbSectionYear";
+            cmbSectionYear.Size = new Size(313, 23);
+            cmbSectionYear.TabIndex = 16;
+            // 
+            // label14
+            // 
+            label14.AutoSize = true;
+            label14.Location = new Point(6, 103);
+            label14.Name = "label14";
+            label14.Size = new Size(62, 15);
+            label14.TabIndex = 15;
+            label14.Text = "Year Level:";
+            // 
+            // cmbSectionProgram
+            // 
+            cmbSectionProgram.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbSectionProgram.FormattingEnabled = true;
+            cmbSectionProgram.Items.AddRange(new object[] { "BSCS", "BSIT" });
+            cmbSectionProgram.Location = new Point(74, 71);
+            cmbSectionProgram.Name = "cmbSectionProgram";
+            cmbSectionProgram.Size = new Size(313, 23);
+            cmbSectionProgram.TabIndex = 14;
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Location = new Point(6, 75);
+            label13.Name = "label13";
+            label13.Size = new Size(56, 15);
+            label13.TabIndex = 13;
+            label13.Text = "Program:";
+            // 
             // btnSaveChanges
             // 
             btnSaveChanges.Location = new Point(124, 401);
@@ -836,43 +885,76 @@
             label5.TabIndex = 0;
             label5.Text = "New Section Name:";
             // 
-            // label13
+            // tabPending
             // 
-            label13.AutoSize = true;
-            label13.Location = new Point(6, 75);
-            label13.Name = "label13";
-            label13.Size = new Size(56, 15);
-            label13.TabIndex = 13;
-            label13.Text = "Program:";
+            tabPending.Controls.Add(btnForceAssign);
+            tabPending.Controls.Add(cmbManualTeacher);
+            tabPending.Controls.Add(label15);
+            tabPending.Controls.Add(dgvPending);
+            tabPending.Location = new Point(4, 24);
+            tabPending.Name = "tabPending";
+            tabPending.Size = new Size(1256, 653);
+            tabPending.TabIndex = 3;
+            tabPending.Text = "Pending Subjects";
+            tabPending.UseVisualStyleBackColor = true;
             // 
-            // cmbSectionProgram
+            // btnForceAssign
             // 
-            cmbSectionProgram.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbSectionProgram.FormattingEnabled = true;
-            cmbSectionProgram.Items.AddRange(new object[] { "BSCS", "BSIT" });
-            cmbSectionProgram.Location = new Point(74, 71);
-            cmbSectionProgram.Name = "cmbSectionProgram";
-            cmbSectionProgram.Size = new Size(313, 23);
-            cmbSectionProgram.TabIndex = 14;
+            btnForceAssign.Location = new Point(682, 117);
+            btnForceAssign.Name = "btnForceAssign";
+            btnForceAssign.Size = new Size(122, 23);
+            btnForceAssign.TabIndex = 3;
+            btnForceAssign.Text = "Force Assign & Retry";
+            btnForceAssign.UseVisualStyleBackColor = true;
+            btnForceAssign.Click += btnForceAssign_Click;
             // 
-            // label14
+            // cmbManualTeacher
             // 
-            label14.AutoSize = true;
-            label14.Location = new Point(6, 103);
-            label14.Name = "label14";
-            label14.Size = new Size(62, 15);
-            label14.TabIndex = 15;
-            label14.Text = "Year Level:";
+            cmbManualTeacher.FormattingEnabled = true;
+            cmbManualTeacher.Location = new Point(682, 72);
+            cmbManualTeacher.Name = "cmbManualTeacher";
+            cmbManualTeacher.Size = new Size(121, 23);
+            cmbManualTeacher.TabIndex = 2;
             // 
-            // cmbSectionYear
+            // label15
             // 
-            cmbSectionYear.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbSectionYear.FormattingEnabled = true;
-            cmbSectionYear.Items.AddRange(new object[] { "1", "2", "3", "4" });
-            cmbSectionYear.Location = new Point(74, 99);
-            cmbSectionYear.Name = "cmbSectionYear";
-            cmbSectionYear.Size = new Size(313, 23);
-            cmbSectionYear.TabIndex = 16;
+            label15.AutoSize = true;
+            label15.Location = new Point(654, 30);
+            label15.Name = "label15";
+            label15.Size = new Size(115, 15);
+            label15.TabIndex = 1;
+            label15.Text = "Assign New Teacher:";
+            // 
+            // dgvPending
+            // 
+            dgvPending.AllowUserToAddRows = false;
+            dgvPending.AllowUserToDeleteRows = false;
+            dgvPending.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvPending.Columns.AddRange(new DataGridViewColumn[] { Section, Subject, Reason });
+            dgvPending.Dock = DockStyle.Left;
+            dgvPending.Location = new Point(0, 0);
+            dgvPending.Name = "dgvPending";
+            dgvPending.ReadOnly = true;
+            dgvPending.Size = new Size(635, 653);
+            dgvPending.TabIndex = 0;
+            // 
+            // Section
+            // 
+            Section.HeaderText = "Section";
+            Section.Name = "Section";
+            Section.ReadOnly = true;
+            // 
+            // Subject
+            // 
+            Subject.HeaderText = "Subject";
+            Subject.Name = "Subject";
+            Subject.ReadOnly = true;
+            // 
+            // Reason
+            // 
+            Reason.HeaderText = "Reason";
+            Reason.Name = "Reason";
+            Reason.ReadOnly = true;
             // 
             // AdminDashboard
             // 
@@ -905,6 +987,9 @@
             groupBox7.ResumeLayout(false);
             groupBox3.ResumeLayout(false);
             groupBox3.PerformLayout();
+            tabPending.ResumeLayout(false);
+            tabPending.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvPending).EndInit();
             ResumeLayout(false);
         }
 
@@ -982,5 +1067,13 @@
         private ComboBox cmbSectionProgram;
         private Label label14;
         private ComboBox cmbSectionYear;
+        private TabPage tabPending;
+        private DataGridView dgvPending;
+        private DataGridViewTextBoxColumn Section;
+        private DataGridViewTextBoxColumn Subject;
+        private DataGridViewTextBoxColumn Reason;
+        private Label label15;
+        private ComboBox cmbManualTeacher;
+        private Button btnForceAssign;
     }
 }

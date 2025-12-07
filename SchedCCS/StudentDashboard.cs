@@ -18,6 +18,8 @@ namespace SchedCCS
     {
         private readonly User currentUser;
 
+        #region 1. Initialization
+
         public StudentDashboard(User user)
         {
             InitializeComponent();
@@ -34,8 +36,6 @@ namespace SchedCCS
             InitializeMapHotspots();
         }
 
-        #region 1. UI Initialization & Map Setup
-
         private void InitializeDashboardUI()
         {
             try
@@ -45,10 +45,9 @@ namespace SchedCCS
                 if (lbl != null) lbl.Text = currentUser.FullName;
 
                 // Set Default Title
-                Control title = this.Controls.Find("lblPageTitle", true).FirstOrDefault();
-                if (title != null) title.Text = "Dashboard Home";
+                UpdatePageTitle("Dashboard Home");
             }
-            catch { /* Ignore UI lookup errors */ }
+            catch { /* Suppress minor UI lookup errors during initialization */ }
         }
 
         private void InitializeMapHotspots()
@@ -208,8 +207,10 @@ namespace SchedCCS
 
             if (!string.IsNullOrEmpty(roomName))
             {
-                RoomScheduleForm popup = new RoomScheduleForm(roomName);
-                popup.ShowDialog();
+                using (RoomScheduleForm popup = new RoomScheduleForm(roomName))
+                {
+                    popup.ShowDialog();
+                }
             }
         }
 
@@ -325,8 +326,12 @@ namespace SchedCCS
 
         private void dgvStudentSchedule_Resize(object sender, EventArgs e)
         {
-            SetupGrid();
-            LoadMySchedule();
+            if (dgvStudentSchedule.Rows.Count > 0)
+            {
+                int availableHeight = dgvStudentSchedule.Height - dgvStudentSchedule.ColumnHeadersHeight;
+                int exactRowHeight = availableHeight / 11;
+                foreach (DataGridViewRow row in dgvStudentSchedule.Rows) row.Height = exactRowHeight;
+            }
         }
 
         #endregion
@@ -359,7 +364,7 @@ namespace SchedCCS
 
         #endregion
 
-        #region 6. PDF Export (Decomposed for Modularity)
+        #region 6. PDF Export Logic
 
         private void btnExportPdf_Click(object sender, EventArgs e)
         {
