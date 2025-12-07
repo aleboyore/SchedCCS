@@ -45,7 +45,7 @@ namespace SchedCCS
             // Apply role-based UI restrictions
             if (!IsAdmin)
             {
-                button1.Visible = false;
+                btnGenerate.Visible = false;
                 this.Text = "Student Schedule Viewer";
                 MessageBox.Show("Student View: Please select your section from the dropdown.");
             }
@@ -184,7 +184,7 @@ namespace SchedCCS
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnGenerate_Click(object sender, EventArgs e)
         {
             // Extra Check: If we already have perfection, ask before running the CPU hard.
             if (!isDataDirty && DataManager.FailedAssignments.Count == 0 && DataManager.MasterSchedule.Count > 0)
@@ -654,9 +654,6 @@ namespace SchedCCS
             lstSections.Items.Clear();
             foreach (var s in DataManager.Sections) lstSections.Items.Add(s.Name);
 
-            cmbManualTeacher.Items.Clear();
-            foreach (var t in DataManager.Teachers) cmbManualTeacher.Items.Add(t.Name);
-
             RefreshSectionDropdown();
         }
 
@@ -814,15 +811,40 @@ namespace SchedCCS
             UpdateMasterGrid();
         }
 
-        private int GetDayIndex(string day)
+        private int GetDayIndex(string dayName)
         {
-            switch (day) { case "Mon": return 1; case "Tue": return 2; case "Wed": return 3; case "Thu": return 4; case "Fri": return 5; case "Sat": return 6; default: return 7; }
+            // Fix: Ensure all returned values are between 0 and 6
+            switch (dayName)
+            {
+                case "Monday": return 1;
+                case "Tuesday": return 2;
+                case "Wednesday": return 3;
+                case "Thursday": return 4;
+                case "Friday": return 5;
+                case "Saturday": return 6;
+                case "Sunday": return 0; // CHANGED FROM 7 TO 0
+                default: return 0; // Safe fallback
+            }
         }
 
         private int GetTimeIndex(string timeRange)
         {
-            string startHour = timeRange.Split(':')[0];
-            return int.TryParse(startHour, out int h) ? h : 0;
+            try
+            {
+                string startHour = timeRange.Split(':')[0];
+                int hour = int.Parse(startHour);
+                int index = hour - 7;
+
+                // Safety Clamp: Ensure it stays within [0, 12]
+                if (index < 0) return 0;
+                if (index > 12) return 12;
+
+                return index;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         private void btnLogout_Click(object sender, EventArgs e)
@@ -921,47 +943,16 @@ namespace SchedCCS
             }
         }
 
-        private void btnForceAssign_Click(object sender, EventArgs e)
+        // --- HELPER TO CLEAR FLAGS ---
+        private void ClearBusyFlag(ScheduleItem item)
         {
-            if (dgvPending.SelectedRows.Count == 0 || cmbManualTeacher.SelectedItem == null)
-            {
-                MessageBox.Show("Select a subject and a teacher.");
-                return;
-            }
+            var t = DataManager.Teachers.FirstOrDefault(x => x.Name == item.Teacher);
+            var s = DataManager.Sections.FirstOrDefault(x => x.Name == item.Section);
+            var r = DataManager.Rooms.FirstOrDefault(x => x.Name == item.Room);
 
-            string newTeacher = cmbManualTeacher.SelectedItem.ToString();
-            string section = dgvPending.SelectedRows[0].Cells["Section"].Value.ToString();
-            string subject = dgvPending.SelectedRows[0].Cells["Subject"].Value.ToString();
-
-            var teacherObj = DataManager.Teachers.FirstOrDefault(t => t.Name == newTeacher);
-            if (teacherObj == null) return;
-
-            int count = 0;
-            foreach (var slot in DataManager.MasterSchedule)
-            {
-                if (slot.Section == section && slot.Subject == subject && slot.Teacher == "Professor XYZ")
-                {
-                    slot.Teacher = newTeacher;
-                    int d = GetDayIndex(slot.Day) - 1;
-                    int t = int.Parse(slot.Time.Split(':')[0]) - 7;
-                    if (d >= 0 && t >= 0) teacherObj.IsBusy[d, t] = true;
-                    count++;
-                }
-            }
-
-            if (count > 0)
-            {
-                string cleanCode = subject.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
-                if (!teacherObj.QualifiedSubjects.Contains(cleanCode)) teacherObj.QualifiedSubjects.Add(cleanCode);
-
-                dgvPending.Rows.Remove(dgvPending.SelectedRows[0]);
-                UpdateTimetableView();
-                MessageBox.Show($"Assigned {newTeacher} to {count} slots.");
-            }
-            else
-            {
-                MessageBox.Show("Slots already fixed or not found.");
-            }
+            if (t != null) t.IsBusy[item.DayIndex, item.TimeIndex] = false;
+            if (s != null) s.IsBusy[item.DayIndex, item.TimeIndex] = false;
+            if (r != null) r.IsBusy[item.DayIndex, item.TimeIndex] = false;
         }
 
         #endregion

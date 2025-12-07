@@ -33,7 +33,7 @@
             tabPage1 = new TabPage();
             btnLogout = new Button();
             cmbFilterType = new ComboBox();
-            button1 = new Button();
+            btnGenerate = new Button();
             dataGridView1 = new DataGridView();
             btnExport = new Button();
             comboBox1 = new ComboBox();
@@ -102,9 +102,6 @@
             txtSectionName = new TextBox();
             label5 = new Label();
             tabPending = new TabPage();
-            btnForceAssign = new Button();
-            cmbManualTeacher = new ComboBox();
-            label15 = new Label();
             dgvPending = new DataGridView();
             Section = new DataGridViewTextBoxColumn();
             Subject = new DataGridViewTextBoxColumn();
@@ -149,7 +146,7 @@
             // 
             tabPage1.Controls.Add(btnLogout);
             tabPage1.Controls.Add(cmbFilterType);
-            tabPage1.Controls.Add(button1);
+            tabPage1.Controls.Add(btnGenerate);
             tabPage1.Controls.Add(dataGridView1);
             tabPage1.Controls.Add(btnExport);
             tabPage1.Controls.Add(comboBox1);
@@ -182,16 +179,16 @@
             cmbFilterType.Text = "Section";
             cmbFilterType.SelectedIndexChanged += cmbFilterType_SelectedIndexChanged;
             // 
-            // button1
+            // btnGenerate
             // 
-            button1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            button1.Location = new Point(425, 618);
-            button1.Name = "button1";
-            button1.Size = new Size(407, 23);
-            button1.TabIndex = 4;
-            button1.Text = "Generate Schedule";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            btnGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            btnGenerate.Location = new Point(425, 618);
+            btnGenerate.Name = "btnGenerate";
+            btnGenerate.Size = new Size(407, 23);
+            btnGenerate.TabIndex = 4;
+            btnGenerate.Text = "Generate Schedule";
+            btnGenerate.UseVisualStyleBackColor = true;
+            btnGenerate.Click += btnGenerate_Click;
             // 
             // dataGridView1
             // 
@@ -887,9 +884,6 @@
             // 
             // tabPending
             // 
-            tabPending.Controls.Add(btnForceAssign);
-            tabPending.Controls.Add(cmbManualTeacher);
-            tabPending.Controls.Add(label15);
             tabPending.Controls.Add(dgvPending);
             tabPending.Location = new Point(4, 24);
             tabPending.Name = "tabPending";
@@ -898,44 +892,16 @@
             tabPending.Text = "Pending Subjects";
             tabPending.UseVisualStyleBackColor = true;
             // 
-            // btnForceAssign
-            // 
-            btnForceAssign.Location = new Point(682, 117);
-            btnForceAssign.Name = "btnForceAssign";
-            btnForceAssign.Size = new Size(122, 23);
-            btnForceAssign.TabIndex = 3;
-            btnForceAssign.Text = "Force Assign & Retry";
-            btnForceAssign.UseVisualStyleBackColor = true;
-            btnForceAssign.Click += btnForceAssign_Click;
-            // 
-            // cmbManualTeacher
-            // 
-            cmbManualTeacher.FormattingEnabled = true;
-            cmbManualTeacher.Location = new Point(682, 72);
-            cmbManualTeacher.Name = "cmbManualTeacher";
-            cmbManualTeacher.Size = new Size(121, 23);
-            cmbManualTeacher.TabIndex = 2;
-            // 
-            // label15
-            // 
-            label15.AutoSize = true;
-            label15.Location = new Point(654, 30);
-            label15.Name = "label15";
-            label15.Size = new Size(115, 15);
-            label15.TabIndex = 1;
-            label15.Text = "Assign New Teacher:";
-            // 
             // dgvPending
             // 
             dgvPending.AllowUserToAddRows = false;
             dgvPending.AllowUserToDeleteRows = false;
             dgvPending.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvPending.Columns.AddRange(new DataGridViewColumn[] { Section, Subject, Reason });
-            dgvPending.Dock = DockStyle.Left;
-            dgvPending.Location = new Point(0, 0);
+            dgvPending.Location = new Point(8, 9);
             dgvPending.Name = "dgvPending";
             dgvPending.ReadOnly = true;
-            dgvPending.Size = new Size(635, 653);
+            dgvPending.Size = new Size(1240, 636);
             dgvPending.TabIndex = 0;
             // 
             // Section
@@ -988,7 +954,6 @@
             groupBox3.ResumeLayout(false);
             groupBox3.PerformLayout();
             tabPending.ResumeLayout(false);
-            tabPending.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dgvPending).EndInit();
             ResumeLayout(false);
         }
@@ -999,7 +964,7 @@
         private TabPage tabPage1;
         private Button btnExport;
         private ComboBox comboBox1;
-        private Button button1;
+        private Button btnGenerate;
         private TabPage tabPage2;
         private DataGridView dataGridView1;
         private TabPage tabMaster;
@@ -1072,8 +1037,5 @@
         private DataGridViewTextBoxColumn Section;
         private DataGridViewTextBoxColumn Subject;
         private DataGridViewTextBoxColumn Reason;
-        private Label label15;
-        private ComboBox cmbManualTeacher;
-        private Button btnForceAssign;
     }
 }
