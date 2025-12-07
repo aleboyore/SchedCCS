@@ -165,6 +165,7 @@ namespace SchedCCS
         private void ConfigureGridStyles()
         {
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
             dataGridView1.Columns["Time"].FillWeight = 50;
             dataGridView1.ScrollBars = ScrollBars.None;
             dataGridView1.DefaultCellStyle.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular);
