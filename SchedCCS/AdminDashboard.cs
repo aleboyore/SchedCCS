@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Windows.Forms;
-using System.IO;
+﻿using iText.Kernel.Colors;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
-using iText.Kernel.Colors;
+using System.Text.Json;
 
 namespace SchedCCS
 {
@@ -154,9 +149,48 @@ namespace SchedCCS
 
         private void UpdateMasterGrid()
         {
+            // 1. Reset the Grid
             dgvMaster.DataSource = null;
-            dgvMaster.DataSource = DataManager.MasterSchedule;
+
+            // 2. Sort the Data (Crucial for Admins)
+            // We sort by Day (Mon->Sun), then Time (7am->6pm), then Section.
+            // This turns the random list into a readable timeline.
+            var sortedSchedule = DataManager.MasterSchedule
+                .OrderBy(x => x.DayIndex)       // Group by Day (Mon=1, Tue=2...)
+                .ThenBy(x => x.TimeIndex)       // Then by Time (7am, 8am...)
+                .ThenBy(x => x.Section)         // Then by Section name
+                .ToList();
+
+            dgvMaster.DataSource = sortedSchedule;
+
+            // 3. Grid Styling
             dgvMaster.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvMaster.AllowUserToAddRows = false;       // Disable extra empty row at bottom
+            dgvMaster.RowHeadersVisible = false;        // Hide the ugly left-side selector block
+            dgvMaster.SelectionMode = DataGridViewSelectionMode.FullRowSelect; // Click selects whole row
+            dgvMaster.ReadOnly = true;                  // Admin shouldn't type directly here (use Right-Click)
+
+            // 4. Hide "Developer" Columns (The Ugly Data)
+            if (dgvMaster.Columns["DayIndex"] != null) dgvMaster.Columns["DayIndex"].Visible = false;
+            if (dgvMaster.Columns["TimeIndex"] != null) dgvMaster.Columns["TimeIndex"].Visible = false;
+            if (dgvMaster.Columns["RoomObj"] != null) dgvMaster.Columns["RoomObj"].Visible = false;
+
+            // 5. Rename Headers (Professional Look)
+            // We use ALL CAPS to distinguish this as a formal report.
+            if (dgvMaster.Columns["Section"] != null) dgvMaster.Columns["Section"].HeaderText = "SECTION";
+            if (dgvMaster.Columns["Subject"] != null) dgvMaster.Columns["Subject"].HeaderText = "SUBJECT CODE";
+            if (dgvMaster.Columns["Teacher"] != null) dgvMaster.Columns["Teacher"].HeaderText = "INSTRUCTOR";
+            if (dgvMaster.Columns["Room"] != null) dgvMaster.Columns["Room"].HeaderText = "ROOM";
+            if (dgvMaster.Columns["Day"] != null) dgvMaster.Columns["Day"].HeaderText = "DAY";
+            if (dgvMaster.Columns["Time"] != null) dgvMaster.Columns["Time"].HeaderText = "TIME SLOT";
+
+            // 6. Optional: Column Ordering (Put Day/Time first for easier reading)
+            if (dgvMaster.Columns["Day"] != null) dgvMaster.Columns["Day"].DisplayIndex = 0;
+            if (dgvMaster.Columns["Time"] != null) dgvMaster.Columns["Time"].DisplayIndex = 1;
+            if (dgvMaster.Columns["Section"] != null) dgvMaster.Columns["Section"].DisplayIndex = 2;
+            if (dgvMaster.Columns["Subject"] != null) dgvMaster.Columns["Subject"].DisplayIndex = 3;
+            if (dgvMaster.Columns["Room"] != null) dgvMaster.Columns["Room"].DisplayIndex = 4;
+            if (dgvMaster.Columns["Teacher"] != null) dgvMaster.Columns["Teacher"].DisplayIndex = 5;
         }
 
         private void UpdateTimetableView()
@@ -790,26 +824,90 @@ namespace SchedCCS
 
         private void dgvMaster_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
+            // Identify which column was clicked
             string columnClicked = dgvMaster.Columns[e.ColumnIndex].Name;
-            isAscending = (currentSortColumn == columnClicked) ? !isAscending : true;
-            currentSortColumn = columnClicked;
 
-            if (columnClicked == "Day")
-                DataManager.MasterSchedule = isAscending ? DataManager.MasterSchedule.OrderBy(x => GetDayIndex(x.Day)).ToList() : DataManager.MasterSchedule.OrderByDescending(x => GetDayIndex(x.Day)).ToList();
-            else if (columnClicked == "Time")
-                DataManager.MasterSchedule = isAscending ? DataManager.MasterSchedule.OrderBy(x => GetTimeIndex(x.Time)).ToList() : DataManager.MasterSchedule.OrderByDescending(x => GetTimeIndex(x.Time)).ToList();
+            // Toggle Sort Direction
+            if (currentSortColumn == columnClicked)
+            {
+                isAscending = !isAscending; // Flip direction if clicking the same column
+            }
             else
+            {
+                currentSortColumn = columnClicked;
+                isAscending = true; // Default to Ascending for a new column
+            }
+
+            // Perform the Sort
+            // We use a List variable to hold the sorted results
+            List<ScheduleItem> sortedList = null;
+
+            if (isAscending)
             {
                 switch (columnClicked)
                 {
-                    case "Section": DataManager.MasterSchedule = isAscending ? DataManager.MasterSchedule.OrderBy(x => x.Section).ToList() : DataManager.MasterSchedule.OrderByDescending(x => x.Section).ToList(); break;
-                    case "Subject": DataManager.MasterSchedule = isAscending ? DataManager.MasterSchedule.OrderBy(x => x.Subject).ToList() : DataManager.MasterSchedule.OrderByDescending(x => x.Subject).ToList(); break;
-                    case "Teacher": DataManager.MasterSchedule = isAscending ? DataManager.MasterSchedule.OrderBy(x => x.Teacher).ToList() : DataManager.MasterSchedule.OrderByDescending(x => x.Teacher).ToList(); break;
-                    case "Room": DataManager.MasterSchedule = isAscending ? DataManager.MasterSchedule.OrderBy(x => x.Room).ToList() : DataManager.MasterSchedule.OrderByDescending(x => x.Room).ToList(); break;
+                    case "Day":
+                        sortedList = DataManager.MasterSchedule.OrderBy(x => x.DayIndex).ToList();
+                        break;
+                    case "Time":
+                        sortedList = DataManager.MasterSchedule.OrderBy(x => x.TimeIndex).ToList();
+                        break;
+                    case "Section":
+                        sortedList = DataManager.MasterSchedule.OrderBy(x => x.Section).ToList();
+                        break;
+                    case "Subject":
+                        sortedList = DataManager.MasterSchedule.OrderBy(x => x.Subject).ToList();
+                        break;
+                    case "Teacher":
+                        sortedList = DataManager.MasterSchedule.OrderBy(x => x.Teacher).ToList();
+                        break;
+                    case "Room":
+                        sortedList = DataManager.MasterSchedule.OrderBy(x => x.Room).ToList();
+                        break;
+                    default:
+                        return; // Do nothing if clicking a hidden/unknown column
+                }
+            }
+            else // Descending (Z-A)
+            {
+                switch (columnClicked)
+                {
+                    case "Day":
+                        sortedList = DataManager.MasterSchedule.OrderByDescending(x => x.DayIndex).ToList();
+                        break;
+                    case "Time":
+                        sortedList = DataManager.MasterSchedule.OrderByDescending(x => x.TimeIndex).ToList();
+                        break;
+                    case "Section":
+                        sortedList = DataManager.MasterSchedule.OrderByDescending(x => x.Section).ToList();
+                        break;
+                    case "Subject":
+                        sortedList = DataManager.MasterSchedule.OrderByDescending(x => x.Subject).ToList();
+                        break;
+                    case "Teacher":
+                        sortedList = DataManager.MasterSchedule.OrderByDescending(x => x.Teacher).ToList();
+                        break;
+                    case "Room":
+                        sortedList = DataManager.MasterSchedule.OrderByDescending(x => x.Room).ToList();
+                        break;
+                    default:
+                        return;
                 }
             }
 
-            UpdateMasterGrid();
+            // Apply the sorted list to the grid
+            dgvMaster.DataSource = sortedList;
+
+            // Optional: Add a visual indicator (like an arrow) to the header text
+            foreach (DataGridViewColumn col in dgvMaster.Columns)
+            {
+                // Clear arrows from other columns
+                col.HeaderText = col.HeaderText.Replace(" ▲", "").Replace(" ▼", "");
+            }
+
+            // Add arrow to current column
+            dgvMaster.Columns[e.ColumnIndex].HeaderText += isAscending ? " ▲" : " ▼";
+
         }
 
         private int GetDayIndex(string dayName)
@@ -854,28 +952,39 @@ namespace SchedCCS
                 this.Close();
         }
 
-        private void btnExport_Click(object sender, EventArgs e)
+        //create backup
+        private void btnBackupDatabase_Click(object sender, EventArgs e)
         {
-            if (DataManager.MasterSchedule.Count == 0)
-            {
-                MessageBox.Show("No schedule to export! Please generate one first.");
-                return;
-            }
+            SaveFileDialog save = new SaveFileDialog();
+            save.Filter = "System Backup File|*.json";
+            save.FileName = $"SchedCCS_Backup_{DateTime.Now:yyyyMMdd_HHmm}.json";
 
-            SaveFileDialog sfd = new SaveFileDialog { Filter = "CSV File|*.csv", FileName = "Schedule.csv" };
-            if (sfd.ShowDialog() == DialogResult.OK)
+            if (save.ShowDialog() == DialogResult.OK)
             {
                 try
                 {
-                    using (StreamWriter sw = new StreamWriter(sfd.FileName))
+                    // 1. Pack data into the container
+                    var backup = new SystemBackup
                     {
-                        sw.WriteLine("Section,Subject,Teacher,Room,Day,Time");
-                        foreach (var item in DataManager.MasterSchedule)
-                            sw.WriteLine($"{item.Section},{item.Subject},{item.Teacher},{item.Room},{item.Day},{item.Time}");
-                    }
-                    MessageBox.Show("Export Successful!");
+                        Rooms = DataManager.Rooms,
+                        Teachers = DataManager.Teachers,
+                        Sections = DataManager.Sections,
+                        MasterSchedule = DataManager.MasterSchedule,
+                        FailedAssignments = DataManager.FailedAssignments
+                    };
+
+                    // 2. Serialize to JSON (Make it readable with WriteIndented)
+                    string jsonString = JsonSerializer.Serialize(backup, new JsonSerializerOptions { WriteIndented = true });
+
+                    // 3. Save to file
+                    File.WriteAllText(save.FileName, jsonString);
+
+                    MessageBox.Show("System Database Backed up Successfully!");
                 }
-                catch (Exception ex) { MessageBox.Show("Error saving file: " + ex.Message); }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Backup Failed: " + ex.Message);
+                }
             }
         }
 
@@ -1443,7 +1552,7 @@ namespace SchedCCS
                         var freeRoom = DataManager.Rooms.FirstOrDefault(r => r.Type == roomType && !r.IsBusy[d, t]);
                         string roomNote = freeRoom != null ? $"({freeRoom.Name})" : "(No Rooms)";
 
-                        report += $"� {GetDayName(d)} @ {GetTimeLabel(t)} {roomNote}\n";
+                        report += $"• {GetDayName(d)} @ {GetTimeLabel(t)} {roomNote}\n";
                         optionsFound++;
                     }
                 }
@@ -1454,5 +1563,196 @@ namespace SchedCCS
             else
                 MessageBox.Show(report, "Availability Cheat Sheet");
         }
+
+        private void btnExportPdf_Click(object sender, EventArgs e)
+        {
+            if (comboBox1.SelectedItem == null) { MessageBox.Show("Please select a view first."); return; }
+
+            string filterMode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
+            string filterValue = comboBox1.SelectedItem.ToString();
+
+            SaveFileDialog save = new SaveFileDialog();
+            save.Filter = "PDF File|*.pdf";
+            save.FileName = $"{filterMode}_{filterValue}_Schedule.pdf";
+
+            if (save.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    PdfWriter writer = new PdfWriter(save.FileName);
+                    PdfDocument pdf = new PdfDocument(writer);
+                    pdf.SetDefaultPageSize(iText.Kernel.Geom.PageSize.A4.Rotate());
+                    Document document = new Document(pdf);
+                    document.SetMargins(15, 20, 10, 20);
+
+                    // 1. Header
+                    document.Add(GeneratePdfHeader());
+
+                    // 2. Context Title
+                    document.Add(new Paragraph($"\nOFFICIAL SCHEDULE: {filterValue} ({filterMode})")
+                        .SetTextAlignment(TextAlignment.CENTER).SetBold().SetFontSize(14));
+
+                    // 3. The Colorful Grid
+                    document.Add(GenerateAdminScheduleTable(filterMode, filterValue));
+
+                    // 4. The "Approved By" Footer (Added!)
+                    document.Add(GeneratePdfFooter());
+
+                    document.Close();
+                    MessageBox.Show("PDF Exported Successfully!");
+                }
+                catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
+            }
+        }
+
+        // --- HELPER 1: HEADER ---
+        private Paragraph GeneratePdfHeader()
+        {
+            return new Paragraph()
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetFontSize(9)
+                .SetMultipliedLeading(1.0f)
+                .Add("Republic of the Philippines\n")
+                .Add(new Text("Laguna State Polytechnic University\n").SetFontSize(11).SetBold())
+                .Add("College of Computer Studies\n\n");
+        }
+
+        // --- HELPER 2: FOOTER (New!) ---
+        private Table GeneratePdfFooter()
+        {
+            Table footerTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1 }));
+            footerTable.SetWidth(UnitValue.CreatePercentValue(100));
+            footerTable.SetBorder(iText.Layout.Borders.Border.NO_BORDER);
+            footerTable.SetMarginTop(20); // Space above signature
+
+            Cell left = new Cell().Add(new Paragraph("Generated by: SchedCCS Admin System").SetFontSize(8))
+                .SetBorder(iText.Layout.Borders.Border.NO_BORDER);
+
+            Cell right = new Cell().Add(new Paragraph("Approved by: ______________________\nCollege Dean")
+                .SetFontSize(10).SetBold())
+                .SetTextAlignment(TextAlignment.RIGHT)
+                .SetBorder(iText.Layout.Borders.Border.NO_BORDER);
+
+            footerTable.AddCell(left);
+            footerTable.AddCell(right);
+            return footerTable;
+        }
+
+        // --- HELPER 3: COLORFUL GRID ---
+        private Table GenerateAdminScheduleTable(string filterMode, string filterValue)
+        {
+            float[] colWidths = { 1.2f, 2, 2, 2, 2, 2, 2, 2 };
+            Table table = new Table(UnitValue.CreatePercentArray(colWidths));
+            table.SetWidth(UnitValue.CreatePercentValue(100));
+
+            // Headers
+            string[] headers = { "TIME", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" };
+            foreach (string h in headers)
+            {
+                table.AddCell(new Cell().Add(new Paragraph(h).SetBold().SetFontSize(7))
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .SetTextAlignment(TextAlignment.CENTER));
+            }
+
+            // Rows
+            for (int t = 0; t < 11; t++)
+            {
+                string timeLabel = $"{7 + t}:00 - {8 + t}:00";
+                table.AddCell(new Cell().Add(new Paragraph(timeLabel).SetFontSize(7).SetBold())
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                    .SetHeight(25));
+
+                for (int d = 1; d <= 7; d++)
+                {
+                    var item = DataManager.MasterSchedule.FirstOrDefault(s =>
+                        s.DayIndex == d && s.TimeIndex == t &&
+                        ((filterMode == "Section" && s.Section == filterValue) ||
+                         (filterMode == "Teacher" && s.Teacher == filterValue) ||
+                         (filterMode == "Room" && s.Room == filterValue))
+                    );
+
+                    Cell cell = new Cell().SetHeight(25).SetPadding(1);
+
+                    if (item != null)
+                    {
+                        string content = "";
+                        if (filterMode == "Section") content = $"{item.Subject}\n{item.Teacher}\n{item.Room}";
+                        else if (filterMode == "Teacher") content = $"{item.Subject}\n{item.Section}\n{item.Room}";
+                        else content = $"{item.Subject}\n{item.Section}\n{item.Teacher}";
+
+                        cell.Add(new Paragraph(content).SetFontSize(7).SetMultipliedLeading(0.9f).SetTextAlignment(TextAlignment.CENTER));
+
+                        // --- COLOR LOGIC (FIXED) ---
+                        if (item.Subject.Contains("(Lab)"))
+                        {
+                            cell.SetBackgroundColor(new DeviceRgb(255, 160, 122)); // Light Salmon
+                        }
+                        else
+                        {
+                            // Generate Random Pastel Color based on Subject Name
+                            System.Drawing.Color rndColor = GetSubjectColor(item.Subject);
+                            cell.SetBackgroundColor(new DeviceRgb(rndColor.R, rndColor.G, rndColor.B));
+                        }
+                    }
+                    table.AddCell(cell);
+                }
+            }
+            return table;
+        }
+
+        // --- HELPER 4: COLOR GENERATOR (Same as Student Dashboard) ---
+
+        private void btnRestoreDatabase_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog open = new OpenFileDialog();
+            open.Filter = "System Backup File|*.json";
+
+            if (open.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    string jsonString = File.ReadAllText(open.FileName);
+
+                    // Deserialize (Convert text back to Objects)
+                    SystemBackup backup = JsonSerializer.Deserialize<SystemBackup>(jsonString);
+
+                    if (backup != null)
+                    {
+                        // 1. Restore Data
+                        DataManager.Rooms = backup.Rooms ?? new List<Room>();
+                        DataManager.Teachers = backup.Teachers ?? new List<Teacher>();
+                        DataManager.Sections = backup.Sections ?? new List<Section>();
+                        DataManager.MasterSchedule = backup.MasterSchedule ?? new List<ScheduleItem>();
+                        DataManager.FailedAssignments = backup.FailedAssignments ?? new List<FailedEntry>();
+
+                        // 2. Critical: Re-Link the "RoomObj" references
+                        // JSON saves data, but it breaks the "Links" between objects. We must rebuild them.
+                        RebuildBusyArrays(DataManager.MasterSchedule);
+
+                        // 3. Refresh UI
+                        RefreshAdminLists();     // Updates the side lists
+                        UpdateMasterGrid();      // Updates the main view
+                        UpdateTimetableView();   // Updates the calendar view
+
+                        MessageBox.Show("System Data Restored Successfully!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Restore Failed: " + ex.Message);
+                }
+            }
+        }
+    }
+
+    // Simple container for all system data
+    public class SystemBackup
+    {
+        public List<Room> Rooms { get; set; }
+        public List<Teacher> Teachers { get; set; }
+        public List<Section> Sections { get; set; }
+        public List<ScheduleItem> MasterSchedule { get; set; }
+        public List<FailedEntry> FailedAssignments { get; set; }
     }
 }

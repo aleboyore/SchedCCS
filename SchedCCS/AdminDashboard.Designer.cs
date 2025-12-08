@@ -29,14 +29,15 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            btnExportPdf = new Button();
             btnLogout = new Button();
             cmbFilterType = new ComboBox();
             btnGenerate = new Button();
             dataGridView1 = new DataGridView();
-            btnExport = new Button();
+            btnBackupDatabase = new Button();
             comboBox1 = new ComboBox();
             tabMaster = new TabPage();
             dgvMaster = new DataGridView();
@@ -103,12 +104,13 @@
             txtSectionName = new TextBox();
             label5 = new Label();
             tabPending = new TabPage();
+            btnFindSlots = new Button();
             dgvPending = new DataGridView();
             Section = new DataGridViewTextBoxColumn();
             Subject = new DataGridViewTextBoxColumn();
             Reason = new DataGridViewTextBoxColumn();
             ctxMenuSchedule = new ContextMenuStrip(components);
-            btnFindSlots = new Button();
+            btnRestoreDatabase = new Button();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
@@ -147,11 +149,13 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(btnRestoreDatabase);
+            tabPage1.Controls.Add(btnExportPdf);
             tabPage1.Controls.Add(btnLogout);
             tabPage1.Controls.Add(cmbFilterType);
             tabPage1.Controls.Add(btnGenerate);
             tabPage1.Controls.Add(dataGridView1);
-            tabPage1.Controls.Add(btnExport);
+            tabPage1.Controls.Add(btnBackupDatabase);
             tabPage1.Controls.Add(comboBox1);
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
@@ -160,6 +164,16 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Schedule View";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // btnExportPdf
+            // 
+            btnExportPdf.Location = new Point(487, 6);
+            btnExportPdf.Name = "btnExportPdf";
+            btnExportPdf.Size = new Size(84, 23);
+            btnExportPdf.TabIndex = 11;
+            btnExportPdf.Text = "Export PDF";
+            btnExportPdf.UseVisualStyleBackColor = true;
+            btnExportPdf.Click += btnExportPdf_Click;
             // 
             // btnLogout
             // 
@@ -199,14 +213,14 @@
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.BackColor = SystemColors.Window;
-            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Window;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle3;
             dataGridView1.Location = new Point(6, 36);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.Size = new Size(1244, 571);
@@ -214,15 +228,15 @@
             dataGridView1.CellMouseClick += dataGridView1_CellMouseClick;
             dataGridView1.Resize += dataGridView1_Resize;
             // 
-            // btnExport
+            // btnBackupDatabase
             // 
-            btnExport.Location = new Point(1135, 7);
-            btnExport.Name = "btnExport";
-            btnExport.Size = new Size(113, 23);
-            btnExport.TabIndex = 7;
-            btnExport.Text = "Export to CSV";
-            btnExport.UseVisualStyleBackColor = true;
-            btnExport.Click += btnExport_Click;
+            btnBackupDatabase.Location = new Point(1135, 7);
+            btnBackupDatabase.Name = "btnBackupDatabase";
+            btnBackupDatabase.Size = new Size(113, 23);
+            btnBackupDatabase.TabIndex = 7;
+            btnBackupDatabase.Text = "Create Backup";
+            btnBackupDatabase.UseVisualStyleBackColor = true;
+            btnBackupDatabase.Click += btnBackupDatabase_Click;
             // 
             // comboBox1
             // 
@@ -897,6 +911,16 @@
             tabPending.Text = "Pending Subjects";
             tabPending.UseVisualStyleBackColor = true;
             // 
+            // btnFindSlots
+            // 
+            btnFindSlots.Location = new Point(578, 606);
+            btnFindSlots.Name = "btnFindSlots";
+            btnFindSlots.Size = new Size(100, 23);
+            btnFindSlots.TabIndex = 1;
+            btnFindSlots.Text = "Find Valid Slots";
+            btnFindSlots.UseVisualStyleBackColor = true;
+            btnFindSlots.Click += btnFindSlots_Click;
+            // 
             // dgvPending
             // 
             dgvPending.AllowUserToAddRows = false;
@@ -932,15 +956,15 @@
             ctxMenuSchedule.Name = "ctxMenuSchedule";
             ctxMenuSchedule.Size = new Size(61, 4);
             // 
-            // btnFindSlots
+            // btnRestoreDatabase
             // 
-            btnFindSlots.Location = new Point(578, 606);
-            btnFindSlots.Name = "btnFindSlots";
-            btnFindSlots.Size = new Size(100, 23);
-            btnFindSlots.TabIndex = 1;
-            btnFindSlots.Text = "Find Valid Slots";
-            btnFindSlots.UseVisualStyleBackColor = true;
-            btnFindSlots.Click += btnFindSlots_Click;
+            btnRestoreDatabase.Location = new Point(632, 6);
+            btnRestoreDatabase.Name = "btnRestoreDatabase";
+            btnRestoreDatabase.Size = new Size(90, 23);
+            btnRestoreDatabase.TabIndex = 12;
+            btnRestoreDatabase.Text = "Load Backup";
+            btnRestoreDatabase.UseVisualStyleBackColor = true;
+            btnRestoreDatabase.Click += btnRestoreDatabase_Click;
             // 
             // AdminDashboard
             // 
@@ -982,7 +1006,7 @@
 
         private TabControl tabControl1;
         private TabPage tabPage1;
-        private Button btnExport;
+        private Button btnBackupDatabase;
         private ComboBox comboBox1;
         private Button btnGenerate;
         private TabPage tabPage2;
@@ -1059,5 +1083,7 @@
         private DataGridViewTextBoxColumn Reason;
         private ContextMenuStrip ctxMenuSchedule;
         private Button btnFindSlots;
+        private Button btnExportPdf;
+        private Button btnRestoreDatabase;
     }
 }

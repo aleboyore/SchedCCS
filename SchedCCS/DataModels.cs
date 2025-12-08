@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace SchedCCS
 {
@@ -40,6 +41,7 @@ namespace SchedCCS
         public List<string> QualifiedSubjects { get; set; }
 
         // Availability Matrix: [7 Days, 13 Hours] (Mon-Sun, 7am-7pm)
+        [JsonIgnore]
         public bool[,] IsBusy { get; set; }
 
         public Teacher()
@@ -79,6 +81,7 @@ namespace SchedCCS
         public RoomType Type { get; set; }
 
         // Availability Matrix: [7 Days, 13 Hours]
+        [JsonIgnore]
         public bool[,] IsBusy { get; set; }
 
         public Room()
@@ -103,6 +106,7 @@ namespace SchedCCS
         public List<Subject> SubjectsToTake { get; set; }
 
         // Availability Matrix: [7 Days, 13 Hours]
+        [JsonIgnore]
         public bool[,] IsBusy { get; set; }
 
         public Section()
