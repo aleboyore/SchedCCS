@@ -177,7 +177,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1264, 681);
+            ClientSize = new Size(1280, 720);
             Controls.Add(btnBack);
             Controls.Add(btnRegister);
             Controls.Add(cmbSection);
@@ -193,7 +193,9 @@
             Controls.Add(label3);
             Controls.Add(label2);
             Controls.Add(label1);
+            FormBorderStyle = FormBorderStyle.None;
             Name = "RegisterForm";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Register Form";
             ResumeLayout(false);
             PerformLayout();

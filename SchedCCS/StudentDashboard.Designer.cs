@@ -37,6 +37,7 @@
             lblStudentName = new Label();
             picProfile = new PictureBox();
             pnlContent = new Panel();
+            lblPageTitle = new Label();
             pnlViewHome = new Panel();
             pic_LAB3 = new PictureBox();
             pic_LAB2 = new PictureBox();
@@ -56,13 +57,14 @@
             pic_FACULTY = new PictureBox();
             pic_LEC10 = new PictureBox();
             pic_LEC9 = new PictureBox();
-            cmbBuilding = new ComboBox();
             picBlueprint = new PictureBox();
             pnlViewSchedule = new Panel();
             btnExportPdf = new Button();
             dgvStudentSchedule = new DataGridView();
             lblNoSchedule = new Label();
             pnlViewSettings = new Panel();
+            btnEdit = new Button();
+            chkShowPass = new CheckBox();
             btnSaveChanges = new Button();
             label4 = new Label();
             label3 = new Label();
@@ -71,7 +73,7 @@
             txtEditName = new TextBox();
             label2 = new Label();
             label1 = new Label();
-            lblPageTitle = new Label();
+            cmbBuilding = new ComboBox();
             toolTip1 = new ToolTip(components);
             pnlSidebar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)picProfile).BeginInit();
@@ -212,8 +214,20 @@
             pnlContent.Size = new Size(1064, 681);
             pnlContent.TabIndex = 1;
             // 
+            // lblPageTitle
+            // 
+            lblPageTitle.AutoSize = true;
+            lblPageTitle.Dock = DockStyle.Top;
+            lblPageTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            lblPageTitle.Location = new Point(0, 0);
+            lblPageTitle.Name = "lblPageTitle";
+            lblPageTitle.Size = new Size(213, 30);
+            lblPageTitle.TabIndex = 0;
+            lblPageTitle.Text = "Student Dashboard";
+            // 
             // pnlViewHome
             // 
+            pnlViewHome.Controls.Add(cmbBuilding);
             pnlViewHome.Controls.Add(pic_LAB3);
             pnlViewHome.Controls.Add(pic_LAB2);
             pnlViewHome.Controls.Add(pic_LAB1);
@@ -232,7 +246,6 @@
             pnlViewHome.Controls.Add(pic_FACULTY);
             pnlViewHome.Controls.Add(pic_LEC10);
             pnlViewHome.Controls.Add(pic_LEC9);
-            pnlViewHome.Controls.Add(cmbBuilding);
             pnlViewHome.Controls.Add(picBlueprint);
             pnlViewHome.Dock = DockStyle.Fill;
             pnlViewHome.Location = new Point(0, 30);
@@ -456,25 +469,13 @@
             pic_LEC9.Tag = "LEC 9";
             pic_LEC9.Visible = false;
             // 
-            // cmbBuilding
-            // 
-            cmbBuilding.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            cmbBuilding.FormattingEnabled = true;
-            cmbBuilding.Items.AddRange(new object[] { "Building A", "Building B" });
-            cmbBuilding.Location = new Point(931, 13);
-            cmbBuilding.Name = "cmbBuilding";
-            cmbBuilding.Size = new Size(121, 23);
-            cmbBuilding.TabIndex = 1;
-            cmbBuilding.Text = "Building A";
-            cmbBuilding.SelectedIndexChanged += cmbBuilding_SelectedIndexChanged;
-            // 
             // picBlueprint
             // 
             picBlueprint.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             picBlueprint.BackColor = Color.SteelBlue;
-            picBlueprint.Location = new Point(12, 45);
+            picBlueprint.Location = new Point(0, -30);
             picBlueprint.Name = "picBlueprint";
-            picBlueprint.Size = new Size(1040, 594);
+            picBlueprint.Size = new Size(1064, 681);
             picBlueprint.TabIndex = 2;
             picBlueprint.TabStop = false;
             // 
@@ -492,7 +493,7 @@
             // btnExportPdf
             // 
             btnExportPdf.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnExportPdf.Location = new Point(910, 6);
+            btnExportPdf.Location = new Point(911, 4);
             btnExportPdf.Name = "btnExportPdf";
             btnExportPdf.Size = new Size(146, 23);
             btnExportPdf.TabIndex = 3;
@@ -529,6 +530,8 @@
             // 
             // pnlViewSettings
             // 
+            pnlViewSettings.Controls.Add(btnEdit);
+            pnlViewSettings.Controls.Add(chkShowPass);
             pnlViewSettings.Controls.Add(btnSaveChanges);
             pnlViewSettings.Controls.Add(label4);
             pnlViewSettings.Controls.Add(label3);
@@ -544,14 +547,36 @@
             pnlViewSettings.TabIndex = 3;
             pnlViewSettings.Visible = false;
             // 
+            // btnEdit
+            // 
+            btnEdit.Location = new Point(429, 445);
+            btnEdit.Name = "btnEdit";
+            btnEdit.Size = new Size(75, 23);
+            btnEdit.TabIndex = 9;
+            btnEdit.Text = "Edit Info";
+            btnEdit.UseVisualStyleBackColor = true;
+            btnEdit.Click += btnEdit_Click;
+            // 
+            // chkShowPass
+            // 
+            chkShowPass.AutoSize = true;
+            chkShowPass.Location = new Point(429, 420);
+            chkShowPass.Name = "chkShowPass";
+            chkShowPass.Size = new Size(108, 19);
+            chkShowPass.TabIndex = 8;
+            chkShowPass.Text = "Show Password";
+            chkShowPass.UseVisualStyleBackColor = true;
+            chkShowPass.Click += chkShowPass_CheckedChanged;
+            // 
             // btnSaveChanges
             // 
-            btnSaveChanges.Location = new Point(492, 428);
+            btnSaveChanges.Location = new Point(560, 445);
             btnSaveChanges.Name = "btnSaveChanges";
             btnSaveChanges.Size = new Size(75, 23);
             btnSaveChanges.TabIndex = 7;
             btnSaveChanges.Text = "Save Changes";
             btnSaveChanges.UseVisualStyleBackColor = true;
+            btnSaveChanges.Visible = false;
             btnSaveChanges.Click += btnSaveChanges_Click;
             // 
             // label4
@@ -578,6 +603,7 @@
             txtEditConfirm.Name = "txtEditConfirm";
             txtEditConfirm.Size = new Size(206, 23);
             txtEditConfirm.TabIndex = 4;
+            txtEditConfirm.UseSystemPasswordChar = true;
             // 
             // txtEditPass
             // 
@@ -585,6 +611,7 @@
             txtEditPass.Name = "txtEditPass";
             txtEditPass.Size = new Size(206, 23);
             txtEditPass.TabIndex = 3;
+            txtEditPass.UseSystemPasswordChar = true;
             // 
             // txtEditName
             // 
@@ -611,16 +638,17 @@
             label1.TabIndex = 0;
             label1.Text = "Update Account Info";
             // 
-            // lblPageTitle
+            // cmbBuilding
             // 
-            lblPageTitle.AutoSize = true;
-            lblPageTitle.Dock = DockStyle.Top;
-            lblPageTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblPageTitle.Location = new Point(0, 0);
-            lblPageTitle.Name = "lblPageTitle";
-            lblPageTitle.Size = new Size(213, 30);
-            lblPageTitle.TabIndex = 0;
-            lblPageTitle.Text = "Student Dashboard";
+            cmbBuilding.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            cmbBuilding.FormattingEnabled = true;
+            cmbBuilding.Items.AddRange(new object[] { "Building A", "Building B" });
+            cmbBuilding.Location = new Point(982, 5);
+            cmbBuilding.Name = "cmbBuilding";
+            cmbBuilding.Size = new Size(79, 23);
+            cmbBuilding.TabIndex = 1;
+            cmbBuilding.Text = "Building A";
+            cmbBuilding.SelectedIndexChanged += cmbBuilding_SelectedIndexChanged;
             // 
             // StudentDashboard
             // 
@@ -629,7 +657,9 @@
             ClientSize = new Size(1264, 681);
             Controls.Add(pnlContent);
             Controls.Add(pnlSidebar);
+            FormBorderStyle = FormBorderStyle.None;
             Name = "StudentDashboard";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Student Dashboard";
             pnlSidebar.ResumeLayout(false);
             pnlSidebar.PerformLayout();
@@ -709,5 +739,7 @@
         private PictureBox pic_LAB3;
         private PictureBox pic_LAB2;
         private PictureBox pic_LAB1;
+        private CheckBox chkShowPass;
+        private Button btnEdit;
     }
 }

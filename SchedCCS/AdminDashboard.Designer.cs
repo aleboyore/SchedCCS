@@ -29,9 +29,10 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            btnRestoreDatabase = new Button();
             btnExportPdf = new Button();
             btnLogout = new Button();
             cmbFilterType = new ComboBox();
@@ -110,7 +111,6 @@
             Subject = new DataGridViewTextBoxColumn();
             Reason = new DataGridViewTextBoxColumn();
             ctxMenuSchedule = new ContextMenuStrip(components);
-            btnRestoreDatabase = new Button();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
@@ -143,7 +143,7 @@
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1264, 681);
+            tabControl1.Size = new Size(1280, 720);
             tabControl1.TabIndex = 4;
             tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
             // 
@@ -160,10 +160,20 @@
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1256, 653);
+            tabPage1.Size = new Size(1272, 692);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Schedule View";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // btnRestoreDatabase
+            // 
+            btnRestoreDatabase.Location = new Point(632, 6);
+            btnRestoreDatabase.Name = "btnRestoreDatabase";
+            btnRestoreDatabase.Size = new Size(90, 23);
+            btnRestoreDatabase.TabIndex = 12;
+            btnRestoreDatabase.Text = "Load Backup";
+            btnRestoreDatabase.UseVisualStyleBackColor = true;
+            btnRestoreDatabase.Click += btnRestoreDatabase_Click;
             // 
             // btnExportPdf
             // 
@@ -199,9 +209,9 @@
             // btnGenerate
             // 
             btnGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            btnGenerate.Location = new Point(425, 618);
+            btnGenerate.Location = new Point(425, 657);
             btnGenerate.Name = "btnGenerate";
-            btnGenerate.Size = new Size(407, 23);
+            btnGenerate.Size = new Size(423, 23);
             btnGenerate.TabIndex = 4;
             btnGenerate.Text = "Generate Schedule";
             btnGenerate.UseVisualStyleBackColor = true;
@@ -213,17 +223,17 @@
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = SystemColors.Window;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle3.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = SystemColors.Window;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
             dataGridView1.Location = new Point(6, 36);
             dataGridView1.Name = "dataGridView1";
-            dataGridView1.Size = new Size(1244, 571);
+            dataGridView1.Size = new Size(1260, 610);
             dataGridView1.TabIndex = 8;
             dataGridView1.CellMouseClick += dataGridView1_CellMouseClick;
             dataGridView1.Resize += dataGridView1_Resize;
@@ -956,23 +966,15 @@
             ctxMenuSchedule.Name = "ctxMenuSchedule";
             ctxMenuSchedule.Size = new Size(61, 4);
             // 
-            // btnRestoreDatabase
-            // 
-            btnRestoreDatabase.Location = new Point(632, 6);
-            btnRestoreDatabase.Name = "btnRestoreDatabase";
-            btnRestoreDatabase.Size = new Size(90, 23);
-            btnRestoreDatabase.TabIndex = 12;
-            btnRestoreDatabase.Text = "Load Backup";
-            btnRestoreDatabase.UseVisualStyleBackColor = true;
-            btnRestoreDatabase.Click += btnRestoreDatabase_Click;
-            // 
             // AdminDashboard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1264, 681);
+            ClientSize = new Size(1280, 720);
             Controls.Add(tabControl1);
+            FormBorderStyle = FormBorderStyle.None;
             Name = "AdminDashboard";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Admin Dashboard";
             Load += Form1_Load_1;
             tabControl1.ResumeLayout(false);

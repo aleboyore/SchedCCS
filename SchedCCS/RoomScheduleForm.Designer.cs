@@ -52,7 +52,7 @@
             dgvRoomSchedule.Location = new Point(12, 52);
             dgvRoomSchedule.Name = "dgvRoomSchedule";
             dgvRoomSchedule.ReadOnly = true;
-            dgvRoomSchedule.Size = new Size(1240, 617);
+            dgvRoomSchedule.Size = new Size(1256, 656);
             dgvRoomSchedule.TabIndex = 1;
             // 
             // btnClose
@@ -69,11 +69,13 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1264, 681);
+            ClientSize = new Size(1280, 720);
             Controls.Add(btnClose);
             Controls.Add(dgvRoomSchedule);
             Controls.Add(lblRoomName);
+            FormBorderStyle = FormBorderStyle.None;
             Name = "RoomScheduleForm";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Room Schedule Form";
             ((System.ComponentModel.ISupportInitialize)dgvRoomSchedule).EndInit();
             ResumeLayout(false);

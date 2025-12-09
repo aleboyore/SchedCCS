@@ -34,6 +34,7 @@ namespace SchedCCS
 
             // Initialize Interactive Map
             InitializeMapHotspots();
+            InitializeSettingsUI();
         }
 
         private void InitializeDashboardUI()
@@ -336,29 +337,106 @@ namespace SchedCCS
 
         #endregion
 
-        #region 5. Account Settings
+        #region 5. Account Settings (Improved)
 
+        // 1. INITIALIZATION: Lock everything down
+        private void InitializeSettingsUI()
+        {
+            // Lock fields
+            txtEditName.ReadOnly = true;
+            txtEditPass.ReadOnly = true;
+            txtEditConfirm.ReadOnly = true;
+
+            // Gray background to indicate disabled state
+            txtEditName.BackColor = System.Drawing.SystemColors.Control;
+            txtEditPass.BackColor = System.Drawing.SystemColors.Control;
+            txtEditConfirm.BackColor = System.Drawing.SystemColors.Control;
+
+            // Button States
+            btnEdit.Visible = true;
+            btnSaveChanges.Visible = false; // Hide Save until they click Edit
+            btnEdit.Text = "Edit Info";
+
+            // Security
+            txtEditPass.UseSystemPasswordChar = true;
+            txtEditConfirm.UseSystemPasswordChar = true;
+        }
+
+        // 2. THE "EDIT" BUTTON TOGGLE
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            bool isEditing = !txtEditName.ReadOnly; // Check current state
+
+            if (isEditing)
+            {
+                // CANCEL EDITING (Revert)
+                InitializeSettingsUI();
+
+                // Restore original values (So they don't lose the old data visually)
+                txtEditName.Text = currentUser.FullName;
+                txtEditPass.Text = currentUser.Password;
+                txtEditConfirm.Text = currentUser.Password;
+            }
+            else
+            {
+                // START EDITING (Unlock)
+                txtEditName.ReadOnly = false;
+                txtEditPass.ReadOnly = false;
+                txtEditConfirm.ReadOnly = false;
+
+                // White background for editing
+                txtEditName.BackColor = System.Drawing.Color.White;
+                txtEditPass.BackColor = System.Drawing.Color.White;
+                txtEditConfirm.BackColor = System.Drawing.Color.White;
+
+                btnEdit.Text = "Cancel";
+                btnSaveChanges.Visible = true;
+            }
+        }
+
+        // 3. THE "SHOW PASSWORD" CHECKBOX
+        private void chkShowPass_CheckedChanged(object sender, EventArgs e)
+        {
+            // If Checked -> Show Text (UseSystemPasswordChar = false)
+            // If Unchecked -> Show Dots (UseSystemPasswordChar = true)
+            txtEditPass.UseSystemPasswordChar = !chkShowPass.Checked;
+            txtEditConfirm.UseSystemPasswordChar = !chkShowPass.Checked;
+        }
+
+        // 4. SAVE LOGIC (With Validation)
         private void btnSaveChanges_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtEditName.Text)) return;
-            if (txtEditPass.Text != txtEditConfirm.Text)
+            if (string.IsNullOrWhiteSpace(txtEditName.Text))
             {
-                MessageBox.Show("Passwords do not match.");
+                MessageBox.Show("Name cannot be empty.");
                 return;
             }
 
+            if (txtEditPass.Text != txtEditConfirm.Text)
+            {
+                MessageBox.Show("Passwords do not match!");
+                return;
+            }
+
+            // Update Database/Memory
             var userInDb = DataManager.Users.FirstOrDefault(u => u.Username == currentUser.Username);
             if (userInDb != null)
             {
                 userInDb.FullName = txtEditName.Text;
                 userInDb.Password = txtEditPass.Text;
+
+                // Update Local Current User
                 currentUser.FullName = txtEditName.Text;
                 currentUser.Password = txtEditPass.Text;
 
+                // Update Sidebar Label
                 Control lbl = this.Controls.Find("lblStudentName", true).FirstOrDefault();
                 if (lbl != null) lbl.Text = currentUser.FullName;
 
                 MessageBox.Show("Account updated successfully!");
+
+                // Lock fields again after saving
+                InitializeSettingsUI();
             }
         }
 
