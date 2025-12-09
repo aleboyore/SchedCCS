@@ -38,6 +38,7 @@
             lblStudentName = new Label();
             picProfile = new PictureBox();
             pnlContent = new Panel();
+            btnClose = new Button();
             pnlViewHome = new Panel();
             cmbBuilding = new ComboBox();
             pnlBuildingB = new Panel();
@@ -217,6 +218,7 @@
             // pnlContent
             // 
             pnlContent.BackColor = Color.White;
+            pnlContent.Controls.Add(btnClose);
             pnlContent.Controls.Add(pnlViewHome);
             pnlContent.Controls.Add(pnlViewSchedule);
             pnlContent.Controls.Add(pnlViewSettings);
@@ -226,6 +228,22 @@
             pnlContent.Name = "pnlContent";
             pnlContent.Size = new Size(1064, 681);
             pnlContent.TabIndex = 1;
+            // 
+            // btnClose
+            // 
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnClose.BackColor = Color.Transparent;
+            btnClose.Cursor = Cursors.Hand;
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatStyle = FlatStyle.Flat;
+            btnClose.ForeColor = Color.Black;
+            btnClose.Location = new Point(1022, 0);
+            btnClose.Name = "btnClose";
+            btnClose.Size = new Size(35, 30);
+            btnClose.TabIndex = 4;
+            btnClose.Text = "✕";
+            btnClose.UseVisualStyleBackColor = false;
+            btnClose.Click += btnClose_Click;
             // 
             // pnlViewHome
             // 
@@ -797,5 +815,6 @@
         private PictureBox pic_LEC8;
         private PictureBox pic_LEC3;
         private PictureBox pic_OCTA;
+        private Button btnClose;
     }
 }

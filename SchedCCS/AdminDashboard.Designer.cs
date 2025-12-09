@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             btnRestoreDatabase = new Button();
@@ -111,6 +111,7 @@
             Subject = new DataGridViewTextBoxColumn();
             Reason = new DataGridViewTextBoxColumn();
             ctxMenuSchedule = new ContextMenuStrip(components);
+            btnClose = new Button();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
@@ -150,6 +151,7 @@
             // tabPage1
             // 
             tabPage1.Controls.Add(btnRestoreDatabase);
+            tabPage1.Controls.Add(btnClose);
             tabPage1.Controls.Add(btnExportPdf);
             tabPage1.Controls.Add(btnLogout);
             tabPage1.Controls.Add(cmbFilterType);
@@ -167,7 +169,7 @@
             // 
             // btnRestoreDatabase
             // 
-            btnRestoreDatabase.Location = new Point(632, 6);
+            btnRestoreDatabase.Location = new Point(544, 5);
             btnRestoreDatabase.Name = "btnRestoreDatabase";
             btnRestoreDatabase.Size = new Size(90, 23);
             btnRestoreDatabase.TabIndex = 12;
@@ -177,7 +179,7 @@
             // 
             // btnExportPdf
             // 
-            btnExportPdf.Location = new Point(487, 6);
+            btnExportPdf.Location = new Point(399, 5);
             btnExportPdf.Name = "btnExportPdf";
             btnExportPdf.Size = new Size(84, 23);
             btnExportPdf.TabIndex = 11;
@@ -199,7 +201,7 @@
             // 
             cmbFilterType.FormattingEnabled = true;
             cmbFilterType.Items.AddRange(new object[] { "Section", "Teacher", "Room" });
-            cmbFilterType.Location = new Point(889, 7);
+            cmbFilterType.Location = new Point(801, 6);
             cmbFilterType.Name = "cmbFilterType";
             cmbFilterType.Size = new Size(121, 23);
             cmbFilterType.TabIndex = 9;
@@ -223,14 +225,14 @@
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = SystemColors.Window;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Window;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle1;
             dataGridView1.Location = new Point(6, 36);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.Size = new Size(1260, 610);
@@ -240,7 +242,7 @@
             // 
             // btnBackupDatabase
             // 
-            btnBackupDatabase.Location = new Point(1135, 7);
+            btnBackupDatabase.Location = new Point(1047, 6);
             btnBackupDatabase.Name = "btnBackupDatabase";
             btnBackupDatabase.Size = new Size(113, 23);
             btnBackupDatabase.TabIndex = 7;
@@ -251,7 +253,7 @@
             // comboBox1
             // 
             comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(1016, 7);
+            comboBox1.Location = new Point(928, 6);
             comboBox1.Name = "comboBox1";
             comboBox1.Size = new Size(113, 23);
             comboBox1.TabIndex = 6;
@@ -262,7 +264,7 @@
             tabMaster.Controls.Add(dgvMaster);
             tabMaster.Location = new Point(4, 24);
             tabMaster.Name = "tabMaster";
-            tabMaster.Size = new Size(1256, 653);
+            tabMaster.Size = new Size(1272, 692);
             tabMaster.TabIndex = 2;
             tabMaster.Text = "Master Schedule";
             tabMaster.UseVisualStyleBackColor = true;
@@ -284,7 +286,7 @@
             tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1256, 653);
+            tabPage2.Size = new Size(1272, 692);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Manage Data";
             tabPage2.UseVisualStyleBackColor = true;
@@ -300,7 +302,7 @@
             tabControl2.Multiline = true;
             tabControl2.Name = "tabControl2";
             tabControl2.SelectedIndex = 0;
-            tabControl2.Size = new Size(1250, 647);
+            tabControl2.Size = new Size(1266, 686);
             tabControl2.TabIndex = 0;
             // 
             // tabPage3
@@ -310,7 +312,7 @@
             tabPage3.Location = new Point(27, 4);
             tabPage3.Name = "tabPage3";
             tabPage3.Padding = new Padding(3);
-            tabPage3.Size = new Size(1219, 639);
+            tabPage3.Size = new Size(1235, 678);
             tabPage3.TabIndex = 0;
             tabPage3.Text = "Manage Teacher";
             tabPage3.UseVisualStyleBackColor = true;
@@ -431,7 +433,7 @@
             tabPage4.Location = new Point(27, 4);
             tabPage4.Name = "tabPage4";
             tabPage4.Padding = new Padding(3);
-            tabPage4.Size = new Size(1219, 639);
+            tabPage4.Size = new Size(1235, 678);
             tabPage4.TabIndex = 1;
             tabPage4.Text = "Manage Rooms";
             tabPage4.UseVisualStyleBackColor = true;
@@ -556,7 +558,7 @@
             tabPage5.Controls.Add(groupBox3);
             tabPage5.Location = new Point(27, 4);
             tabPage5.Name = "tabPage5";
-            tabPage5.Size = new Size(1219, 639);
+            tabPage5.Size = new Size(1235, 678);
             tabPage5.TabIndex = 2;
             tabPage5.Text = "Sections & Subjects";
             tabPage5.UseVisualStyleBackColor = true;
@@ -916,7 +918,7 @@
             tabPending.Controls.Add(dgvPending);
             tabPending.Location = new Point(4, 24);
             tabPending.Name = "tabPending";
-            tabPending.Size = new Size(1256, 653);
+            tabPending.Size = new Size(1272, 692);
             tabPending.TabIndex = 3;
             tabPending.Text = "Pending Subjects";
             tabPending.UseVisualStyleBackColor = true;
@@ -965,6 +967,22 @@
             // 
             ctxMenuSchedule.Name = "ctxMenuSchedule";
             ctxMenuSchedule.Size = new Size(61, 4);
+            // 
+            // btnClose
+            // 
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnClose.BackColor = Color.Transparent;
+            btnClose.Cursor = Cursors.Hand;
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatStyle = FlatStyle.Flat;
+            btnClose.ForeColor = Color.Black;
+            btnClose.Location = new Point(1231, 3);
+            btnClose.Name = "btnClose";
+            btnClose.Size = new Size(35, 30);
+            btnClose.TabIndex = 13;
+            btnClose.Text = "✕";
+            btnClose.UseVisualStyleBackColor = false;
+            btnClose.Click += btnClose_Click;
             // 
             // AdminDashboard
             // 
@@ -1087,5 +1105,6 @@
         private Button btnFindSlots;
         private Button btnExportPdf;
         private Button btnRestoreDatabase;
+        private Button btnClose;
     }
 }

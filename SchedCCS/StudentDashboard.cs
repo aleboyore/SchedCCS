@@ -25,13 +25,12 @@ namespace SchedCCS
             InitializeComponent();
             currentUser = user;
 
-            // 1. Initialize UI & Map FIRST (Safe)
+            // 1. Initialize UI components and Map first (Safe)
             InitializeDashboardUI();
-            InitializeMapHotspots(); // <--- MOVED UP (Was at bottom)
+            InitializeMapHotspots();
             InitializeSettingsUI();
 
-            // 2. Load Data SECOND (Risky)
-            // Wrap in try-catch so it doesn't break the whole form if data is missing
+            // 2. Load Data (Database dependency)
             try
             {
                 SetupGrid();
@@ -47,77 +46,13 @@ namespace SchedCCS
         {
             try
             {
-                // Update Sidebar Name
                 Control lbl = this.Controls.Find("lblStudentName", true).FirstOrDefault();
                 if (lbl != null) lbl.Text = currentUser.FullName;
 
-                // Set Default Title
                 UpdatePageTitle("Dashboard Home");
+                ShowView(pnlViewHome); // Default View
             }
-            catch { /* Suppress minor UI lookup errors during initialization */ }
-        }
-
-        private void InitializeMapHotspots()
-        {
-            // --- BUILDING A ROOMS ---
-            SetupMapHotspot(pic_LEC9);
-            SetupMapHotspot(pic_LEC10);
-            SetupMapHotspot(pic_FACULTY); // Special
-            SetupMapHotspot(pic_LEC11);
-            SetupMapHotspot(pic_LEC12);
-            SetupMapHotspot(pic_LEC4);
-            SetupMapHotspot(pic_LEC5);
-            SetupMapHotspot(pic_LEC6);
-            SetupMapHotspot(pic_LEC7);
-            SetupMapHotspot(pic_LEC8);
-            SetupMapHotspot(pic_DEAN);    // Special
-            SetupMapHotspot(pic_ACCRED);  // Special
-            SetupMapHotspot(pic_LEC2);
-            SetupMapHotspot(pic_LEC3);
-            SetupMapHotspot(pic_OCTA);    // Special
-
-            // --- BUILDING B ROOMS ---
-            SetupMapHotspot(pic_LAB1);
-            SetupMapHotspot(pic_LAB2);
-            SetupMapHotspot(pic_LAB3);
-            SetupMapHotspot(pic_LAB4);
-            SetupMapHotspot(pic_UnK);     // Special ("Unknown" or "Storage")
-            SetupMapHotspot(pic_LEC1);
-            SetupMapHotspot(pic_LAB5);
-            SetupMapHotspot(pic_LAB6);
-
-            // Set Initial Map State
-            if (cmbBuilding.Items.Count > 0)
-            {
-                cmbBuilding.SelectedIndex = 0;
-            }
-        }
-
-        private void SetupMapHotspot(PictureBox hotspot)
-        {
-            if (hotspot == null) return;
-
-            // 1. FORCE VISIBILITY (The Fix)
-            // Just in case they were hidden in the properties window
-            hotspot.Visible = true;
-            hotspot.BringToFront();
-
-            // 2. Transparency
-            hotspot.BackColor = System.Drawing.Color.Transparent;
-
-            // 3. Tooltip
-            string roomName = hotspot.Tag?.ToString() ?? "Unknown Room";
-            toolTip1.SetToolTip(hotspot, roomName);
-
-            // 4. Wire Events (Safety: Remove before adding to prevent duplicates)
-            hotspot.Click -= Room_Click;
-            hotspot.Click += Room_Click;
-
-            hotspot.MouseEnter -= Room_MouseEnter;
-            hotspot.MouseEnter += Room_MouseEnter;
-
-            hotspot.MouseLeave -= Room_MouseLeave;
-            hotspot.MouseLeave += Room_MouseLeave;
+            catch { }
         }
 
         #endregion
@@ -152,7 +87,6 @@ namespace SchedCCS
             UpdatePageTitle("Account Settings");
             ShowView(pnlViewSettings);
 
-            // Pre-fill current user data
             txtEditName.Text = currentUser.FullName;
             txtEditPass.Text = currentUser.Password;
             txtEditConfirm.Text = currentUser.Password;
@@ -166,6 +100,26 @@ namespace SchedCCS
             }
         }
 
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you want to exit the application?", "Exit", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                Application.Exit();
+            }
+        }
+
+        private void btnClose_MouseEnter(object sender, EventArgs e)
+        {
+            btnClose.BackColor = System.Drawing.Color.Red;
+            btnClose.ForeColor = System.Drawing.Color.White;
+        }
+
+        private void btnClose_MouseLeave(object sender, EventArgs e)
+        {
+            btnClose.BackColor = System.Drawing.Color.Transparent;
+            btnClose.ForeColor = System.Drawing.Color.Black;
+        }
+
         private void UpdatePageTitle(string titleText)
         {
             Control title = this.Controls.Find("lblPageTitle", true).FirstOrDefault();
@@ -175,6 +129,44 @@ namespace SchedCCS
         #endregion
 
         #region 3. Map Interaction Logic
+
+        private void InitializeMapHotspots()
+        {
+            // Building A
+            SetupMapHotspot(pic_LEC9); SetupMapHotspot(pic_LEC10); SetupMapHotspot(pic_FACULTY);
+            SetupMapHotspot(pic_LEC11); SetupMapHotspot(pic_LEC12); SetupMapHotspot(pic_LEC4);
+            SetupMapHotspot(pic_LEC5); SetupMapHotspot(pic_LEC6); SetupMapHotspot(pic_LEC7);
+            SetupMapHotspot(pic_LEC8); SetupMapHotspot(pic_DEAN); SetupMapHotspot(pic_ACCRED);
+            SetupMapHotspot(pic_LEC2); SetupMapHotspot(pic_LEC3); SetupMapHotspot(pic_OCTA);
+
+            // Building B
+            SetupMapHotspot(pic_LAB1); SetupMapHotspot(pic_LAB2); SetupMapHotspot(pic_LAB3);
+            SetupMapHotspot(pic_LAB4); SetupMapHotspot(pic_UnK); SetupMapHotspot(pic_LEC1);
+            SetupMapHotspot(pic_LAB5); SetupMapHotspot(pic_LAB6);
+
+            if (cmbBuilding.Items.Count > 0) cmbBuilding.SelectedIndex = 0;
+        }
+
+        private void SetupMapHotspot(PictureBox hotspot)
+        {
+            if (hotspot == null) return;
+
+            hotspot.Visible = true;
+            hotspot.BringToFront();
+            hotspot.BackColor = System.Drawing.Color.Transparent;
+
+            string roomName = hotspot.Tag?.ToString() ?? "Unknown Room";
+            toolTip1.SetToolTip(hotspot, roomName);
+
+            hotspot.Click -= Room_Click;
+            hotspot.Click += Room_Click;
+
+            hotspot.MouseEnter -= Room_MouseEnter;
+            hotspot.MouseEnter += Room_MouseEnter;
+
+            hotspot.MouseLeave -= Room_MouseLeave;
+            hotspot.MouseLeave += Room_MouseLeave;
+        }
 
         private void cmbBuilding_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -186,38 +178,31 @@ namespace SchedCCS
             {
                 pnlBuildingA.Visible = true;
                 pnlBuildingB.Visible = false;
-
                 pnlBuildingA.BringToFront();
-                cmbBuilding.BringToFront(); // <--- ADD THIS: Force the box to stay on top of the panel
+                cmbBuilding.BringToFront();
             }
             else if (selected == "Building B")
             {
                 pnlBuildingB.Visible = true;
                 pnlBuildingA.Visible = false;
-
                 pnlBuildingB.BringToFront();
-                cmbBuilding.BringToFront(); // <--- ADD THIS HERE TOO
+                cmbBuilding.BringToFront();
             }
         }
-
 
         private void Room_Click(object sender, EventArgs e)
         {
             PictureBox clickedSpot = (PictureBox)sender;
-            string rawTag = clickedSpot.Tag?.ToString(); // e.g. "Laboratory Room 1" or "Dean's Office"
+            string rawTag = clickedSpot.Tag?.ToString();
 
             if (string.IsNullOrEmpty(rawTag)) return;
 
-            // --- STEP 1: HANDLE SPECIAL ROOMS (No Schedule) ---
-            // We check for keywords. If found, show a popup and STOP.
             string upperTag = rawTag.ToUpper();
 
-            if (upperTag.Contains("FACULTY") ||
-                upperTag.Contains("DEAN") ||
-                upperTag.Contains("ACCRED") ||
-                upperTag.Contains("OCTA") ||
-                upperTag.Contains("UNKNOWN") ||
-                upperTag.Contains("STORAGE") ||
+            // Special Room Handling
+            if (upperTag.Contains("FACULTY") || upperTag.Contains("DEAN") ||
+                upperTag.Contains("ACCRED") || upperTag.Contains("OCTA") ||
+                upperTag.Contains("UNKNOWN") || upperTag.Contains("STORAGE") ||
                 upperTag.Contains("OFFICE"))
             {
                 string msg = "";
@@ -227,28 +212,16 @@ namespace SchedCCS
                 else msg = $"{rawTag}\n(Restricted Area)";
 
                 MessageBox.Show(msg, "Room Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return; // Stop here! Don't try to load a schedule.
+                return;
             }
 
-            // --- STEP 2: TRANSLATE TAG TO DB CODE (The Fix) ---
-            // Convert "Laboratory Room 1" -> "LAB 1"
-            // Convert "Lecture Room 5" -> "LEC 5"
-
-            string dbRoomName = rawTag; // Default to whatever is there
-
-            // logic: If it contains the long word, replace it with the short code
+            // Normalize Tag to Database Code
+            string dbRoomName = rawTag;
             if (dbRoomName.Contains("Laboratory Room"))
-            {
                 dbRoomName = dbRoomName.Replace("Laboratory Room", "LAB").Trim();
-            }
             else if (dbRoomName.Contains("Lecture Room"))
-            {
                 dbRoomName = dbRoomName.Replace("Lecture Room", "LEC").Trim();
-            }
-            // If it's already "LEC 1", the code above does nothing, which is fine.
 
-            // --- STEP 3: OPEN SCHEDULE ---
-            // Now we pass the cleaned-up name ("LAB 1") to the form
             using (RoomScheduleForm popup = new RoomScheduleForm(dbRoomName))
             {
                 popup.ShowDialog();
@@ -258,7 +231,7 @@ namespace SchedCCS
         private void Room_MouseEnter(object sender, EventArgs e)
         {
             PictureBox p = (PictureBox)sender;
-            p.BackColor = System.Drawing.Color.FromArgb(100, 255, 255, 0); // Highlight Yellow
+            p.BackColor = System.Drawing.Color.FromArgb(100, 255, 255, 0);
         }
 
         private void Room_MouseLeave(object sender, EventArgs e)
@@ -278,17 +251,15 @@ namespace SchedCCS
             string[] days = { "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" };
             foreach (var d in days) dgvStudentSchedule.Columns.Add(d, d);
 
-            // Grid Styling
             dgvStudentSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvStudentSchedule.Columns["Time"].FillWeight = 60;
             dgvStudentSchedule.ScrollBars = ScrollBars.None;
-            dgvStudentSchedule.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 7.5F, FontStyle.Regular);
-            dgvStudentSchedule.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 8F, FontStyle.Bold);
+            dgvStudentSchedule.DefaultCellStyle.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular);
+            dgvStudentSchedule.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             dgvStudentSchedule.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvStudentSchedule.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvStudentSchedule.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
 
-            // Dynamic Height Calculation
             int availableHeight = dgvStudentSchedule.Height - dgvStudentSchedule.ColumnHeadersHeight;
             int exactRowHeight = availableHeight / 11;
 
@@ -298,11 +269,8 @@ namespace SchedCCS
             dgvStudentSchedule.RowHeadersVisible = false;
 
             foreach (DataGridViewColumn col in dgvStudentSchedule.Columns)
-            {
                 col.SortMode = DataGridViewColumnSortMode.NotSortable;
-            }
 
-            // Generate Rows (7:00 AM - 6:00 PM)
             for (int i = 7; i < 18; i++)
             {
                 string timeLabel = ToSimple12Hour($"{i}:00 - {i + 1}:00");
@@ -315,7 +283,6 @@ namespace SchedCCS
         {
             System.Drawing.Color defaultColor = System.Drawing.Color.White;
 
-            // Check if data exists
             if (DataManager.MasterSchedule.Count == 0)
             {
                 dgvStudentSchedule.Visible = false;
@@ -330,7 +297,6 @@ namespace SchedCCS
                 if (lbl != null) lbl.Visible = false;
             }
 
-            // Clear Grid Content
             foreach (DataGridViewRow row in dgvStudentSchedule.Rows)
                 for (int c = 1; c < 8; c++)
                 {
@@ -338,21 +304,17 @@ namespace SchedCCS
                     row.Cells[c].Style.BackColor = defaultColor;
                 }
 
-            // Filter Data
             var myClasses = DataManager.MasterSchedule
                 .Where(x => x.Section == currentUser.StudentSection)
                 .ToList();
 
-            // Populate Grid
             foreach (var item in myClasses)
             {
                 int startHour = int.Parse(item.Time.Split(':')[0]);
                 int rowIndex = startHour - 7;
+                int colIndex = GetDayColumnIndex(item.Day);
 
-                int colIndex = 0;
-                switch (item.Day) { case "Mon": colIndex = 1; break; case "Tue": colIndex = 2; break; case "Wed": colIndex = 3; break; case "Thu": colIndex = 4; break; case "Fri": colIndex = 5; break; case "Sat": colIndex = 6; break; case "Sun": colIndex = 7; break; }
-
-                if (rowIndex >= 0 && rowIndex < dgvStudentSchedule.Rows.Count)
+                if (rowIndex >= 0 && rowIndex < dgvStudentSchedule.Rows.Count && colIndex > 0)
                 {
                     dgvStudentSchedule.Rows[rowIndex].Cells[colIndex].Value = $"{item.Subject}\n{item.Teacher}\n{item.Room}";
 
@@ -377,54 +339,43 @@ namespace SchedCCS
 
         #endregion
 
-        #region 5. Account Settings (Improved)
+        #region 5. Account Settings Logic
 
-        // 1. INITIALIZATION: Lock everything down
         private void InitializeSettingsUI()
         {
-            // Lock fields
             txtEditName.ReadOnly = true;
             txtEditPass.ReadOnly = true;
             txtEditConfirm.ReadOnly = true;
 
-            // Gray background to indicate disabled state
-            txtEditName.BackColor = System.Drawing.SystemColors.Control;
-            txtEditPass.BackColor = System.Drawing.SystemColors.Control;
-            txtEditConfirm.BackColor = System.Drawing.SystemColors.Control;
+            txtEditName.BackColor = SystemColors.Control;
+            txtEditPass.BackColor = SystemColors.Control;
+            txtEditConfirm.BackColor = SystemColors.Control;
 
-            // Button States
             btnEdit.Visible = true;
-            btnSaveChanges.Visible = false; // Hide Save until they click Edit
+            btnSaveChanges.Visible = false;
             btnEdit.Text = "Edit Info";
 
-            // Security
             txtEditPass.UseSystemPasswordChar = true;
             txtEditConfirm.UseSystemPasswordChar = true;
         }
 
-        // 2. THE "EDIT" BUTTON TOGGLE
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            bool isEditing = !txtEditName.ReadOnly; // Check current state
+            bool isEditing = !txtEditName.ReadOnly;
 
             if (isEditing)
             {
-                // CANCEL EDITING (Revert)
                 InitializeSettingsUI();
-
-                // Restore original values (So they don't lose the old data visually)
                 txtEditName.Text = currentUser.FullName;
                 txtEditPass.Text = currentUser.Password;
                 txtEditConfirm.Text = currentUser.Password;
             }
             else
             {
-                // START EDITING (Unlock)
                 txtEditName.ReadOnly = false;
                 txtEditPass.ReadOnly = false;
                 txtEditConfirm.ReadOnly = false;
 
-                // White background for editing
                 txtEditName.BackColor = System.Drawing.Color.White;
                 txtEditPass.BackColor = System.Drawing.Color.White;
                 txtEditConfirm.BackColor = System.Drawing.Color.White;
@@ -434,16 +385,12 @@ namespace SchedCCS
             }
         }
 
-        // 3. THE "SHOW PASSWORD" CHECKBOX
         private void chkShowPass_CheckedChanged(object sender, EventArgs e)
         {
-            // If Checked -> Show Text (UseSystemPasswordChar = false)
-            // If Unchecked -> Show Dots (UseSystemPasswordChar = true)
             txtEditPass.UseSystemPasswordChar = !chkShowPass.Checked;
             txtEditConfirm.UseSystemPasswordChar = !chkShowPass.Checked;
         }
 
-        // 4. SAVE LOGIC (With Validation)
         private void btnSaveChanges_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtEditName.Text))
@@ -458,24 +405,19 @@ namespace SchedCCS
                 return;
             }
 
-            // Update Database/Memory
             var userInDb = DataManager.Users.FirstOrDefault(u => u.Username == currentUser.Username);
             if (userInDb != null)
             {
                 userInDb.FullName = txtEditName.Text;
                 userInDb.Password = txtEditPass.Text;
 
-                // Update Local Current User
                 currentUser.FullName = txtEditName.Text;
                 currentUser.Password = txtEditPass.Text;
 
-                // Update Sidebar Label
                 Control lbl = this.Controls.Find("lblStudentName", true).FirstOrDefault();
                 if (lbl != null) lbl.Text = currentUser.FullName;
 
                 MessageBox.Show("Account updated successfully!");
-
-                // Lock fields again after saving
                 InitializeSettingsUI();
             }
         }
@@ -496,12 +438,11 @@ namespace SchedCCS
                 {
                     PdfWriter writer = new PdfWriter(save.FileName);
                     PdfDocument pdf = new PdfDocument(writer);
-                    pdf.SetDefaultPageSize(PageSize.A4.Rotate());
+                    pdf.SetDefaultPageSize(iText.Kernel.Geom.PageSize.A4.Rotate());
 
                     Document document = new Document(pdf);
                     document.SetMargins(15, 20, 10, 20);
 
-                    // Add Content using Helper Methods
                     document.Add(GeneratePdfHeader());
                     document.Add(GenerateStudentInfoTable());
                     document.Add(GenerateScheduleTable());
@@ -515,7 +456,6 @@ namespace SchedCCS
             }
         }
 
-        // Helper: Generates the official university header
         private Paragraph GeneratePdfHeader()
         {
             return new Paragraph()
@@ -530,7 +470,6 @@ namespace SchedCCS
                 .Add("First Semester, Academic Year 2025-2026");
         }
 
-        // Helper: Generates the student details block
         private Table GenerateStudentInfoTable()
         {
             string section = currentUser.StudentSection;
@@ -550,14 +489,12 @@ namespace SchedCCS
             return infoTable;
         }
 
-        // Helper: Generates the main schedule grid with colors
         private Table GenerateScheduleTable()
         {
             float[] colWidths = { 1.2f, 2, 2, 2, 2, 2, 2, 2 };
             Table table = new Table(UnitValue.CreatePercentArray(colWidths));
             table.SetWidth(UnitValue.CreatePercentValue(100));
 
-            // Headers
             string[] headers = { "TIME", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" };
             foreach (string h in headers)
             {
@@ -568,14 +505,13 @@ namespace SchedCCS
                     .SetPadding(0).SetHeight(15));
             }
 
-            // Rows
             foreach (DataGridViewRow row in dgvStudentSchedule.Rows)
             {
                 string niceTime = ToSimple12Hour(row.Cells[0].Value?.ToString() ?? "");
                 table.AddCell(new Cell().Add(new Paragraph(niceTime).SetFontSize(7).SetBold())
                     .SetTextAlignment(TextAlignment.CENTER).SetVerticalAlignment(VerticalAlignment.MIDDLE).SetPadding(0).SetHeight(25));
 
-                for (int i = 1; i < 7; i++)
+                for (int i = 1; i < 8; i++)
                 {
                     string content = row.Cells[i].Value?.ToString() ?? "";
                     Cell dataCell = new Cell().Add(new Paragraph(content).SetFontSize(7).SetMultipliedLeading(0.9f));
@@ -589,12 +525,10 @@ namespace SchedCCS
                     }
                     table.AddCell(dataCell);
                 }
-                table.AddCell(new Cell().SetHeight(25)); // Sunday
             }
             return table;
         }
 
-        // Helper: Generates signatures footer
         private Table GeneratePdfFooter()
         {
             Table footerTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1 }));
@@ -612,7 +546,22 @@ namespace SchedCCS
 
         #endregion
 
-        #region 7. Formatting Helpers
+        #region 7. Helpers
+
+        private int GetDayColumnIndex(string day)
+        {
+            switch (day)
+            {
+                case "Mon": return 1;
+                case "Tue": return 2;
+                case "Wed": return 3;
+                case "Thu": return 4;
+                case "Fri": return 5;
+                case "Sat": return 6;
+                case "Sun": return 7;
+                default: return 0;
+            }
+        }
 
         private string ToSimple12Hour(string timeRange)
         {

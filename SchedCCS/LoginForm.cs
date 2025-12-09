@@ -15,14 +15,13 @@ namespace SchedCCS
 
         #endregion
 
-        #region 2. Event Handlers
+        #region 2. UI Event Handlers
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
             string inputID = txtStudentID.Text;
             string inputPass = txtPassword.Text;
 
-            // Attempt to retrieve user from DataManager
             var user = AuthenticateUser(inputID, inputPass);
 
             if (user != null)
@@ -41,17 +40,36 @@ namespace SchedCCS
             OpenRegistration();
         }
 
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void btnClose_MouseEnter(object sender, EventArgs e)
+        {
+            btnClose.BackColor = System.Drawing.Color.Red;
+            btnClose.ForeColor = System.Drawing.Color.White;
+        }
+
+        private void btnClose_MouseLeave(object sender, EventArgs e)
+        {
+            btnClose.BackColor = System.Drawing.Color.Transparent;
+            btnClose.ForeColor = System.Drawing.Color.Black;
+        }
+
         #endregion
 
-        #region 3. Helper Methods
+        #region 3. Authentication Logic
 
-        // Validates credentials against the in-memory user list
         private User AuthenticateUser(string username, string password)
         {
             return DataManager.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
         }
 
-        // Directs the user to the appropriate dashboard based on role
+        #endregion
+
+        #region 4. Navigation & State Management
+
         private void ProceedToDashboard(User user)
         {
             this.Hide();
@@ -59,31 +77,23 @@ namespace SchedCCS
             if (user.Role == "Admin")
             {
                 MessageBox.Show("Welcome, Admin!");
-
                 using (AdminDashboard adminPage = new AdminDashboard())
                 {
-                    // ShowDialog pauses execution here until the dashboard closes
                     adminPage.ShowDialog();
                 }
-
-                // Security: Wipe all fields on Admin logout
                 ClearFields(wipeUsername: true);
             }
             else
             {
                 MessageBox.Show($"Welcome, {user.FullName}!");
-
-                // Pass the specific User object to the Student Dashboard context
                 using (StudentDashboard studentPage = new StudentDashboard(user))
                 {
                     studentPage.ShowDialog();
                 }
-
-                // UX: Keep Student ID populated for convenience on logout
                 ClearFields(wipeUsername: false);
             }
 
-            this.Show(); // Re-open Login window
+            this.Show();
         }
 
         private void OpenRegistration()

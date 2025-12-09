@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Windows.Forms;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SchedCCS
 {
@@ -16,9 +16,39 @@ namespace SchedCCS
 
         #endregion
 
-        #region 2. Core Logic
+        #region 2. UI Event Handlers
 
-        // Retrieves available sections from the DataManager and populates the ComboBox.
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+            RegisterStudent();
+        }
+
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void btnClose_MouseEnter(object sender, EventArgs e)
+        {
+            btnClose.BackColor = System.Drawing.Color.Red;
+            btnClose.ForeColor = System.Drawing.Color.White;
+        }
+
+        private void btnClose_MouseLeave(object sender, EventArgs e)
+        {
+            btnClose.BackColor = System.Drawing.Color.Transparent;
+            btnClose.ForeColor = System.Drawing.Color.Black;
+        }
+
+        #endregion
+
+        #region 3. Core Logic & Helpers
+
         private void PopulateSectionDropdown()
         {
             cmbSection.Items.Clear();
@@ -32,14 +62,13 @@ namespace SchedCCS
             }
             else
             {
-                MessageBox.Show("No sections found. Administrator action required to generate data.");
+                MessageBox.Show("No sections available. Please contact Administrator.");
             }
         }
 
-        // Validates input fields and creates a new Student entity.
         private void RegisterStudent()
         {
-            // 1. Validate required text fields
+            // Validate required fields
             if (string.IsNullOrWhiteSpace(txtFirstName.Text) ||
                 string.IsNullOrWhiteSpace(txtLastName.Text) ||
                 string.IsNullOrWhiteSpace(txtStudentID.Text))
@@ -48,29 +77,29 @@ namespace SchedCCS
                 return;
             }
 
-            // 2. Validate section selection
+            // Validate section selection
             if (cmbSection.SelectedItem == null)
             {
                 MessageBox.Show("Please select a section.");
                 return;
             }
 
-            // 3. Validate password matching
+            // Validate password matching
             if (txtPassword.Text != txtConfirm.Text)
             {
                 MessageBox.Show("Passwords do not match.");
                 return;
             }
 
-            // 4. Check for duplicate Student ID
+            // Check for duplicate Student ID
             bool userExists = DataManager.Users.Any(u => u.Username == txtStudentID.Text);
             if (userExists)
             {
-                MessageBox.Show("The provided Student ID is already registered.");
+                MessageBox.Show("Student ID is already registered.");
                 return;
             }
 
-            // 5. Create and persist new User object
+            // Create and persist new User
             User newUser = new User
             {
                 Username = txtStudentID.Text,
@@ -83,20 +112,6 @@ namespace SchedCCS
             DataManager.Users.Add(newUser);
             MessageBox.Show("Account created successfully. Please login.");
 
-            this.Close();
-        }
-
-        #endregion
-
-        #region 3. Event Handlers
-
-        private void btnRegister_Click(object sender, EventArgs e)
-        {
-            RegisterStudent();
-        }
-
-        private void btnBack_Click(object sender, EventArgs e)
-        {
             this.Close();
         }
 

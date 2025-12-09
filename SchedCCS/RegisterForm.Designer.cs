@@ -43,6 +43,7 @@
             cmbSection = new ComboBox();
             btnRegister = new Button();
             btnBack = new Button();
+            btnClose = new Button();
             SuspendLayout();
             // 
             // label1
@@ -173,11 +174,28 @@
             btnBack.UseVisualStyleBackColor = true;
             btnBack.Click += btnBack_Click;
             // 
+            // btnClose
+            // 
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnClose.BackColor = Color.Transparent;
+            btnClose.Cursor = Cursors.Hand;
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatStyle = FlatStyle.Flat;
+            btnClose.ForeColor = Color.Black;
+            btnClose.Location = new Point(1233, 12);
+            btnClose.Name = "btnClose";
+            btnClose.Size = new Size(35, 30);
+            btnClose.TabIndex = 15;
+            btnClose.Text = "✕";
+            btnClose.UseVisualStyleBackColor = false;
+            btnClose.Click += btnClose_Click;
+            // 
             // RegisterForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1280, 720);
+            Controls.Add(btnClose);
             Controls.Add(btnBack);
             Controls.Add(btnRegister);
             Controls.Add(cmbSection);
@@ -218,5 +236,6 @@
         private ComboBox cmbSection;
         private Button btnRegister;
         private Button btnBack;
+        private Button btnClose;
     }
 }

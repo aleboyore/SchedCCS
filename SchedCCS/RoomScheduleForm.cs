@@ -17,66 +17,59 @@ namespace SchedCCS
             InitializeComponent();
             _targetRoom = roomName;
 
-            // Set window title
+            // Update UI Title
             lblRoomName.Text = $"Schedule: {_targetRoom}";
 
-            // Initialize UI and Data
+            // Build Grid and Load Data
             SetupGrid();
             LoadRoomSchedule();
 
-            // Subscribe to events
+            // Wire events
             this.Resize += new EventHandler(RoomScheduleForm_Resize);
         }
 
         #endregion
 
-        #region 2. UI Setup & Styling
+        #region 2. UI Configuration
 
-        // Configures the DataGridView columns, rows, and visual styles.
         private void SetupGrid()
         {
-            // Reset grid state
+            // Clear previous structure
             dgvRoomSchedule.Columns.Clear();
             dgvRoomSchedule.Rows.Clear();
 
-            // Define columns
+            // Define Columns
             dgvRoomSchedule.Columns.Add("Time", "TIME");
             string[] days = { "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" };
             foreach (var d in days) dgvRoomSchedule.Columns.Add(d, d);
 
-            // Apply visual styling
+            // Styling Configuration
             dgvRoomSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvRoomSchedule.Columns["Time"].FillWeight = 60;
             dgvRoomSchedule.ScrollBars = ScrollBars.None;
 
-            dgvRoomSchedule.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 7.5F, FontStyle.Regular);
-            dgvRoomSchedule.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 8F, FontStyle.Bold);
+            dgvRoomSchedule.DefaultCellStyle.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular);
+            dgvRoomSchedule.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             dgvRoomSchedule.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvRoomSchedule.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvRoomSchedule.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
 
-            // Calculate dynamic row height to fill the screen
-            int availableHeight = dgvRoomSchedule.Height - dgvRoomSchedule.ColumnHeadersHeight;
-            int exactRowHeight = availableHeight / 11; // 11 Rows (7am - 6pm)
-
-            // Prevent rows from becoming too small on small screens
-            if (exactRowHeight < 20) exactRowHeight = 20;
-
-            // Lock row height
-            dgvRoomSchedule.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
-            dgvRoomSchedule.RowTemplate.Height = exactRowHeight;
-
-            // Disable user interaction for structure
             dgvRoomSchedule.AllowUserToAddRows = false;
             dgvRoomSchedule.RowHeadersVisible = false;
 
-            // Disable column sorting
-            foreach (DataGridViewColumn col in dgvRoomSchedule.Columns)
-            {
-                col.SortMode = DataGridViewColumnSortMode.NotSortable;
-            }
+            // Dynamic Layout Calculation
+            int availableHeight = dgvRoomSchedule.Height - dgvRoomSchedule.ColumnHeadersHeight;
+            int exactRowHeight = availableHeight / 11;
+            if (exactRowHeight < 20) exactRowHeight = 20;
 
-            // Populate Time Rows
+            dgvRoomSchedule.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+            dgvRoomSchedule.RowTemplate.Height = exactRowHeight;
+
+            // Lock sorting
+            foreach (DataGridViewColumn col in dgvRoomSchedule.Columns)
+                col.SortMode = DataGridViewColumnSortMode.NotSortable;
+
+            // Generate Time Slots (7am - 6pm)
             for (int i = 7; i < 18; i++)
             {
                 string timeLabel = ToSimple12Hour($"{i}:00 - {i + 1}:00");
@@ -87,45 +80,31 @@ namespace SchedCCS
 
         #endregion
 
-        #region 3. Data Logic
+        #region 3. Data Loading Logic
 
-        // Retrieves data from the DataManager and populates the grid cells.
         private void LoadRoomSchedule()
         {
-            // Accessing global data without exposing internal list implementation
+            // Robust Search: Ignore casing and spaces to prevent mismatches
             var roomClasses = DataManager.MasterSchedule
-                .Where(x => x.Room == _targetRoom).ToList();
+                .Where(s => s.Room.Trim().ToUpper() == _targetRoom.Trim().ToUpper())
+                .ToList();
 
             foreach (var item in roomClasses)
             {
-                // Parse time to find correct row index
                 int startHour = int.Parse(item.Time.Split(':')[0]);
                 int rowIndex = startHour - 7;
+                int colIndex = GetDayColumnIndex(item.Day);
 
-                // Map day string to column index
-                int colIndex = 0;
-                switch (item.Day)
+                if (rowIndex >= 0 && rowIndex < dgvRoomSchedule.Rows.Count && colIndex > 0)
                 {
-                    case "Mon": colIndex = 1; break;
-                    case "Tue": colIndex = 2; break;
-                    case "Wed": colIndex = 3; break;
-                    case "Thu": colIndex = 4; break;
-                    case "Fri": colIndex = 5; break;
-                    case "Sat": colIndex = 6; break;
-                    case "Sun": colIndex = 7; break;
-                }
+                    var cell = dgvRoomSchedule.Rows[rowIndex].Cells[colIndex];
+                    cell.Value = $"{item.Subject}\n{item.Section}\n{item.Teacher}";
 
-                // Populate cell if indices are valid
-                if (rowIndex >= 0 && rowIndex < dgvRoomSchedule.Rows.Count)
-                {
-                    dgvRoomSchedule.Rows[rowIndex].Cells[colIndex].Value =
-                        $"{item.Subject}\n{item.Section}\n{item.Teacher}";
-
-                    // Apply Color Coding
+                    // Color Coding Logic
                     if (item.Subject.Contains("(Lab)"))
-                        dgvRoomSchedule.Rows[rowIndex].Cells[colIndex].Style.BackColor = Color.LightSalmon;
+                        cell.Style.BackColor = Color.LightSalmon;
                     else
-                        dgvRoomSchedule.Rows[rowIndex].Cells[colIndex].Style.BackColor = GetSubjectColor(item.Subject);
+                        cell.Style.BackColor = GetSubjectColor(item.Subject);
                 }
             }
             dgvRoomSchedule.ClearSelection();
@@ -135,7 +114,21 @@ namespace SchedCCS
 
         #region 4. Helper Methods
 
-        // Converts 24-hour time string to 12-hour format.
+        private int GetDayColumnIndex(string day)
+        {
+            switch (day)
+            {
+                case "Mon": return 1;
+                case "Tue": return 2;
+                case "Wed": return 3;
+                case "Thu": return 4;
+                case "Fri": return 5;
+                case "Sat": return 6;
+                case "Sun": return 7;
+                default: return 0;
+            }
+        }
+
         private string ToSimple12Hour(string timeRange)
         {
             try
@@ -148,18 +141,12 @@ namespace SchedCCS
             catch { return timeRange; }
         }
 
-        // Generates a consistent color based on the subject name hash.
         private Color GetSubjectColor(string subjectName)
         {
             string baseName = subjectName.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
             int seed = baseName.GetHashCode();
             Random r = new Random(seed);
-
-            // Use high values (160-255) for pastel colors
-            int red = r.Next(160, 255);
-            int green = r.Next(160, 255);
-            int blue = r.Next(160, 255);
-            return Color.FromArgb(red, green, blue);
+            return Color.FromArgb(r.Next(160, 255), r.Next(160, 255), r.Next(160, 255));
         }
 
         #endregion
@@ -168,9 +155,7 @@ namespace SchedCCS
 
         private void RoomScheduleForm_Resize(object sender, EventArgs e)
         {
-            // Check if window is minimized to prevent calculation errors
             if (this.WindowState == FormWindowState.Minimized) return;
-
             SetupGrid();
             LoadRoomSchedule();
         }
@@ -178,6 +163,18 @@ namespace SchedCCS
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void btnClose_MouseEnter(object sender, EventArgs e)
+        {
+            btnClose.BackColor = Color.Red;
+            btnClose.ForeColor = Color.White;
+        }
+
+        private void btnClose_MouseLeave(object sender, EventArgs e)
+        {
+            btnClose.BackColor = Color.Transparent;
+            btnClose.ForeColor = Color.Black;
         }
 
         #endregion

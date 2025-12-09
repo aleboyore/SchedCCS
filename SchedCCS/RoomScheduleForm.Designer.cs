@@ -57,12 +57,18 @@
             // 
             // btnClose
             // 
-            btnClose.Location = new Point(1177, 12);
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnClose.BackColor = Color.Transparent;
+            btnClose.Cursor = Cursors.Hand;
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatStyle = FlatStyle.Flat;
+            btnClose.ForeColor = Color.Black;
+            btnClose.Location = new Point(1233, 12);
             btnClose.Name = "btnClose";
-            btnClose.Size = new Size(75, 23);
+            btnClose.Size = new Size(35, 30);
             btnClose.TabIndex = 2;
-            btnClose.Text = "Close";
-            btnClose.UseVisualStyleBackColor = true;
+            btnClose.Text = "✕";
+            btnClose.UseVisualStyleBackColor = false;
             btnClose.Click += btnClose_Click;
             // 
             // RoomScheduleForm

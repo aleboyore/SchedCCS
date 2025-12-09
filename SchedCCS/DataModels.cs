@@ -142,7 +142,7 @@ namespace SchedCCS
         public string? Room { get; set; }
         public string? Day { get; set; }
         public string? Time { get; set; }
-        public int DayIndex { get; set; }   
+        public int DayIndex { get; set; }
         public int TimeIndex { get; set; }
         public Room RoomObj { get; set; }
     }

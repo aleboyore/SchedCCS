@@ -4,21 +4,19 @@ using System.Linq;
 
 namespace SchedCCS
 {
-    // Simple entity class representing a system user
     public class User
     {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
-        public string Role { get; set; } = "Student"; // Default role
-        public string? StudentSection { get; set; } // Nullable for Admins
+        public string Role { get; set; } = "Student";
+        public string? StudentSection { get; set; }
     }
 
     public static class DataManager
     {
-        #region 1. Data Storage
+        #region 1. Data Repositories
 
-        // In-memory data repositories
         public static List<Room> Rooms { get; set; } = new List<Room>();
         public static List<Teacher> Teachers { get; set; } = new List<Teacher>();
         public static List<Section> Sections { get; set; } = new List<Section>();
@@ -26,7 +24,6 @@ namespace SchedCCS
         public static List<ScheduleItem> MasterSchedule { get; set; } = new List<ScheduleItem>();
         public static List<FailedEntry> FailedAssignments { get; set; } = new List<FailedEntry>();
 
-        // Predefined Academic Programs
         public static readonly List<string> Programs = new List<string>
         {
             "BSCS", "BSINFO", "GAV", "IS", "SMP", "WMAD", "NA"
@@ -38,7 +35,6 @@ namespace SchedCCS
 
         public static void Initialize()
         {
-            // Reset lists to prevent duplication on re-initialization
             Rooms.Clear();
             Teachers.Clear();
             Sections.Clear();
@@ -56,7 +52,7 @@ namespace SchedCCS
 
         private static void LoadUsers()
         {
-            // Default System Admin
+            // Default Admin
             Users.Add(new User
             {
                 Username = "admin",
@@ -87,18 +83,17 @@ namespace SchedCCS
 
         private static void LoadRooms()
         {
-            // Building A: Lecture Rooms (1-15)
+            // Building A (Lecture)
             for (int i = 1; i <= 15; i++)
                 Rooms.Add(new Room { Id = i, Name = $"LEC {i}", Type = RoomType.Lecture });
 
-            // Building B: Laboratory Rooms (1-10)
+            // Building B (Laboratory)
             for (int i = 1; i <= 10; i++)
                 Rooms.Add(new Room { Id = 20 + i, Name = $"LAB {i}", Type = RoomType.Laboratory });
         }
 
         private static void LoadTeachers()
         {
-            // Initialize faculty members and their qualified subjects
             AddTeacher(1, "Mr. Desamero", "ITEC 102");
             AddTeacher(2, "Mr. Funtila", "GEC 103");
             AddTeacher(3, "Ms. De Torres", "ITEC 101", "ITEL 415", "ITEP 415");
@@ -139,7 +134,7 @@ namespace SchedCCS
 
         private static void LoadSections()
         {
-            // --- 1ST YEAR BSINFO ---
+            // 1st Year BSINFO
             var info1Subjs = new[] {
                 ("ITEC 102", "Mr. Desamero"), ("GEC 103", "Mr. Funtila"), ("ITEC 101", "Ms. De Torres"),
                 ("GEC 102", "Ms. Cabreza"), ("PE 1", "Ms. Parica"), ("GEC 101", "Mr. Calosa"),
@@ -150,7 +145,7 @@ namespace SchedCCS
             CreateSection("INFO 1C", "BSINFO", 1, info1Subjs);
             CreateSection("INFO 1D", "BSINFO", 1, info1Subjs);
 
-            // --- 1ST YEAR BSCS ---
+            // 1st Year BSCS
             var cs1Subjs = new[] {
                 ("ITEC 102", "Mr. Dorado"), ("GEC 103", "Mr. Funtila"), ("ITEC 101", "Ms. Arida"),
                 ("GEC 102", "Ms. Cabreza"), ("PE 1", "Mr. Sael"), ("GEC 101", "Mr. Calosa"),
@@ -159,7 +154,7 @@ namespace SchedCCS
             CreateSection("CS 1A", "BSCS", 1, cs1Subjs);
             CreateSection("CS 1B", "BSCS", 1, cs1Subjs);
 
-            // --- 2ND YEAR BSINFO ---
+            // 2nd Year BSINFO
             var info2Subjs = new[] {
                 ("ITEC 204", "Ms. Encanto"), ("ITEL 201", "Mr. Dorado"), ("ITEP 203", "Ms. Escote"),
                 ("ITEC 205", "Mr. Amora"), ("GEC 107", "Ms. Basaca"), ("SOSLIT", "Ms. Del Valle"),
@@ -168,7 +163,7 @@ namespace SchedCCS
             CreateSection("INFO 2A", "BSINFO", 2, info2Subjs);
             CreateSection("INFO 2B", "BSINFO", 2, info2Subjs);
 
-            // Variations for INFO 2C/2D
+            // 2nd Year BSINFO Variations
             CreateSection("INFO 2C", "BSINFO", 2, new[] {
                 ("ITEC 204", "Ms. Encanto"), ("ITEL 201", "Ms. Escote"), ("ITEP 203", "Ms. Escote"),
                 ("ITEC 205", "Mr. Amora"), ("GEC 107", "Ms. Basaca"), ("SOSLIT", "Ms. Del Valle"),
@@ -180,7 +175,7 @@ namespace SchedCCS
                 ("ITEL 202", "Mr. Dungo"), ("PE 3", "Mr. Moreno")
             });
 
-            // --- 2ND YEAR BSCS ---
+            // 2nd Year BSCS
             var cs2Subjs = new[] {
                 ("CMSC 202", "Ms. Cabuyao"), ("MATH 24", "Mr. Bombio"), ("ITEC 205", "Mr. Lara"),
                 ("PE 3", "Mr. Moreno"), ("ITEC 104", "Ms. Arida"), ("SOSLIT", "Ms. Del Valle"),
@@ -189,7 +184,7 @@ namespace SchedCCS
             CreateSection("CS 2A", "BSCS", 2, cs2Subjs);
             CreateSection("CS 2B", "BSCS", 2, cs2Subjs);
 
-            // --- 3RD YEAR MAJORS ---
+            // 3rd Year Majors
             var wmad3 = new[] { ("ITEP 308", "Mr. Manaloto"), ("ITEP 310", "Mr. Manzanero"), ("ITEL 304", "Mr. Del Rosario"), ("ITST 301", "Mr. Dorado"), ("ITST 302", "Ms. Viojan"), ("ITEP 309", "Ms. Viojan") };
             CreateSection("3WMAD1", "WMAD", 3, wmad3);
             CreateSection("3WMAD2", "WMAD", 3, wmad3);
@@ -207,7 +202,7 @@ namespace SchedCCS
 
             CreateSection("3GAV1", "GAV", 3, new[] { ("CMSC 305", "Ms. Ompangco"), ("CMSC 309", "Ms. Castillo"), ("CMSC 310", "Mr. Ilagan"), ("CSST 102", "Mr. Lara"), ("CSST 101", "Ms. Arida"), ("CMSC 306", "Ms. Cabuyao"), ("CMSC 307", "Ms. Arida"), ("CMSC 308", "Ms. Ompangco") });
 
-            // --- 4TH YEAR MAJORS ---
+            // 4th Year Majors
             CreateSection("4WMAD1", "WMAD", 4, new[] { ("ITEP 413", "Engr. Santos"), ("ITST 306", "Ms. Encanto"), ("ITEP 414", "Mr. Ual"), ("ITEP 415", "Mr. Dela Cruz") });
             CreateSection("4WMAD2", "WMAD", 4, new[] { ("ITEP 413", "Engr. Santos"), ("ITST 306", "Ms. Cabuyao"), ("ITEP 414", "Mr. Ual"), ("ITEP 415", "Mr. Dela Cruz") });
             CreateSection("4WMAD3", "WMAD", 4, new[] { ("ITEP 413", "Engr. Santos"), ("ITST 306", "Mr. Amora"), ("ITEP 414", "Mr. Ual"), ("ITEP 415", "Ms. De Torres") });
@@ -249,7 +244,7 @@ namespace SchedCCS
 
                 bool isPE = code.StartsWith("PE") || code.StartsWith("PATHFIT");
 
-                // Auto-Assign Qualification to Teacher (Smart Loading)
+                // Smart Teacher Qualification Assignment
                 var teacher = Teachers.FirstOrDefault(t => t.Name.ToUpper().Contains(teacherName.ToUpper().Split(' ').Last()));
                 if (teacher != null)
                 {
@@ -261,14 +256,14 @@ namespace SchedCCS
                     }
                 }
 
-                // Add Subject to Section based on Type
+                // Add Subject to Section
                 if (isPE)
                 {
                     s.SubjectsToTake.Add(new Subject { Code = code, Units = 2, IsLab = false });
                 }
                 else if (isLabSubject)
                 {
-                    // Split into Lecture (2 units) and Lab (3 units)
+                    // Split: Lecture (2 units) + Lab (3 units)
                     s.SubjectsToTake.Add(new Subject { Code = code + " (Lec)", Units = 2, IsLab = false });
                     s.SubjectsToTake.Add(new Subject { Code = code + " (Lab)", Units = 3, IsLab = true });
                 }
