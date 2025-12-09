@@ -25,16 +25,22 @@ namespace SchedCCS
             InitializeComponent();
             currentUser = user;
 
-            // Initialize UI Components
+            // 1. Initialize UI & Map FIRST (Safe)
             InitializeDashboardUI();
-
-            // Setup and Load Data
-            SetupGrid();
-            LoadMySchedule();
-
-            // Initialize Interactive Map
-            InitializeMapHotspots();
+            InitializeMapHotspots(); // <--- MOVED UP (Was at bottom)
             InitializeSettingsUI();
+
+            // 2. Load Data SECOND (Risky)
+            // Wrap in try-catch so it doesn't break the whole form if data is missing
+            try
+            {
+                SetupGrid();
+                LoadMySchedule();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading schedule: " + ex.Message);
+            }
         }
 
         private void InitializeDashboardUI()
@@ -53,10 +59,10 @@ namespace SchedCCS
 
         private void InitializeMapHotspots()
         {
-            // Register Building A Hotspots
+            // --- BUILDING A ROOMS ---
             SetupMapHotspot(pic_LEC9);
             SetupMapHotspot(pic_LEC10);
-            SetupMapHotspot(pic_FACULTY);
+            SetupMapHotspot(pic_FACULTY); // Special
             SetupMapHotspot(pic_LEC11);
             SetupMapHotspot(pic_LEC12);
             SetupMapHotspot(pic_LEC4);
@@ -64,22 +70,26 @@ namespace SchedCCS
             SetupMapHotspot(pic_LEC6);
             SetupMapHotspot(pic_LEC7);
             SetupMapHotspot(pic_LEC8);
-            SetupMapHotspot(pic_DEAN);
-            SetupMapHotspot(pic_ACCRED);
+            SetupMapHotspot(pic_DEAN);    // Special
+            SetupMapHotspot(pic_ACCRED);  // Special
             SetupMapHotspot(pic_LEC2);
             SetupMapHotspot(pic_LEC3);
-            SetupMapHotspot(pic_OCTA);
+            SetupMapHotspot(pic_OCTA);    // Special
 
-            // Register Building B Hotspots
+            // --- BUILDING B ROOMS ---
             SetupMapHotspot(pic_LAB1);
             SetupMapHotspot(pic_LAB2);
             SetupMapHotspot(pic_LAB3);
+            SetupMapHotspot(pic_LAB4);
+            SetupMapHotspot(pic_UnK);     // Special ("Unknown" or "Storage")
+            SetupMapHotspot(pic_LEC1);
+            SetupMapHotspot(pic_LAB5);
+            SetupMapHotspot(pic_LAB6);
 
             // Set Initial Map State
             if (cmbBuilding.Items.Count > 0)
             {
                 cmbBuilding.SelectedIndex = 0;
-                cmbBuilding_SelectedIndexChanged(this, EventArgs.Empty);
             }
         }
 
@@ -87,15 +97,26 @@ namespace SchedCCS
         {
             if (hotspot == null) return;
 
-            // Configure Transparency and Events
-            hotspot.Parent = picBlueprint;
+            // 1. FORCE VISIBILITY (The Fix)
+            // Just in case they were hidden in the properties window
+            hotspot.Visible = true;
+            hotspot.BringToFront();
+
+            // 2. Transparency
             hotspot.BackColor = System.Drawing.Color.Transparent;
 
+            // 3. Tooltip
             string roomName = hotspot.Tag?.ToString() ?? "Unknown Room";
             toolTip1.SetToolTip(hotspot, roomName);
 
+            // 4. Wire Events (Safety: Remove before adding to prevent duplicates)
+            hotspot.Click -= Room_Click;
             hotspot.Click += Room_Click;
+
+            hotspot.MouseEnter -= Room_MouseEnter;
             hotspot.MouseEnter += Room_MouseEnter;
+
+            hotspot.MouseLeave -= Room_MouseLeave;
             hotspot.MouseLeave += Room_MouseLeave;
         }
 
@@ -163,55 +184,74 @@ namespace SchedCCS
 
             if (selected == "Building A")
             {
-                picBlueprint.BackColor = System.Drawing.Color.LightBlue;
-                SetBuildingA_Visibility(true);
-                SetBuildingB_Visibility(false);
+                pnlBuildingA.Visible = true;
+                pnlBuildingB.Visible = false;
+
+                pnlBuildingA.BringToFront();
+                cmbBuilding.BringToFront(); // <--- ADD THIS: Force the box to stay on top of the panel
             }
             else if (selected == "Building B")
             {
-                picBlueprint.BackColor = System.Drawing.Color.LightSalmon;
-                SetBuildingA_Visibility(false);
-                SetBuildingB_Visibility(true);
+                pnlBuildingB.Visible = true;
+                pnlBuildingA.Visible = false;
+
+                pnlBuildingB.BringToFront();
+                cmbBuilding.BringToFront(); // <--- ADD THIS HERE TOO
             }
         }
 
-        private void SetBuildingA_Visibility(bool isVisible)
-        {
-            if (pic_LEC9 != null) pic_LEC9.Visible = isVisible;
-            if (pic_LEC10 != null) pic_LEC10.Visible = isVisible;
-            if (pic_FACULTY != null) pic_FACULTY.Visible = isVisible;
-            if (pic_LEC11 != null) pic_LEC11.Visible = isVisible;
-            if (pic_LEC12 != null) pic_LEC12.Visible = isVisible;
-            if (pic_LEC4 != null) pic_LEC4.Visible = isVisible;
-            if (pic_LEC5 != null) pic_LEC5.Visible = isVisible;
-            if (pic_LEC6 != null) pic_LEC6.Visible = isVisible;
-            if (pic_LEC7 != null) pic_LEC7.Visible = isVisible;
-            if (pic_LEC8 != null) pic_LEC8.Visible = isVisible;
-            if (pic_DEAN != null) pic_DEAN.Visible = isVisible;
-            if (pic_ACCRED != null) pic_ACCRED.Visible = isVisible;
-            if (pic_LEC2 != null) pic_LEC2.Visible = isVisible;
-            if (pic_LEC3 != null) pic_LEC3.Visible = isVisible;
-            if (pic_OCTA != null) pic_OCTA.Visible = isVisible;
-        }
-
-        private void SetBuildingB_Visibility(bool isVisible)
-        {
-            if (pic_LAB1 != null) pic_LAB1.Visible = isVisible;
-            if (pic_LAB2 != null) pic_LAB2.Visible = isVisible;
-            if (pic_LAB3 != null) pic_LAB3.Visible = isVisible;
-        }
 
         private void Room_Click(object sender, EventArgs e)
         {
             PictureBox clickedSpot = (PictureBox)sender;
-            string roomName = clickedSpot.Tag?.ToString();
+            string rawTag = clickedSpot.Tag?.ToString(); // e.g. "Laboratory Room 1" or "Dean's Office"
 
-            if (!string.IsNullOrEmpty(roomName))
+            if (string.IsNullOrEmpty(rawTag)) return;
+
+            // --- STEP 1: HANDLE SPECIAL ROOMS (No Schedule) ---
+            // We check for keywords. If found, show a popup and STOP.
+            string upperTag = rawTag.ToUpper();
+
+            if (upperTag.Contains("FACULTY") ||
+                upperTag.Contains("DEAN") ||
+                upperTag.Contains("ACCRED") ||
+                upperTag.Contains("OCTA") ||
+                upperTag.Contains("UNKNOWN") ||
+                upperTag.Contains("STORAGE") ||
+                upperTag.Contains("OFFICE"))
             {
-                using (RoomScheduleForm popup = new RoomScheduleForm(roomName))
-                {
-                    popup.ShowDialog();
-                }
+                string msg = "";
+                if (upperTag.Contains("FACULTY")) msg = "Faculty Room\n(Teachers Only)";
+                else if (upperTag.Contains("DEAN")) msg = "College Dean's Office\n(Official Business Only)";
+                else if (upperTag.Contains("OCTA")) msg = "OCTA Research Office";
+                else msg = $"{rawTag}\n(Restricted Area)";
+
+                MessageBox.Show(msg, "Room Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return; // Stop here! Don't try to load a schedule.
+            }
+
+            // --- STEP 2: TRANSLATE TAG TO DB CODE (The Fix) ---
+            // Convert "Laboratory Room 1" -> "LAB 1"
+            // Convert "Lecture Room 5" -> "LEC 5"
+
+            string dbRoomName = rawTag; // Default to whatever is there
+
+            // logic: If it contains the long word, replace it with the short code
+            if (dbRoomName.Contains("Laboratory Room"))
+            {
+                dbRoomName = dbRoomName.Replace("Laboratory Room", "LAB").Trim();
+            }
+            else if (dbRoomName.Contains("Lecture Room"))
+            {
+                dbRoomName = dbRoomName.Replace("Lecture Room", "LEC").Trim();
+            }
+            // If it's already "LEC 1", the code above does nothing, which is fine.
+
+            // --- STEP 3: OPEN SCHEDULE ---
+            // Now we pass the cleaned-up name ("LAB 1") to the form
+            using (RoomScheduleForm popup = new RoomScheduleForm(dbRoomName))
+            {
+                popup.ShowDialog();
             }
         }
 

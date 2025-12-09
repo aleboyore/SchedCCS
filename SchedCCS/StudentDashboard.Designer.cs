@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(StudentDashboard));
             pnlSidebar = new Panel();
             btnLogout = new Button();
             btnSettings = new Button();
@@ -37,27 +38,33 @@
             lblStudentName = new Label();
             picProfile = new PictureBox();
             pnlContent = new Panel();
-            lblPageTitle = new Label();
             pnlViewHome = new Panel();
+            cmbBuilding = new ComboBox();
+            pnlBuildingB = new Panel();
+            pic_UnK = new PictureBox();
+            pic_LAB6 = new PictureBox();
+            pic_LAB5 = new PictureBox();
+            pic_LEC1 = new PictureBox();
+            pic_LAB4 = new PictureBox();
             pic_LAB3 = new PictureBox();
             pic_LAB2 = new PictureBox();
             pic_LAB1 = new PictureBox();
+            pnlBuildingA = new Panel();
             pic_OCTA = new PictureBox();
             pic_LEC3 = new PictureBox();
-            pic_LEC2 = new PictureBox();
-            pic_ACCRED = new PictureBox();
-            pic_DEAN = new PictureBox();
             pic_LEC8 = new PictureBox();
             pic_LEC7 = new PictureBox();
-            pic_LEC6 = new PictureBox();
-            pic_LEC5 = new PictureBox();
-            pic_LEC4 = new PictureBox();
             pic_LEC12 = new PictureBox();
             pic_LEC11 = new PictureBox();
             pic_FACULTY = new PictureBox();
             pic_LEC10 = new PictureBox();
             pic_LEC9 = new PictureBox();
-            picBlueprint = new PictureBox();
+            pic_LEC6 = new PictureBox();
+            pic_LEC5 = new PictureBox();
+            pic_LEC4 = new PictureBox();
+            pic_LEC2 = new PictureBox();
+            pic_ACCRED = new PictureBox();
+            pic_DEAN = new PictureBox();
             pnlViewSchedule = new Panel();
             btnExportPdf = new Button();
             dgvStudentSchedule = new DataGridView();
@@ -73,31 +80,37 @@
             txtEditName = new TextBox();
             label2 = new Label();
             label1 = new Label();
-            cmbBuilding = new ComboBox();
+            lblPageTitle = new Label();
             toolTip1 = new ToolTip(components);
             pnlSidebar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)picProfile).BeginInit();
             pnlContent.SuspendLayout();
             pnlViewHome.SuspendLayout();
+            pnlBuildingB.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pic_UnK).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LAB6).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LAB5).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LAB4).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LAB3).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LAB2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LAB1).BeginInit();
+            pnlBuildingA.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pic_OCTA).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC3).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pic_LEC2).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pic_ACCRED).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pic_DEAN).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC8).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC7).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pic_LEC6).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pic_LEC5).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pic_LEC4).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC12).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC11).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_FACULTY).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC10).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC9).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)picBlueprint).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC6).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC5).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC4).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC2).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_ACCRED).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_DEAN).BeginInit();
             pnlViewSchedule.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvStudentSchedule).BeginInit();
             pnlViewSettings.SuspendLayout();
@@ -214,270 +227,301 @@
             pnlContent.Size = new Size(1064, 681);
             pnlContent.TabIndex = 1;
             // 
-            // lblPageTitle
-            // 
-            lblPageTitle.AutoSize = true;
-            lblPageTitle.Dock = DockStyle.Top;
-            lblPageTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblPageTitle.Location = new Point(0, 0);
-            lblPageTitle.Name = "lblPageTitle";
-            lblPageTitle.Size = new Size(213, 30);
-            lblPageTitle.TabIndex = 0;
-            lblPageTitle.Text = "Student Dashboard";
-            // 
             // pnlViewHome
             // 
             pnlViewHome.Controls.Add(cmbBuilding);
-            pnlViewHome.Controls.Add(pic_LAB3);
-            pnlViewHome.Controls.Add(pic_LAB2);
-            pnlViewHome.Controls.Add(pic_LAB1);
-            pnlViewHome.Controls.Add(pic_OCTA);
-            pnlViewHome.Controls.Add(pic_LEC3);
-            pnlViewHome.Controls.Add(pic_LEC2);
-            pnlViewHome.Controls.Add(pic_ACCRED);
-            pnlViewHome.Controls.Add(pic_DEAN);
-            pnlViewHome.Controls.Add(pic_LEC8);
-            pnlViewHome.Controls.Add(pic_LEC7);
-            pnlViewHome.Controls.Add(pic_LEC6);
-            pnlViewHome.Controls.Add(pic_LEC5);
-            pnlViewHome.Controls.Add(pic_LEC4);
-            pnlViewHome.Controls.Add(pic_LEC12);
-            pnlViewHome.Controls.Add(pic_LEC11);
-            pnlViewHome.Controls.Add(pic_FACULTY);
-            pnlViewHome.Controls.Add(pic_LEC10);
-            pnlViewHome.Controls.Add(pic_LEC9);
-            pnlViewHome.Controls.Add(picBlueprint);
+            pnlViewHome.Controls.Add(pnlBuildingB);
+            pnlViewHome.Controls.Add(pnlBuildingA);
             pnlViewHome.Dock = DockStyle.Fill;
             pnlViewHome.Location = new Point(0, 30);
             pnlViewHome.Name = "pnlViewHome";
             pnlViewHome.Size = new Size(1064, 651);
             pnlViewHome.TabIndex = 3;
             // 
+            // cmbBuilding
+            // 
+            cmbBuilding.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            cmbBuilding.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbBuilding.FormattingEnabled = true;
+            cmbBuilding.Items.AddRange(new object[] { "Building A", "Building B" });
+            cmbBuilding.Location = new Point(976, 10);
+            cmbBuilding.Name = "cmbBuilding";
+            cmbBuilding.Size = new Size(79, 23);
+            cmbBuilding.TabIndex = 1;
+            cmbBuilding.SelectedIndexChanged += cmbBuilding_SelectedIndexChanged;
+            // 
+            // pnlBuildingB
+            // 
+            pnlBuildingB.BackgroundImage = Properties.Resources.old_building;
+            pnlBuildingB.Controls.Add(pic_UnK);
+            pnlBuildingB.Controls.Add(pic_LAB6);
+            pnlBuildingB.Controls.Add(pic_LAB5);
+            pnlBuildingB.Controls.Add(pic_LEC1);
+            pnlBuildingB.Controls.Add(pic_LAB4);
+            pnlBuildingB.Controls.Add(pic_LAB3);
+            pnlBuildingB.Controls.Add(pic_LAB2);
+            pnlBuildingB.Controls.Add(pic_LAB1);
+            pnlBuildingB.Dock = DockStyle.Fill;
+            pnlBuildingB.Location = new Point(0, 0);
+            pnlBuildingB.Name = "pnlBuildingB";
+            pnlBuildingB.Size = new Size(1064, 651);
+            pnlBuildingB.TabIndex = 33;
+            pnlBuildingB.Visible = false;
+            // 
+            // pic_UnK
+            // 
+            pic_UnK.BackColor = Color.Transparent;
+            pic_UnK.Location = new Point(203, 322);
+            pic_UnK.Name = "pic_UnK";
+            pic_UnK.Size = new Size(132, 122);
+            pic_UnK.TabIndex = 46;
+            pic_UnK.TabStop = false;
+            pic_UnK.Tag = "Storage Room";
+            // 
+            // pic_LAB6
+            // 
+            pic_LAB6.BackColor = Color.Transparent;
+            pic_LAB6.Location = new Point(715, 322);
+            pic_LAB6.Name = "pic_LAB6";
+            pic_LAB6.Size = new Size(127, 122);
+            pic_LAB6.TabIndex = 45;
+            pic_LAB6.TabStop = false;
+            pic_LAB6.Tag = "Laboratory Room 6";
+            // 
+            // pic_LAB5
+            // 
+            pic_LAB5.BackColor = Color.Transparent;
+            pic_LAB5.Location = new Point(529, 322);
+            pic_LAB5.Name = "pic_LAB5";
+            pic_LAB5.Size = new Size(133, 122);
+            pic_LAB5.TabIndex = 44;
+            pic_LAB5.TabStop = false;
+            pic_LAB5.Tag = "Laboratory Room 5";
+            // 
+            // pic_LEC1
+            // 
+            pic_LEC1.BackColor = Color.Transparent;
+            pic_LEC1.Location = new Point(388, 322);
+            pic_LEC1.Name = "pic_LEC1";
+            pic_LEC1.Size = new Size(126, 122);
+            pic_LEC1.TabIndex = 43;
+            pic_LEC1.TabStop = false;
+            pic_LEC1.Tag = "Lecture Room 1";
+            // 
+            // pic_LAB4
+            // 
+            pic_LAB4.BackColor = Color.Transparent;
+            pic_LAB4.Location = new Point(714, 495);
+            pic_LAB4.Name = "pic_LAB4";
+            pic_LAB4.Size = new Size(127, 116);
+            pic_LAB4.TabIndex = 42;
+            pic_LAB4.TabStop = false;
+            pic_LAB4.Tag = "Laboratory Room 4";
+            // 
             // pic_LAB3
             // 
             pic_LAB3.BackColor = Color.Transparent;
-            pic_LAB3.Cursor = Cursors.Hand;
-            pic_LAB3.Location = new Point(671, 300);
+            pic_LAB3.Location = new Point(529, 486);
             pic_LAB3.Name = "pic_LAB3";
-            pic_LAB3.Size = new Size(100, 50);
-            pic_LAB3.TabIndex = 20;
+            pic_LAB3.Size = new Size(133, 125);
+            pic_LAB3.TabIndex = 41;
             pic_LAB3.TabStop = false;
-            pic_LAB3.Tag = "LAB 3";
-            pic_LAB3.Visible = false;
+            pic_LAB3.Tag = "Laboratory Room 3";
             // 
             // pic_LAB2
             // 
             pic_LAB2.BackColor = Color.Transparent;
-            pic_LAB2.Cursor = Cursors.Hand;
-            pic_LAB2.Location = new Point(482, 300);
+            pic_LAB2.Location = new Point(388, 486);
             pic_LAB2.Name = "pic_LAB2";
-            pic_LAB2.Size = new Size(100, 50);
-            pic_LAB2.TabIndex = 19;
+            pic_LAB2.Size = new Size(126, 125);
+            pic_LAB2.TabIndex = 40;
             pic_LAB2.TabStop = false;
-            pic_LAB2.Tag = "LAB 2";
-            pic_LAB2.Visible = false;
+            pic_LAB2.Tag = "Laboratory Room 2";
             // 
             // pic_LAB1
             // 
             pic_LAB1.BackColor = Color.Transparent;
-            pic_LAB1.Cursor = Cursors.Hand;
-            pic_LAB1.Location = new Point(293, 300);
+            pic_LAB1.Location = new Point(203, 496);
             pic_LAB1.Name = "pic_LAB1";
-            pic_LAB1.Size = new Size(100, 50);
-            pic_LAB1.TabIndex = 18;
+            pic_LAB1.Size = new Size(132, 116);
+            pic_LAB1.TabIndex = 39;
             pic_LAB1.TabStop = false;
-            pic_LAB1.Tag = "LAB 1";
-            pic_LAB1.Visible = false;
+            pic_LAB1.Tag = "Laboratory Room 1";
+            // 
+            // pnlBuildingA
+            // 
+            pnlBuildingA.BackgroundImage = (Image)resources.GetObject("pnlBuildingA.BackgroundImage");
+            pnlBuildingA.BackgroundImageLayout = ImageLayout.Zoom;
+            pnlBuildingA.Controls.Add(pic_OCTA);
+            pnlBuildingA.Controls.Add(pic_LEC3);
+            pnlBuildingA.Controls.Add(pic_LEC8);
+            pnlBuildingA.Controls.Add(pic_LEC7);
+            pnlBuildingA.Controls.Add(pic_LEC12);
+            pnlBuildingA.Controls.Add(pic_LEC11);
+            pnlBuildingA.Controls.Add(pic_FACULTY);
+            pnlBuildingA.Controls.Add(pic_LEC10);
+            pnlBuildingA.Controls.Add(pic_LEC9);
+            pnlBuildingA.Controls.Add(pic_LEC6);
+            pnlBuildingA.Controls.Add(pic_LEC5);
+            pnlBuildingA.Controls.Add(pic_LEC4);
+            pnlBuildingA.Controls.Add(pic_LEC2);
+            pnlBuildingA.Controls.Add(pic_ACCRED);
+            pnlBuildingA.Controls.Add(pic_DEAN);
+            pnlBuildingA.Dock = DockStyle.Fill;
+            pnlBuildingA.Location = new Point(0, 0);
+            pnlBuildingA.Name = "pnlBuildingA";
+            pnlBuildingA.Size = new Size(1064, 651);
+            pnlBuildingA.TabIndex = 21;
             // 
             // pic_OCTA
             // 
             pic_OCTA.BackColor = Color.Transparent;
-            pic_OCTA.Cursor = Cursors.Hand;
-            pic_OCTA.Location = new Point(860, 389);
+            pic_OCTA.Location = new Point(811, 527);
             pic_OCTA.Name = "pic_OCTA";
-            pic_OCTA.Size = new Size(100, 50);
-            pic_OCTA.TabIndex = 17;
+            pic_OCTA.Size = new Size(113, 110);
+            pic_OCTA.TabIndex = 47;
             pic_OCTA.TabStop = false;
-            pic_OCTA.Tag = "OCTA OFFICE";
-            pic_OCTA.Visible = false;
+            pic_OCTA.Tag = "OCTA Office";
             // 
             // pic_LEC3
             // 
             pic_LEC3.BackColor = Color.Transparent;
-            pic_LEC3.Cursor = Cursors.Hand;
-            pic_LEC3.Location = new Point(671, 389);
+            pic_LEC3.Location = new Point(689, 527);
             pic_LEC3.Name = "pic_LEC3";
-            pic_LEC3.Size = new Size(100, 50);
-            pic_LEC3.TabIndex = 16;
+            pic_LEC3.Size = new Size(112, 110);
+            pic_LEC3.TabIndex = 46;
             pic_LEC3.TabStop = false;
-            pic_LEC3.Tag = "LEC 3";
-            pic_LEC3.Visible = false;
-            // 
-            // pic_LEC2
-            // 
-            pic_LEC2.BackColor = Color.Transparent;
-            pic_LEC2.Cursor = Cursors.Hand;
-            pic_LEC2.Location = new Point(482, 389);
-            pic_LEC2.Name = "pic_LEC2";
-            pic_LEC2.Size = new Size(100, 50);
-            pic_LEC2.TabIndex = 15;
-            pic_LEC2.TabStop = false;
-            pic_LEC2.Tag = "LEC 2";
-            pic_LEC2.Visible = false;
-            // 
-            // pic_ACCRED
-            // 
-            pic_ACCRED.BackColor = Color.Transparent;
-            pic_ACCRED.Cursor = Cursors.Hand;
-            pic_ACCRED.Location = new Point(290, 389);
-            pic_ACCRED.Name = "pic_ACCRED";
-            pic_ACCRED.Size = new Size(100, 50);
-            pic_ACCRED.TabIndex = 14;
-            pic_ACCRED.TabStop = false;
-            pic_ACCRED.Tag = "ACCREDITATION";
-            pic_ACCRED.Visible = false;
-            // 
-            // pic_DEAN
-            // 
-            pic_DEAN.BackColor = Color.Transparent;
-            pic_DEAN.Cursor = Cursors.Hand;
-            pic_DEAN.Location = new Point(104, 389);
-            pic_DEAN.Name = "pic_DEAN";
-            pic_DEAN.Size = new Size(100, 50);
-            pic_DEAN.TabIndex = 13;
-            pic_DEAN.TabStop = false;
-            pic_DEAN.Tag = "DEANS OFFICE";
-            pic_DEAN.Visible = false;
+            pic_LEC3.Tag = "Lecture Room 3";
             // 
             // pic_LEC8
             // 
             pic_LEC8.BackColor = Color.Transparent;
-            pic_LEC8.Cursor = Cursors.Hand;
-            pic_LEC8.Location = new Point(860, 301);
+            pic_LEC8.Location = new Point(811, 397);
             pic_LEC8.Name = "pic_LEC8";
-            pic_LEC8.Size = new Size(100, 50);
-            pic_LEC8.TabIndex = 12;
+            pic_LEC8.Size = new Size(113, 112);
+            pic_LEC8.TabIndex = 45;
             pic_LEC8.TabStop = false;
-            pic_LEC8.Tag = "LEC 8";
-            pic_LEC8.Visible = false;
+            pic_LEC8.Tag = "Lecture Room 8";
             // 
             // pic_LEC7
             // 
             pic_LEC7.BackColor = Color.Transparent;
-            pic_LEC7.Cursor = Cursors.Hand;
-            pic_LEC7.Location = new Point(671, 301);
+            pic_LEC7.Location = new Point(689, 397);
             pic_LEC7.Name = "pic_LEC7";
-            pic_LEC7.Size = new Size(100, 50);
-            pic_LEC7.TabIndex = 11;
+            pic_LEC7.Size = new Size(112, 112);
+            pic_LEC7.TabIndex = 44;
             pic_LEC7.TabStop = false;
-            pic_LEC7.Tag = "LEC 7";
-            pic_LEC7.Visible = false;
-            // 
-            // pic_LEC6
-            // 
-            pic_LEC6.BackColor = Color.Transparent;
-            pic_LEC6.Cursor = Cursors.Hand;
-            pic_LEC6.Location = new Point(482, 301);
-            pic_LEC6.Name = "pic_LEC6";
-            pic_LEC6.Size = new Size(100, 50);
-            pic_LEC6.TabIndex = 10;
-            pic_LEC6.TabStop = false;
-            pic_LEC6.Tag = "LEC 6";
-            pic_LEC6.Visible = false;
-            // 
-            // pic_LEC5
-            // 
-            pic_LEC5.BackColor = Color.Transparent;
-            pic_LEC5.Cursor = Cursors.Hand;
-            pic_LEC5.Location = new Point(293, 301);
-            pic_LEC5.Name = "pic_LEC5";
-            pic_LEC5.Size = new Size(100, 50);
-            pic_LEC5.TabIndex = 9;
-            pic_LEC5.TabStop = false;
-            pic_LEC5.Tag = "LEC 5";
-            pic_LEC5.Visible = false;
-            // 
-            // pic_LEC4
-            // 
-            pic_LEC4.BackColor = Color.Transparent;
-            pic_LEC4.Cursor = Cursors.Hand;
-            pic_LEC4.Location = new Point(104, 301);
-            pic_LEC4.Name = "pic_LEC4";
-            pic_LEC4.Size = new Size(100, 50);
-            pic_LEC4.TabIndex = 8;
-            pic_LEC4.TabStop = false;
-            pic_LEC4.Tag = "LEC 4";
-            pic_LEC4.Visible = false;
+            pic_LEC7.Tag = "Lecture Room 7";
             // 
             // pic_LEC12
             // 
             pic_LEC12.BackColor = Color.Transparent;
-            pic_LEC12.Cursor = Cursors.Hand;
-            pic_LEC12.Location = new Point(860, 211);
+            pic_LEC12.Location = new Point(811, 265);
             pic_LEC12.Name = "pic_LEC12";
-            pic_LEC12.Size = new Size(100, 50);
-            pic_LEC12.TabIndex = 7;
+            pic_LEC12.Size = new Size(113, 111);
+            pic_LEC12.TabIndex = 43;
             pic_LEC12.TabStop = false;
-            pic_LEC12.Tag = "LEC 12";
-            pic_LEC12.Visible = false;
+            pic_LEC12.Tag = "Lecture Room 12";
             // 
             // pic_LEC11
             // 
             pic_LEC11.BackColor = Color.Transparent;
-            pic_LEC11.Cursor = Cursors.Hand;
-            pic_LEC11.Location = new Point(671, 211);
+            pic_LEC11.Location = new Point(689, 265);
             pic_LEC11.Name = "pic_LEC11";
-            pic_LEC11.Size = new Size(100, 50);
-            pic_LEC11.TabIndex = 6;
+            pic_LEC11.Size = new Size(112, 111);
+            pic_LEC11.TabIndex = 42;
             pic_LEC11.TabStop = false;
-            pic_LEC11.Tag = "LEC 11";
-            pic_LEC11.Visible = false;
+            pic_LEC11.Tag = "Lecture Room 11";
             // 
             // pic_FACULTY
             // 
             pic_FACULTY.BackColor = Color.Transparent;
-            pic_FACULTY.Cursor = Cursors.Hand;
-            pic_FACULTY.Location = new Point(482, 211);
+            pic_FACULTY.Location = new Point(266, 265);
             pic_FACULTY.Name = "pic_FACULTY";
-            pic_FACULTY.Size = new Size(100, 50);
-            pic_FACULTY.TabIndex = 5;
+            pic_FACULTY.Size = new Size(111, 111);
+            pic_FACULTY.TabIndex = 41;
             pic_FACULTY.TabStop = false;
-            pic_FACULTY.Tag = "FACULTY";
-            pic_FACULTY.Visible = false;
+            pic_FACULTY.Tag = "Faculty Room";
             // 
             // pic_LEC10
             // 
             pic_LEC10.BackColor = Color.Transparent;
-            pic_LEC10.Cursor = Cursors.Hand;
-            pic_LEC10.Location = new Point(293, 211);
+            pic_LEC10.Location = new Point(147, 265);
             pic_LEC10.Name = "pic_LEC10";
-            pic_LEC10.Size = new Size(100, 50);
-            pic_LEC10.TabIndex = 4;
+            pic_LEC10.Size = new Size(109, 111);
+            pic_LEC10.TabIndex = 40;
             pic_LEC10.TabStop = false;
-            pic_LEC10.Tag = "LEC 10";
-            pic_LEC10.Visible = false;
+            pic_LEC10.Tag = "Lecture Room 10";
             // 
             // pic_LEC9
             // 
             pic_LEC9.BackColor = Color.Transparent;
-            pic_LEC9.Cursor = Cursors.Hand;
-            pic_LEC9.Location = new Point(104, 211);
+            pic_LEC9.Location = new Point(27, 265);
             pic_LEC9.Name = "pic_LEC9";
-            pic_LEC9.Size = new Size(100, 50);
-            pic_LEC9.TabIndex = 3;
+            pic_LEC9.Size = new Size(109, 111);
+            pic_LEC9.TabIndex = 39;
             pic_LEC9.TabStop = false;
-            pic_LEC9.Tag = "LEC 9";
-            pic_LEC9.Visible = false;
+            pic_LEC9.Tag = "Lecture Room 9";
             // 
-            // picBlueprint
+            // pic_LEC6
             // 
-            picBlueprint.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            picBlueprint.BackColor = Color.SteelBlue;
-            picBlueprint.Location = new Point(0, -30);
-            picBlueprint.Name = "picBlueprint";
-            picBlueprint.Size = new Size(1064, 681);
-            picBlueprint.TabIndex = 2;
-            picBlueprint.TabStop = false;
+            pic_LEC6.BackColor = Color.Transparent;
+            pic_LEC6.Location = new Point(266, 397);
+            pic_LEC6.Name = "pic_LEC6";
+            pic_LEC6.Size = new Size(111, 110);
+            pic_LEC6.TabIndex = 38;
+            pic_LEC6.TabStop = false;
+            pic_LEC6.Tag = "Lecture Room 6";
+            // 
+            // pic_LEC5
+            // 
+            pic_LEC5.BackColor = Color.Transparent;
+            pic_LEC5.Location = new Point(147, 397);
+            pic_LEC5.Name = "pic_LEC5";
+            pic_LEC5.Size = new Size(109, 110);
+            pic_LEC5.TabIndex = 37;
+            pic_LEC5.TabStop = false;
+            pic_LEC5.Tag = "Lecture Room 5";
+            // 
+            // pic_LEC4
+            // 
+            pic_LEC4.BackColor = Color.Transparent;
+            pic_LEC4.Location = new Point(27, 397);
+            pic_LEC4.Name = "pic_LEC4";
+            pic_LEC4.Size = new Size(109, 110);
+            pic_LEC4.TabIndex = 36;
+            pic_LEC4.TabStop = false;
+            pic_LEC4.Tag = "Lecture Room 4";
+            // 
+            // pic_LEC2
+            // 
+            pic_LEC2.BackColor = Color.Transparent;
+            pic_LEC2.Location = new Point(266, 527);
+            pic_LEC2.Name = "pic_LEC2";
+            pic_LEC2.Size = new Size(111, 110);
+            pic_LEC2.TabIndex = 35;
+            pic_LEC2.TabStop = false;
+            pic_LEC2.Tag = "Lecture Room 2";
+            // 
+            // pic_ACCRED
+            // 
+            pic_ACCRED.BackColor = Color.Transparent;
+            pic_ACCRED.Location = new Point(147, 527);
+            pic_ACCRED.Name = "pic_ACCRED";
+            pic_ACCRED.Size = new Size(109, 110);
+            pic_ACCRED.TabIndex = 34;
+            pic_ACCRED.TabStop = false;
+            pic_ACCRED.Tag = "Accreditation Room";
+            // 
+            // pic_DEAN
+            // 
+            pic_DEAN.BackColor = Color.Transparent;
+            pic_DEAN.Location = new Point(27, 527);
+            pic_DEAN.Name = "pic_DEAN";
+            pic_DEAN.Size = new Size(109, 110);
+            pic_DEAN.TabIndex = 33;
+            pic_DEAN.TabStop = false;
+            pic_DEAN.Tag = "Dean's Office";
             // 
             // pnlViewSchedule
             // 
@@ -638,17 +682,16 @@
             label1.TabIndex = 0;
             label1.Text = "Update Account Info";
             // 
-            // cmbBuilding
+            // lblPageTitle
             // 
-            cmbBuilding.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            cmbBuilding.FormattingEnabled = true;
-            cmbBuilding.Items.AddRange(new object[] { "Building A", "Building B" });
-            cmbBuilding.Location = new Point(982, 5);
-            cmbBuilding.Name = "cmbBuilding";
-            cmbBuilding.Size = new Size(79, 23);
-            cmbBuilding.TabIndex = 1;
-            cmbBuilding.Text = "Building A";
-            cmbBuilding.SelectedIndexChanged += cmbBuilding_SelectedIndexChanged;
+            lblPageTitle.AutoSize = true;
+            lblPageTitle.Dock = DockStyle.Top;
+            lblPageTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            lblPageTitle.Location = new Point(0, 0);
+            lblPageTitle.Name = "lblPageTitle";
+            lblPageTitle.Size = new Size(213, 30);
+            lblPageTitle.TabIndex = 0;
+            lblPageTitle.Text = "Student Dashboard";
             // 
             // StudentDashboard
             // 
@@ -667,79 +710,92 @@
             pnlContent.ResumeLayout(false);
             pnlContent.PerformLayout();
             pnlViewHome.ResumeLayout(false);
+            pnlBuildingB.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)pic_UnK).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LAB6).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LAB5).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LAB4).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LAB3).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LAB2).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LAB1).EndInit();
+            pnlBuildingA.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pic_OCTA).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC3).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pic_LEC2).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pic_ACCRED).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pic_DEAN).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC8).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC7).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pic_LEC6).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pic_LEC5).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pic_LEC4).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC12).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC11).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_FACULTY).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC10).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_LEC9).EndInit();
-            ((System.ComponentModel.ISupportInitialize)picBlueprint).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC6).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC5).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC4).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_LEC2).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_ACCRED).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_DEAN).EndInit();
             pnlViewSchedule.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvStudentSchedule).EndInit();
             pnlViewSettings.ResumeLayout(false);
             pnlViewSettings.PerformLayout();
             ResumeLayout(false);
+
         }
 
         #endregion
 
-        private Panel pnlSidebar;
-        private Panel pnlContent;
-        private PictureBox picProfile;
-        private Button btnLogout;
-        private Button btnSettings;
-        private Button btnMySchedule;
-        private Button btnDashboard;
-        private Label lblStudentName;
-        private Label lblPageTitle;
-        private Label lblNoSchedule;
-        private Panel pnlViewSchedule;
-        private Panel pnlViewSettings;
-        private DataGridView dgvStudentSchedule;
-        private Button btnSaveChanges;
-        private Label label4;
-        private Label label3;
-        private TextBox txtEditConfirm;
-        private TextBox txtEditPass;
-        private TextBox txtEditName;
-        private Label label2;
-        private Label label1;
-        private Panel pnlViewHome;
-        private Button btnExportPdf;
-        private ComboBox cmbBuilding;
-        private ToolTip toolTip1;
+        private System.Windows.Forms.Panel pnlSidebar;
+        private System.Windows.Forms.Panel pnlContent;
+        private System.Windows.Forms.PictureBox picProfile;
+        private System.Windows.Forms.Button btnLogout;
+        private System.Windows.Forms.Button btnSettings;
+        private System.Windows.Forms.Button btnMySchedule;
+        private System.Windows.Forms.Button btnDashboard;
+        private System.Windows.Forms.Label lblStudentName;
+        private System.Windows.Forms.Label lblPageTitle;
+        private System.Windows.Forms.Label lblNoSchedule;
+        private System.Windows.Forms.Panel pnlViewSchedule;
+        private System.Windows.Forms.Panel pnlViewSettings;
+        private System.Windows.Forms.DataGridView dgvStudentSchedule;
+        private System.Windows.Forms.Button btnSaveChanges;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txtEditConfirm;
+        private System.Windows.Forms.TextBox txtEditPass;
+        private System.Windows.Forms.TextBox txtEditName;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Panel pnlViewHome;
+        private System.Windows.Forms.Button btnExportPdf;
+        private System.Windows.Forms.ComboBox cmbBuilding;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.CheckBox chkShowPass;
+        private System.Windows.Forms.Button btnEdit;
+        private System.Windows.Forms.Panel pnlBuildingA;
+        private System.Windows.Forms.Panel pnlBuildingB;
+        private System.Windows.Forms.PictureBox pic_LAB1;
+        private PictureBox pic_LAB2;
+        private PictureBox pic_LAB3;
+        private PictureBox pic_LAB4;
+        private PictureBox pic_LEC1;
+        private PictureBox pic_LAB5;
+        private PictureBox pic_UnK;
+        private PictureBox pic_LAB6;
+        private PictureBox pic_DEAN;
+        private PictureBox pic_ACCRED;
+        private PictureBox pic_LEC2;
+        private PictureBox pic_LEC4;
+        private PictureBox pic_LEC5;
+        private PictureBox pic_LEC6;
+        private PictureBox pic_LEC9;
+        private PictureBox pic_LEC10;
+        private PictureBox pic_FACULTY;
         private PictureBox pic_LEC12;
         private PictureBox pic_LEC11;
-        private PictureBox pic_FACULTY;
-        private PictureBox pic_LEC10;
-        private PictureBox pic_LEC9;
-        private PictureBox pic_LEC8;
         private PictureBox pic_LEC7;
-        private PictureBox pic_LEC6;
-        private PictureBox pic_LEC5;
-        private PictureBox pic_LEC4;
-        private PictureBox pic_OCTA;
+        private PictureBox pic_LEC8;
         private PictureBox pic_LEC3;
-        private PictureBox pic_LEC2;
-        private PictureBox pic_ACCRED;
-        private PictureBox pic_DEAN;
-        private PictureBox picBlueprint;
-        private PictureBox pic_LAB3;
-        private PictureBox pic_LAB2;
-        private PictureBox pic_LAB1;
-        private CheckBox chkShowPass;
-        private Button btnEdit;
+        private PictureBox pic_OCTA;
     }
 }
