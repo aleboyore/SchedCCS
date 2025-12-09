@@ -87,9 +87,8 @@ namespace SchedCCS
             UpdatePageTitle("Account Settings");
             ShowView(pnlViewSettings);
 
-            txtEditName.Text = currentUser.FullName;
-            txtEditPass.Text = currentUser.Password;
-            txtEditConfirm.Text = currentUser.Password;
+            // Revert settings UI to clean state every time tab is opened
+            InitializeSettingsUI();
         }
 
         private void btnLogout_Click(object sender, EventArgs e)
@@ -343,20 +342,37 @@ namespace SchedCCS
 
         private void InitializeSettingsUI()
         {
+            // 1. Lock fields
             txtEditName.ReadOnly = true;
             txtEditPass.ReadOnly = true;
             txtEditConfirm.ReadOnly = true;
 
-            txtEditName.BackColor = SystemColors.Control;
-            txtEditPass.BackColor = SystemColors.Control;
-            txtEditConfirm.BackColor = SystemColors.Control;
+            // 2. Visuals (Gray background)
+            txtEditName.BackColor = System.Drawing.SystemColors.Control;
+            txtEditPass.BackColor = System.Drawing.SystemColors.Control;
+            txtEditConfirm.BackColor = System.Drawing.SystemColors.Control;
 
+            // 3. Load Data (Name only)
+            txtEditName.Text = currentUser.FullName;
+
+            // 4. Force "Hidden" text state
+            txtEditPass.UseSystemPasswordChar = false;
+            txtEditConfirm.UseSystemPasswordChar = false;
+
+            txtEditPass.Text = "(Hidden)";
+            txtEditConfirm.Text = "(Hidden)";
+
+            txtEditPass.ForeColor = System.Drawing.Color.Gray;
+            txtEditConfirm.ForeColor = System.Drawing.Color.Gray;
+
+            // 5. Button States
             btnEdit.Visible = true;
             btnSaveChanges.Visible = false;
             btnEdit.Text = "Edit Info";
 
-            txtEditPass.UseSystemPasswordChar = true;
-            txtEditConfirm.UseSystemPasswordChar = true;
+            // 6. Hide Toggle
+            chkShowPass.Visible = false;
+            chkShowPass.Checked = false;
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
@@ -365,20 +381,35 @@ namespace SchedCCS
 
             if (isEditing)
             {
+                // === CANCEL EDITING (Revert to Clean State) ===
                 InitializeSettingsUI();
                 txtEditName.Text = currentUser.FullName;
-                txtEditPass.Text = currentUser.Password;
-                txtEditConfirm.Text = currentUser.Password;
             }
             else
             {
+                // === START EDITING (Unlock & Reveal) ===
                 txtEditName.ReadOnly = false;
                 txtEditPass.ReadOnly = false;
                 txtEditConfirm.ReadOnly = false;
 
+                // Visuals
                 txtEditName.BackColor = System.Drawing.Color.White;
                 txtEditPass.BackColor = System.Drawing.Color.White;
                 txtEditConfirm.BackColor = System.Drawing.Color.White;
+
+                // Reset Text Color to Black
+                txtEditPass.ForeColor = System.Drawing.Color.Black;
+                txtEditConfirm.ForeColor = System.Drawing.Color.Black;
+
+                // Turn Masking ON (Dots) and Clear text
+                txtEditPass.UseSystemPasswordChar = true;
+                txtEditConfirm.UseSystemPasswordChar = true;
+
+                txtEditPass.Clear();
+                txtEditConfirm.Clear();
+
+                // Show the checkbox
+                chkShowPass.Visible = true;
 
                 btnEdit.Text = "Cancel";
                 btnSaveChanges.Visible = true;
@@ -399,20 +430,26 @@ namespace SchedCCS
                 return;
             }
 
-            if (txtEditPass.Text != txtEditConfirm.Text)
-            {
-                MessageBox.Show("Passwords do not match!");
-                return;
-            }
-
             var userInDb = DataManager.Users.FirstOrDefault(u => u.Username == currentUser.Username);
             if (userInDb != null)
             {
                 userInDb.FullName = txtEditName.Text;
-                userInDb.Password = txtEditPass.Text;
-
                 currentUser.FullName = txtEditName.Text;
-                currentUser.Password = txtEditPass.Text;
+
+                // Only update password if user typed something
+                if (!string.IsNullOrEmpty(txtEditPass.Text))
+                {
+                    if (txtEditPass.Text != txtEditConfirm.Text)
+                    {
+                        MessageBox.Show("Passwords do not match!");
+                        return;
+                    }
+
+                    // Hash the NEW password
+                    string newHash = SecurityHelper.HashPassword(txtEditPass.Text);
+                    userInDb.Password = newHash;
+                    currentUser.Password = newHash;
+                }
 
                 Control lbl = this.Controls.Find("lblStudentName", true).FirstOrDefault();
                 if (lbl != null) lbl.Text = currentUser.FullName;

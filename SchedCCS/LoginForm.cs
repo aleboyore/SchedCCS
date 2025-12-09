@@ -63,7 +63,11 @@ namespace SchedCCS
 
         private User AuthenticateUser(string username, string password)
         {
-            return DataManager.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
+            // 1. Hash the input immediately
+            string hashedInput = SecurityHelper.HashPassword(password);
+
+            // 2. Compare the HASHED input with the HASHED database password
+            return DataManager.Users.FirstOrDefault(u => u.Username == username && u.Password == hashedInput);
         }
 
         #endregion

@@ -9,6 +9,8 @@ namespace SchedCCS
 {
     public partial class AdminDashboard : Form
     {
+        private readonly ScheduleService _scheduleService;
+
         #region 1. Fields & Properties
 
         // Grid Sorting
@@ -32,12 +34,12 @@ namespace SchedCCS
         public AdminDashboard()
         {
             InitializeComponent();
+            _scheduleService = new ScheduleService(); // Initialize Service
             RefreshAdminLists();
         }
 
         private void Form1_Load_1(object sender, EventArgs e)
         {
-            // Role-based UI restrictions
             if (!IsAdmin)
             {
                 btnGenerate.Visible = false;
@@ -54,10 +56,11 @@ namespace SchedCCS
 
         #endregion
 
-        #region 3. Automated Scheduling Logic
+        #region 3. Schedule Operations (Service Layer)
 
         private void btnGenerate_Click(object sender, EventArgs e)
         {
+            // Prompt if overwriting a valid schedule
             if (!isDataDirty && DataManager.FailedAssignments.Count == 0 && DataManager.MasterSchedule.Count > 0)
             {
                 var result = MessageBox.Show("A valid schedule exists. Re-generating will attempt to find a better configuration.\n\nContinue?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -65,96 +68,129 @@ namespace SchedCCS
             }
 
             RunScheduleGeneration();
-
-            int conflicts = DataManager.FailedAssignments.Count;
-            if (conflicts == 0)
-                MessageBox.Show("Perfect Schedule Generated Successfully!");
-            else
-                MessageBox.Show($"Schedule Generated. {conflicts} subjects could not be placed (check Pending tab).");
         }
 
-        private void RunScheduleGeneration()
+        // CRITICAL: Added 'async' keyword here
+        private async void RunScheduleGeneration()
         {
+            // 1. START LOADING STATE (UX Upgrade)
             Cursor.Current = Cursors.WaitCursor;
+            btnGenerate.Enabled = false;           // Prevent double-clicks
+            btnGenerate.Text = "Processing...";    // Give visual feedback
 
-            // Initialize optimization tracking
-            int lowestConflictCount = int.MaxValue;
-            List<ScheduleItem> bestSchedule = new List<ScheduleItem>();
-            List<FailedEntry> bestFailures = new List<FailedEntry>();
+            // Force the UI to repaint immediately so the text updates
+            Application.DoEvents();
 
-            // Retain current schedule if valid
-            if (!isDataDirty && DataManager.MasterSchedule.Count > 0)
+            try
             {
-                lowestConflictCount = DataManager.FailedAssignments.Count;
-                bestSchedule = new List<ScheduleItem>(DataManager.MasterSchedule);
-                bestFailures = new List<FailedEntry>(DataManager.FailedAssignments);
+                // 2. HEAVY LIFTING (Non-Blocking)
+                // The UI stays alive while we wait here
+                string resultMsg = await _scheduleService.GenerateScheduleAsync();
+
+                // 3. REFRESH UI (Only runs after math is done)
+                UpdateMasterGrid();
+                UpdateTimetableView();
+                LoadPendingList();
+
+                isDataDirty = false;
+
+                // 4. SHOW SUCCESS
+                MessageBox.Show(resultMsg.Contains("Success")
+                    ? "Perfect Schedule Generated Successfully!"
+                    : resultMsg);
             }
-
-            // Execute optimization attempts
-            int attempts = 50;
-            ScheduleGenerator generator = new ScheduleGenerator(DataManager.Rooms, DataManager.Teachers, DataManager.Sections);
-
-            for (int i = 0; i < attempts; i++)
+            catch (Exception ex)
             {
-                generator.Generate();
-                int score = generator.FailedAssignments.Count;
-
-                if (score < lowestConflictCount)
-                {
-                    lowestConflictCount = score;
-                    bestSchedule = new List<ScheduleItem>(generator.GeneratedSchedule);
-                    bestFailures = new List<FailedEntry>(generator.FailedAssignments);
-                }
-
-                if (score == 0) break;
+                MessageBox.Show("Error generating schedule: " + ex.Message);
             }
+            finally
+            {
+                // 5. RESET LOADING STATE (Always runs, even if error)
+                btnGenerate.Enabled = true;
+                btnGenerate.Text = "Generate Schedule"; // Restore original text
+                Cursor.Current = Cursors.Default;
+            }
+        }
 
-            // Apply best result
-            DataManager.MasterSchedule = bestSchedule;
-            DataManager.FailedAssignments = bestFailures;
+        private void UnassignSubject(ScheduleItem item)
+        {
+            // Delegate to Service
+            _scheduleService.UnassignSubject(item);
 
-            // Refresh state
-            RebuildBusyArrays(bestSchedule);
+            // Refresh UI
             UpdateMasterGrid();
             UpdateTimetableView();
-
-            isDataDirty = false;
-            Cursor.Current = Cursors.Default;
+            LoadPendingList();
         }
 
-        private void RebuildBusyArrays(List<ScheduleItem> acceptedSchedule)
+        private void PerformSwap(ScheduleItem oldClass, FailedEntry newClass)
         {
-            // Reset all arrays
-            foreach (var r in DataManager.Rooms) r.IsBusy = new bool[7, 13];
-            foreach (var t in DataManager.Teachers) t.IsBusy = new bool[7, 13];
-            foreach (var s in DataManager.Sections) s.IsBusy = new bool[7, 13];
+            // Delegate to Service
+            bool success = _scheduleService.PerformSwap(oldClass, newClass);
 
-            // Re-apply busy flags based on schedule
-            foreach (var slot in acceptedSchedule)
+            if (!success)
             {
-                var room = DataManager.Rooms.FirstOrDefault(r => r.Name == slot.Room);
-                var teacher = DataManager.Teachers.FirstOrDefault(t => t.Name == slot.Teacher);
-                var section = DataManager.Sections.FirstOrDefault(s => s.Name == slot.Section);
+                MessageBox.Show("Swap failed: The new subject requirements conflict with availability.");
+            }
 
-                if (room != null && teacher != null && section != null)
+            // Refresh UI
+            UpdateMasterGrid();
+            UpdateTimetableView();
+            LoadPendingList();
+        }
+
+        private void ContextMenu_PlaceClick(object sender, EventArgs e)
+        {
+            var menuItem = (ToolStripMenuItem)sender;
+            dynamic data = menuItem.Tag;
+
+            FailedEntry failEntry = data.FailEntry;
+            int targetDay = data.Day;
+            int targetTime = data.Time;
+            string targetRoom = null;
+
+            // Determine Target Room
+            if (cmbFilterType.SelectedItem?.ToString() == "Room")
+            {
+                targetRoom = comboBox1.SelectedItem.ToString();
+            }
+            else
+            {
+                var roomType = failEntry.Subject.IsLab ? RoomType.Laboratory : RoomType.Lecture;
+                var validRoom = DataManager.Rooms.FirstOrDefault(r => r.Type == roomType && !r.IsBusy[targetDay, targetTime]);
+
+                if (validRoom == null)
                 {
-                    room.IsBusy[slot.DayIndex, slot.TimeIndex] = true;
-                    teacher.IsBusy[slot.DayIndex, slot.TimeIndex] = true;
-                    section.IsBusy[slot.DayIndex, slot.TimeIndex] = true;
-                    slot.RoomObj = room;
+                    MessageBox.Show($"No {roomType} rooms are free at this time.");
+                    return;
                 }
+                targetRoom = validRoom.Name;
+            }
+
+            // Delegate to Service
+            bool success = _scheduleService.PlaceBlockManual(failEntry, targetDay, targetTime, targetRoom);
+
+            if (success)
+            {
+                UpdateMasterGrid();
+                UpdateTimetableView();
+                LoadPendingList();
+            }
+            else
+            {
+                MessageBox.Show("Cannot place here. The teacher is busy, the room is occupied, or the class duration exceeds the day.");
             }
         }
 
         #endregion
 
-        #region 4. Manual Scheduling (Context Menu & Swapping)
+        #region 4. Manual Scheduling (Grid Interaction)
 
         private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.Button != MouseButtons.Right || e.RowIndex < 0 || e.ColumnIndex <= 0) return;
 
-            // Force selection
+            // Force Selection
             dataGridView1.ClearSelection();
             dataGridView1.CurrentCell = dataGridView1[e.ColumnIndex, e.RowIndex];
             dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Selected = true;
@@ -163,7 +199,7 @@ namespace SchedCCS
             int timeIndex = e.RowIndex;
             string currentSectionName = comboBox1.SelectedItem?.ToString();
 
-            // Identify existing class in slot
+            // Identify Item in Slot
             var existingClass = DataManager.MasterSchedule.FirstOrDefault(s =>
                 (s.Section == currentSectionName || cmbFilterType.Text != "Section") &&
                 s.DayIndex == dayIndex &&
@@ -178,14 +214,14 @@ namespace SchedCCS
                     s.Section == currentSectionName && s.DayIndex == dayIndex && s.TimeIndex == timeIndex);
             }
 
-            // Build Context Menu
+            // Build Menu
             ctxMenuSchedule.Items.Clear();
             ctxMenuSchedule.Items.Add(new ToolStripMenuItem($"Slot: {GetDayName(dayIndex)} @ {ToSimple12Hour(GetTimeLabel(timeIndex))}") { Enabled = false, BackColor = System.Drawing.Color.LightGray });
             ctxMenuSchedule.Items.Add(new ToolStripSeparator());
 
             if (existingClass != null)
             {
-                // Slot Occupied: Offer Unassign or Swap
+                // Unassign / Swap Options
                 ctxMenuSchedule.Items.Add(new ToolStripMenuItem($"Current: {existingClass.Subject} ({existingClass.Room})") { Enabled = false });
 
                 var unassignItem = new ToolStripMenuItem("Unassign Entire Block (Move to Pending)");
@@ -194,7 +230,6 @@ namespace SchedCCS
 
                 ctxMenuSchedule.Items.Add(new ToolStripSeparator());
 
-                // Filter valid swaps
                 bool isLabSlot = existingClass.Subject.Contains("(Lab)");
                 var validSwaps = DataManager.FailedAssignments
                     .Where(f => f.Section.Name == existingClass.Section && f.Subject.IsLab == isLabSlot)
@@ -214,7 +249,7 @@ namespace SchedCCS
             }
             else
             {
-                // Slot Empty: Offer Placement
+                // Placement Options
                 string currentMode = cmbFilterType.SelectedItem?.ToString();
                 var relevantPending = new List<FailedEntry>();
 
@@ -230,7 +265,7 @@ namespace SchedCCS
                         return t != null && t.QualifiedSubjects.Contains(CleanSubjectName(f.Subject.Code));
                     }).ToList();
                 }
-                else // Room View
+                else // Room Mode
                 {
                     relevantPending = DataManager.FailedAssignments.ToList();
                 }
@@ -254,167 +289,6 @@ namespace SchedCCS
 
             Rectangle cellRect = dataGridView1.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
             ctxMenuSchedule.Show(dataGridView1, cellRect.Left + e.X, cellRect.Top + e.Y);
-        }
-
-        private void ContextMenu_PlaceClick(object sender, EventArgs e)
-        {
-            var menuItem = (ToolStripMenuItem)sender;
-            dynamic data = menuItem.Tag;
-
-            FailedEntry failEntry = data.FailEntry;
-            int targetDay = data.Day;
-            int targetTime = data.Time;
-            string targetRoom = null;
-
-            if (cmbFilterType.SelectedItem?.ToString() == "Room")
-            {
-                targetRoom = comboBox1.SelectedItem.ToString();
-            }
-            else
-            {
-                var roomType = failEntry.Subject.IsLab ? RoomType.Laboratory : RoomType.Lecture;
-                var validRoom = DataManager.Rooms.FirstOrDefault(r => r.Type == roomType && !r.IsBusy[targetDay, targetTime]);
-
-                if (validRoom == null)
-                {
-                    MessageBox.Show($"No {roomType} rooms are free at this time.");
-                    return;
-                }
-                targetRoom = validRoom.Name;
-            }
-
-            bool success = PlaceBlockManual(failEntry, targetDay, targetTime, targetRoom);
-
-            if (success)
-            {
-                UpdateMasterGrid();
-                UpdateTimetableView();
-                LoadPendingList();
-            }
-            else
-            {
-                MessageBox.Show("Cannot place here. The teacher is busy, the room is occupied, or the class duration exceeds the day.");
-            }
-        }
-
-        private bool PlaceBlockManual(FailedEntry fail, int day, int startInfo, string roomName)
-        {
-            int duration = fail.Subject.Units;
-            var teacher = DataManager.Teachers.FirstOrDefault(t => t.QualifiedSubjects.Contains(CleanSubjectName(fail.Subject.Code)));
-            var room = DataManager.Rooms.First(r => r.Name == roomName);
-
-            if (teacher == null) return false;
-
-            List<ScheduleItem> obstacles = new List<ScheduleItem>();
-
-            // Collision Detection
-            for (int i = 0; i < duration; i++)
-            {
-                int t = startInfo + i;
-                if (t > 12) return false;
-
-                // Check Teacher Availability
-                if (teacher.IsBusy[day, t])
-                {
-                    bool busyWithOthers = DataManager.MasterSchedule.Any(s =>
-                        s.Teacher == teacher.Name && s.DayIndex == day && s.TimeIndex == t &&
-                        s.Section != fail.Section.Name);
-
-                    if (busyWithOthers) return false;
-                }
-
-                // Check Room/Section Availability
-                var existing = DataManager.MasterSchedule.FirstOrDefault(s =>
-                    s.DayIndex == day && s.TimeIndex == t &&
-                    (s.Room == roomName || s.Section == fail.Section.Name));
-
-                if (existing != null) obstacles.Add(existing);
-            }
-
-            // Move existing obstacles to Pending
-            foreach (var obstacle in obstacles)
-            {
-                if (DataManager.MasterSchedule.Contains(obstacle)) UnassignSubject(obstacle);
-            }
-
-            // Commit new block
-            for (int i = 0; i < duration; i++)
-            {
-                int t = startInfo + i;
-                ScheduleItem newItem = new ScheduleItem
-                {
-                    Section = fail.Section.Name,
-                    Subject = fail.Subject.Code,
-                    Teacher = teacher.Name,
-                    Room = room.Name,
-                    Day = GetDayName(day),
-                    Time = GetTimeLabel(t),
-                    DayIndex = day,
-                    TimeIndex = t,
-                    RoomObj = room
-                };
-                DataManager.MasterSchedule.Add(newItem);
-
-                teacher.IsBusy[day, t] = true;
-                fail.Section.IsBusy[day, t] = true;
-                room.IsBusy[day, t] = true;
-            }
-
-            if (DataManager.FailedAssignments.Contains(fail))
-                DataManager.FailedAssignments.Remove(fail);
-
-            return true;
-        }
-
-        private void UnassignSubject(ScheduleItem item)
-        {
-            bool isLabTarget = item.Subject.Contains("(Lab)");
-
-            var relatedItems = DataManager.MasterSchedule
-                .Where(s => s.Section == item.Section &&
-                            s.Subject.Contains("(Lab)") == isLabTarget &&
-                            CleanSubjectName(s.Subject) == CleanSubjectName(item.Subject))
-                .ToList();
-
-            if (relatedItems.Count == 0) return;
-
-            foreach (var part in relatedItems) ClearBusyFlag(part);
-
-            DataManager.MasterSchedule.RemoveAll(x => relatedItems.Contains(x));
-
-            var sec = DataManager.Sections.First(x => x.Name == item.Section);
-            var sub = sec.SubjectsToTake.First(x => CleanSubjectName(x.Code) == CleanSubjectName(item.Subject) && x.IsLab == isLabTarget);
-
-            if (!DataManager.FailedAssignments.Any(f => f.Section == sec && f.Subject == sub))
-            {
-                DataManager.FailedAssignments.Add(new FailedEntry
-                {
-                    Section = sec,
-                    Subject = sub,
-                    Reason = "Manually Unassigned"
-                });
-            }
-
-            RebuildBusyArrays(DataManager.MasterSchedule);
-            UpdateMasterGrid();
-            UpdateTimetableView();
-            LoadPendingList();
-        }
-
-        private void PerformSwap(ScheduleItem oldClass, FailedEntry newClass)
-        {
-            UnassignSubject(oldClass);
-
-            bool success = PlaceBlockManual(newClass, oldClass.DayIndex, oldClass.TimeIndex, oldClass.Room);
-
-            if (!success)
-            {
-                MessageBox.Show("Swap failed: The new subject requirements conflict with availability.");
-            }
-
-            UpdateMasterGrid();
-            UpdateTimetableView();
-            LoadPendingList();
         }
 
         private void btnFindSlots_Click(object sender, EventArgs e)
@@ -467,17 +341,6 @@ namespace SchedCCS
                 MessageBox.Show(report, "Availability Cheat Sheet");
         }
 
-        private void ClearBusyFlag(ScheduleItem item)
-        {
-            var t = DataManager.Teachers.FirstOrDefault(x => x.Name == item.Teacher);
-            var s = DataManager.Sections.FirstOrDefault(x => x.Name == item.Section);
-            var r = DataManager.Rooms.FirstOrDefault(x => x.Name == item.Room);
-
-            if (t != null) t.IsBusy[item.DayIndex, item.TimeIndex] = false;
-            if (s != null) s.IsBusy[item.DayIndex, item.TimeIndex] = false;
-            if (r != null) r.IsBusy[item.DayIndex, item.TimeIndex] = false;
-        }
-
         #endregion
 
         #region 5. Visualization & Grid Rendering
@@ -494,19 +357,16 @@ namespace SchedCCS
 
             dgvMaster.DataSource = sortedSchedule;
 
-            // Styling
             dgvMaster.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvMaster.AllowUserToAddRows = false;
             dgvMaster.RowHeadersVisible = false;
             dgvMaster.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvMaster.ReadOnly = true;
 
-            // Visibility
             if (dgvMaster.Columns["DayIndex"] != null) dgvMaster.Columns["DayIndex"].Visible = false;
             if (dgvMaster.Columns["TimeIndex"] != null) dgvMaster.Columns["TimeIndex"].Visible = false;
             if (dgvMaster.Columns["RoomObj"] != null) dgvMaster.Columns["RoomObj"].Visible = false;
 
-            // Headers
             if (dgvMaster.Columns["Section"] != null) dgvMaster.Columns["Section"].HeaderText = "SECTION";
             if (dgvMaster.Columns["Subject"] != null) dgvMaster.Columns["Subject"].HeaderText = "SUBJECT CODE";
             if (dgvMaster.Columns["Teacher"] != null) dgvMaster.Columns["Teacher"].HeaderText = "INSTRUCTOR";
@@ -514,7 +374,6 @@ namespace SchedCCS
             if (dgvMaster.Columns["Day"] != null) dgvMaster.Columns["Day"].HeaderText = "DAY";
             if (dgvMaster.Columns["Time"] != null) dgvMaster.Columns["Time"].HeaderText = "TIME SLOT";
 
-            // Ordering
             if (dgvMaster.Columns["Day"] != null) dgvMaster.Columns["Day"].DisplayIndex = 0;
             if (dgvMaster.Columns["Time"] != null) dgvMaster.Columns["Time"].DisplayIndex = 1;
             if (dgvMaster.Columns["Section"] != null) dgvMaster.Columns["Section"].DisplayIndex = 2;
@@ -566,7 +425,6 @@ namespace SchedCCS
                 dataGridView1.Rows[rowIndex].Height = exactRowHeight;
             }
 
-            // Filter
             List<ScheduleItem> filteredList = new List<ScheduleItem>();
             if (filterMode == "Section") filteredList = DataManager.MasterSchedule.Where(x => x.Section == filterValue).ToList();
             else if (filterMode == "Teacher") filteredList = DataManager.MasterSchedule.Where(x => x.Teacher == filterValue).ToList();
@@ -1035,6 +893,25 @@ namespace SchedCCS
             foreach (var s in DataManager.Sections) lstSections.Items.Add(s.Name);
 
             RefreshSectionDropdown();
+
+            // --- DYNAMIC PROGRAM POPULATION (Batch Add Fix) ---
+            string currentBatchProg = cmbBatchProgram.SelectedItem?.ToString();
+            string currentSectProg = cmbSectionProgram.SelectedItem?.ToString();
+
+            cmbBatchProgram.Items.Clear();
+            cmbSectionProgram.Items.Clear();
+
+            foreach (var prog in DataManager.Programs)
+            {
+                cmbBatchProgram.Items.Add(prog);
+                cmbSectionProgram.Items.Add(prog);
+            }
+
+            if (currentBatchProg != null && cmbBatchProgram.Items.Contains(currentBatchProg))
+                cmbBatchProgram.SelectedItem = currentBatchProg;
+
+            if (currentSectProg != null && cmbSectionProgram.Items.Contains(currentSectProg))
+                cmbSectionProgram.SelectedItem = currentSectProg;
         }
 
         private void RefreshSectionDropdown()
@@ -1114,7 +991,7 @@ namespace SchedCCS
                         DataManager.MasterSchedule = backup.MasterSchedule ?? new List<ScheduleItem>();
                         DataManager.FailedAssignments = backup.FailedAssignments ?? new List<FailedEntry>();
 
-                        RebuildBusyArrays(DataManager.MasterSchedule);
+                        _scheduleService.RebuildBusyArrays(); // Sync using Service
                         RefreshAdminLists();
                         UpdateMasterGrid();
                         UpdateTimetableView();

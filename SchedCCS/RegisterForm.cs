@@ -103,7 +103,10 @@ namespace SchedCCS
             User newUser = new User
             {
                 Username = txtStudentID.Text,
-                Password = txtPassword.Text,
+
+                // Hashing the password before saving
+                Password = SecurityHelper.HashPassword(txtPassword.Text),
+
                 FullName = $"{txtFirstName.Text} {txtLastName.Text}",
                 Role = "Student",
                 StudentSection = cmbSection.SelectedItem.ToString()

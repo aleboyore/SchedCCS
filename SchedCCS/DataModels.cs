@@ -6,7 +6,7 @@ namespace SchedCCS
 {
     #region 1. Interfaces & Enums
 
-    // Defines a contract for objects that have an ID and Name.
+    // Defines a contract for objects that have an ID and Name
     public interface IIdentifiable
     {
         int Id { get; set; }
@@ -22,7 +22,7 @@ namespace SchedCCS
 
     #region 2. Base Classes
 
-    // Base class for any person entity in the system.
+    // Base class for any person entity in the system
     public abstract class Person : IIdentifiable
     {
         public int Id { get; set; }
@@ -35,7 +35,7 @@ namespace SchedCCS
 
     #region 3. Derived Entities
 
-    // Represents a faculty member with specific subject qualifications.
+    // Represents a faculty member with specific subject qualifications
     public class Teacher : Person
     {
         public List<string> QualifiedSubjects { get; set; }
@@ -60,7 +60,7 @@ namespace SchedCCS
 
     #region 4. Resource & Structure Classes
 
-    // Represents a physical room within the facility.
+    // Represents a physical room within the facility
     public class Room : IIdentifiable
     {
         private string _name = string.Empty;
@@ -95,7 +95,7 @@ namespace SchedCCS
         }
     }
 
-    // Represents a student section (class group).
+    // Represents a student section (class group)
     public class Section : IIdentifiable
     {
         public int Id { get; set; }
@@ -121,7 +121,7 @@ namespace SchedCCS
         }
     }
 
-    // Represents a specific subject or course.
+    // Represents a specific subject or course
     public class Subject
     {
         public string Code { get; set; } = string.Empty;
@@ -133,7 +133,7 @@ namespace SchedCCS
 
     #region 5. Data Transfer Objects (DTOs)
 
-    // Flat structure for grid display and CSV export.
+    // Flat structure for grid display and CSV export
     public class ScheduleItem
     {
         public string? Section { get; set; }
@@ -147,7 +147,7 @@ namespace SchedCCS
         public Room RoomObj { get; set; }
     }
 
-    // Tracks assignment failures for the "Pending" list.
+    // Tracks assignment failures for the "Pending" list
     public class FailedEntry
     {
         public Section Section { get; set; }
