@@ -40,17 +40,38 @@ namespace SchedCCS
             Sections.Clear();
             Users.Clear();
 
-            LoadUsers();
-            LoadRooms();
-            LoadTeachers();
-            LoadSections();
+            try
+            {
+                // 1. Try Loading from Database (XAMPP/MySQL)
+                Users = DatabaseHelper.LoadUsers();
+                Rooms = DatabaseHelper.LoadRooms();
+                Teachers = DatabaseHelper.LoadTeachers();
+                Sections = DatabaseHelper.LoadSections();
+
+                // 2. If Database is empty (First Run), use Hardcoded data to Seed it
+                // Note: These calls do NOT use "DatabaseHelper." because they are inside this class.
+                if (Users.Count == 0) LoadUsers_Hardcoded();
+                if (Rooms.Count == 0) LoadRooms_Hardcoded();
+                if (Teachers.Count == 0) LoadTeachers_Hardcoded();
+                if (Sections.Count == 0) LoadSections_Hardcoded();
+            }
+            catch (Exception ex)
+            {
+                // 3. If Database Fails (Offline), fallback to Hardcoded data
+                System.Windows.Forms.MessageBox.Show("Database Error: " + ex.Message + "\n\nSwitching to Offline Mode.");
+
+                LoadUsers_Hardcoded();
+                LoadRooms_Hardcoded();
+                LoadTeachers_Hardcoded();
+                LoadSections_Hardcoded();
+            }
         }
 
         #endregion
 
-        #region 3. Data Loaders
+        #region 3. Hardcoded Data Loaders (Fallback/Seeding)
 
-        private static void LoadUsers()
+        private static void LoadUsers_Hardcoded()
         {
             // Admin (Password: "123")
             Users.Add(new User
@@ -82,7 +103,7 @@ namespace SchedCCS
             });
         }
 
-        private static void LoadRooms()
+        private static void LoadRooms_Hardcoded()
         {
             // Building A (Lecture Rooms)
             Rooms.Add(new Room { Id = 1, Name = "LEC 2", Type = RoomType.Lecture });
@@ -107,7 +128,7 @@ namespace SchedCCS
             Rooms.Add(new Room { Id = 26, Name = "LAB 6", Type = RoomType.Laboratory });
         }
 
-        private static void LoadTeachers()
+        private static void LoadTeachers_Hardcoded()
         {
             // General Education & Common
             AddTeacher(1, "Mr. Desamero", "ITEC 102");
@@ -150,7 +171,7 @@ namespace SchedCCS
             AddTeacher(37, "Mr. Dela Cruz", "ITEP 415", "ITST 306");
         }
 
-        private static void LoadSections()
+        private static void LoadSections_Hardcoded()
         {
             // 1st Year
             var info1 = new[] {
