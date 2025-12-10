@@ -49,7 +49,6 @@ namespace SchedCCS
                 Sections = DatabaseHelper.LoadSections();
 
                 // 2. If Database is empty (First Run), use Hardcoded data to Seed it
-                // Note: These calls do NOT use "DatabaseHelper." because they are inside this class.
                 if (Users.Count == 0) LoadUsers_Hardcoded();
                 if (Rooms.Count == 0) LoadRooms_Hardcoded();
                 if (Teachers.Count == 0) LoadTeachers_Hardcoded();
@@ -105,7 +104,7 @@ namespace SchedCCS
 
         private static void LoadRooms_Hardcoded()
         {
-            // Building A (Lecture Rooms)
+            // Matches SQL "Useable Hotspots" Exactly
             Rooms.Add(new Room { Id = 1, Name = "LEC 2", Type = RoomType.Lecture });
             Rooms.Add(new Room { Id = 2, Name = "LEC 3", Type = RoomType.Lecture });
             Rooms.Add(new Room { Id = 3, Name = "LEC 4", Type = RoomType.Lecture });
@@ -118,7 +117,7 @@ namespace SchedCCS
             Rooms.Add(new Room { Id = 10, Name = "LEC 11", Type = RoomType.Lecture });
             Rooms.Add(new Room { Id = 11, Name = "LEC 12", Type = RoomType.Lecture });
 
-            // Building B (Labs + Mixed)
+            // Building B
             Rooms.Add(new Room { Id = 20, Name = "LEC 1", Type = RoomType.Lecture });
             Rooms.Add(new Room { Id = 21, Name = "LAB 1", Type = RoomType.Laboratory });
             Rooms.Add(new Room { Id = 22, Name = "LAB 2", Type = RoomType.Laboratory });
@@ -130,16 +129,14 @@ namespace SchedCCS
 
         private static void LoadTeachers_Hardcoded()
         {
-            // General Education & Common
+            // Full List (37 Teachers)
             AddTeacher(1, "Mr. Desamero", "ITEC 102");
             AddTeacher(2, "Mr. Funtila", "GEC 103");
-            AddTeacher(3, "Ms. De Torres", "ITEC 101", "ITEL 415", "ITEP 415");
+            AddTeacher(3, "Ms. De Torres", "ITEC 101", "ITEL 415");
             AddTeacher(4, "Ms. Cabreza", "GEC 102");
-            AddTeacher(5, "Ms. Parica", "PE 1");
+            AddTeacher(5, "Ms. Parica", "PE 1", "PE 3");
             AddTeacher(6, "Mr. Calosa", "GEC 101");
             AddTeacher(7, "Ms. Balinsayo", "KOMFIL");
-
-            // Major Subjects
             AddTeacher(9, "Mr. Dorado", "ITEC 102", "ITEL 201", "CMSC 203", "ITST 301", "GEC 104");
             AddTeacher(10, "Ms. Arida", "ITEC 101", "ITEC 104", "CMSC 307", "CSST 101");
             AddTeacher(11, "Mr. Sael", "PE 1");
@@ -173,7 +170,7 @@ namespace SchedCCS
 
         private static void LoadSections_Hardcoded()
         {
-            // 1st Year
+            // 1st Year Sections
             var info1 = new[] {
                 ("ITEC 102", "Mr. Desamero"), ("GEC 103", "Mr. Funtila"), ("ITEC 101", "Ms. De Torres"),
                 ("GEC 102", "Ms. Cabreza"), ("PE 1", "Ms. Parica"), ("GEC 101", "Mr. Calosa"),
@@ -190,7 +187,7 @@ namespace SchedCCS
             CreateSection("CS 1A", "BSCS", 1, cs1);
             CreateSection("CS 1B", "BSCS", 1, cs1);
 
-            // 2nd Year
+            // 2nd Year (Balanced Labs)
             var cs2 = new[] {
                 ("CMSC 202", "Ms. Cabuyao"), ("MATH 24", "Mr. Bombio"), ("ITEC 205", "Mr. Lara"),
                 ("PE 3", "Mr. Moreno"), ("ITEC 104", "Ms. Arida"), ("SOSLIT", "Ms. Del Valle"),
@@ -199,15 +196,7 @@ namespace SchedCCS
             CreateSection("CS 2A", "BSCS", 2, cs2);
             CreateSection("CS 2B", "BSCS", 2, cs2);
 
-            var info2 = new[] {
-                ("ITEC 204", "Ms. Encanto"), ("ITEL 201", "Mr. Dorado"), ("ITEP 203", "Ms. Escote"),
-                ("ITEC 205", "Mr. Amora"), ("GEC 107", "Ms. Basaca"), ("SOSLIT", "Ms. Del Valle"),
-                ("ITEL 202", "Mr. Andres"), ("PE 3", "Mr. Moreno")
-            };
-            CreateSection("INFO 2A", "BSINFO", 2, info2);
-            CreateSection("INFO 2B", "BSINFO", 2, info2);
-
-            // 3rd Year
+            // 3rd Year (Higher Labs)
             var wmad3 = new[] {
                 ("ITEP 308", "Mr. Manaloto"), ("ITEP 310", "Mr. Manzanero"), ("ITEL 304", "Mr. Del Rosario"),
                 ("ITST 301", "Mr. Dorado"), ("ITST 302", "Ms. Viojan")
@@ -245,7 +234,7 @@ namespace SchedCCS
 
                 if (code.Contains("NSTP")) continue;
 
-                // Smart Lab Logic
+                // Smart Lab Logic: Matches SQL logic exactly
                 bool isPotentialLab = code.StartsWith("ITEC") || code.StartsWith("ITEL") ||
                                       code.StartsWith("ITEP") || code.StartsWith("CMSC") ||
                                       code.StartsWith("CSST");

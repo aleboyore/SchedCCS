@@ -98,7 +98,7 @@
             btnClose.FlatAppearance.BorderSize = 0;
             btnClose.FlatStyle = FlatStyle.Flat;
             btnClose.ForeColor = Color.Black;
-            btnClose.Location = new Point(1180, 25);
+            btnClose.Location = new Point(1233, 12);
             btnClose.Name = "btnClose";
             btnClose.Size = new Size(35, 30);
             btnClose.TabIndex = 6;

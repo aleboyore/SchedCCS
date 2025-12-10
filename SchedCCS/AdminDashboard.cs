@@ -152,7 +152,7 @@ namespace SchedCCS
             // Determine Target Room
             if (cmbFilterType.SelectedItem?.ToString() == "Room")
             {
-                targetRoom = comboBox1.SelectedItem.ToString();
+                targetRoom = cmbScheduleView.SelectedItem.ToString();
             }
             else
             {
@@ -186,25 +186,25 @@ namespace SchedCCS
 
         #region 4. Manual Scheduling (Grid Interaction)
 
-        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        private void dgvTimetable_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.Button != MouseButtons.Right || e.RowIndex < 0 || e.ColumnIndex <= 0) return;
 
             // Force Selection
-            dataGridView1.ClearSelection();
-            dataGridView1.CurrentCell = dataGridView1[e.ColumnIndex, e.RowIndex];
-            dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Selected = true;
+            dgvTimetable.ClearSelection();
+            dgvTimetable.CurrentCell = dgvTimetable[e.ColumnIndex, e.RowIndex];
+            dgvTimetable.Rows[e.RowIndex].Cells[e.ColumnIndex].Selected = true;
 
             int dayIndex = e.ColumnIndex;
             int timeIndex = e.RowIndex;
-            string currentSectionName = comboBox1.SelectedItem?.ToString();
+            string currentSectionName = cmbScheduleView.SelectedItem?.ToString();
 
             // Identify Item in Slot
             var existingClass = DataManager.MasterSchedule.FirstOrDefault(s =>
                 (s.Section == currentSectionName || cmbFilterType.Text != "Section") &&
                 s.DayIndex == dayIndex &&
                 s.TimeIndex == timeIndex &&
-                (s.Room == dataGridView1.Rows[timeIndex].Cells[e.ColumnIndex].Value?.ToString().Split('\n').LastOrDefault()
+                (s.Room == dgvTimetable.Rows[timeIndex].Cells[e.ColumnIndex].Value?.ToString().Split('\n').LastOrDefault()
                  || cmbFilterType.Text == "Section")
             );
 
@@ -287,8 +287,8 @@ namespace SchedCCS
                 }
             }
 
-            Rectangle cellRect = dataGridView1.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
-            ctxMenuSchedule.Show(dataGridView1, cellRect.Left + e.X, cellRect.Top + e.Y);
+            Rectangle cellRect = dgvTimetable.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+            ctxMenuSchedule.Show(dgvTimetable, cellRect.Left + e.X, cellRect.Top + e.Y);
         }
 
         private void btnFindSlots_Click(object sender, EventArgs e)
@@ -384,36 +384,36 @@ namespace SchedCCS
 
         private void UpdateTimetableView()
         {
-            string currentSelection = comboBox1.SelectedItem?.ToString();
-            comboBox1.Items.Clear();
-            foreach (var section in DataManager.Sections) comboBox1.Items.Add(section.Name);
+            string currentSelection = cmbScheduleView.SelectedItem?.ToString();
+            cmbScheduleView.Items.Clear();
+            foreach (var section in DataManager.Sections) cmbScheduleView.Items.Add(section.Name);
 
-            if (currentSelection != null && comboBox1.Items.Contains(currentSelection))
+            if (currentSelection != null && cmbScheduleView.Items.Contains(currentSelection))
             {
-                comboBox1.SelectedItem = currentSelection;
+                cmbScheduleView.SelectedItem = currentSelection;
             }
-            else if (comboBox1.Items.Count > 0)
+            else if (cmbScheduleView.Items.Count > 0)
             {
-                comboBox1.SelectedIndex = 0;
+                cmbScheduleView.SelectedIndex = 0;
             }
 
-            if (comboBox1.SelectedItem != null)
+            if (cmbScheduleView.SelectedItem != null)
             {
                 string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
-                DisplayTimetable(comboBox1.SelectedItem.ToString(), mode);
+                DisplayTimetable(cmbScheduleView.SelectedItem.ToString(), mode);
             }
-            dataGridView1.Refresh();
+            dgvTimetable.Refresh();
         }
 
         private void DisplayTimetable(string filterValue, string filterMode)
         {
-            dataGridView1.DataSource = null;
-            dataGridView1.Rows.Clear();
-            dataGridView1.Columns.Clear();
+            dgvTimetable.DataSource = null;
+            dgvTimetable.Rows.Clear();
+            dgvTimetable.Columns.Clear();
 
-            dataGridView1.Columns.Add("Time", "TIME");
+            dgvTimetable.Columns.Add("Time", "TIME");
             string[] days = { "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" };
-            foreach (var day in days) dataGridView1.Columns.Add(day, day);
+            foreach (var day in days) dgvTimetable.Columns.Add(day, day);
 
             ConfigureGridStyles();
 
@@ -421,8 +421,8 @@ namespace SchedCCS
             for (int hour = 7; hour < 18; hour++)
             {
                 string niceTime = ToSimple12Hour($"{hour}:00 - {hour + 1}:00");
-                int rowIndex = dataGridView1.Rows.Add(niceTime, "", "", "", "", "", "", "");
-                dataGridView1.Rows[rowIndex].Height = exactRowHeight;
+                int rowIndex = dgvTimetable.Rows.Add(niceTime, "", "", "", "", "", "", "");
+                dgvTimetable.Rows[rowIndex].Height = exactRowHeight;
             }
 
             List<ScheduleItem> filteredList = new List<ScheduleItem>();
@@ -431,7 +431,7 @@ namespace SchedCCS
             else if (filterMode == "Room") filteredList = DataManager.MasterSchedule.Where(x => x.Room == filterValue).ToList();
 
             RenderScheduleItems(filteredList, filterMode);
-            dataGridView1.ClearSelection();
+            dgvTimetable.ClearSelection();
         }
 
         private void RenderScheduleItems(List<ScheduleItem> items, string filterMode)
@@ -442,14 +442,14 @@ namespace SchedCCS
                 int rowIndex = startHour - 7;
                 int colIndex = GetDayColumnIndex(item.Day);
 
-                if (rowIndex >= 0 && rowIndex < dataGridView1.Rows.Count && colIndex > 0)
+                if (rowIndex >= 0 && rowIndex < dgvTimetable.Rows.Count && colIndex > 0)
                 {
                     string cellText = "";
                     if (filterMode == "Section") cellText = $"{item.Subject}\n{item.Teacher}\n{item.Room}";
                     else if (filterMode == "Teacher") cellText = $"{item.Subject}\n{item.Section}\n{item.Room}";
                     else if (filterMode == "Room") cellText = $"{item.Subject}\n{item.Section}\n{item.Teacher}";
 
-                    var cell = dataGridView1.Rows[rowIndex].Cells[colIndex];
+                    var cell = dgvTimetable.Rows[rowIndex].Cells[colIndex];
                     cell.Value = cellText;
 
                     if (item.Subject.Contains("(Lab)"))
@@ -462,23 +462,23 @@ namespace SchedCCS
 
         private void ConfigureGridStyles()
         {
-            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
-            dataGridView1.Columns["Time"].FillWeight = 50;
-            dataGridView1.ScrollBars = ScrollBars.None;
-            dataGridView1.DefaultCellStyle.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular);
-            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
-            dataGridView1.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridView1.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            dataGridView1.AllowUserToAddRows = false;
-            dataGridView1.RowHeadersVisible = false;
-            foreach (DataGridViewColumn col in dataGridView1.Columns) col.SortMode = DataGridViewColumnSortMode.NotSortable;
+            dgvTimetable.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvTimetable.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+            dgvTimetable.Columns["Time"].FillWeight = 50;
+            dgvTimetable.ScrollBars = ScrollBars.None;
+            dgvTimetable.DefaultCellStyle.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular);
+            dgvTimetable.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+            dgvTimetable.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvTimetable.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvTimetable.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgvTimetable.AllowUserToAddRows = false;
+            dgvTimetable.RowHeadersVisible = false;
+            foreach (DataGridViewColumn col in dgvTimetable.Columns) col.SortMode = DataGridViewColumnSortMode.NotSortable;
         }
 
         private int CalculateRowHeight()
         {
-            int availableHeight = dataGridView1.Height - dataGridView1.ColumnHeadersHeight;
+            int availableHeight = dgvTimetable.Height - dgvTimetable.ColumnHeadersHeight;
             int height = availableHeight / 11;
             return height < 20 ? 20 : height;
         }
@@ -1008,10 +1008,10 @@ namespace SchedCCS
 
         private void btnExportPdf_Click(object sender, EventArgs e)
         {
-            if (comboBox1.SelectedItem == null) { MessageBox.Show("Please select a view first."); return; }
+            if (cmbScheduleView.SelectedItem == null) { MessageBox.Show("Please select a view first."); return; }
 
             string filterMode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
-            string filterValue = comboBox1.SelectedItem.ToString();
+            string filterValue = cmbScheduleView.SelectedItem.ToString();
 
             SaveFileDialog save = new SaveFileDialog();
             save.Filter = "PDF File|*.pdf";
@@ -1159,32 +1159,32 @@ namespace SchedCCS
 
         #region 8. UI Interaction Events
 
-        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        private void tabAdminMenu_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (tabControl1.SelectedTab == tabControl1.TabPages["tabSchedule"])
+            if (tabAdminMenu.SelectedTab == tabAdminMenu.TabPages["tabSchedule"])
             {
                 if (cmbFilterType.SelectedIndex == -1) cmbFilterType.SelectedIndex = 0;
-                if (comboBox1.Items.Count == 0) UpdateTimetableView();
+                if (cmbScheduleView.Items.Count == 0) UpdateTimetableView();
 
                 if (DataManager.MasterSchedule != null && DataManager.MasterSchedule.Count > 0)
                 {
-                    if (comboBox1.SelectedItem != null)
+                    if (cmbScheduleView.SelectedItem != null)
                     {
                         string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
-                        DisplayTimetable(comboBox1.SelectedItem.ToString(), mode);
+                        DisplayTimetable(cmbScheduleView.SelectedItem.ToString(), mode);
                     }
                 }
             }
-            else if (tabControl1.SelectedTab == tabControl1.TabPages["tabMaster"])
+            else if (tabAdminMenu.SelectedTab == tabAdminMenu.TabPages["tabMaster"])
             {
                 UpdateMasterGrid();
                 if (isDataDirty) RunScheduleGeneration();
             }
-            else if (tabControl1.SelectedTab == tabControl1.TabPages["tabManage"])
+            else if (tabAdminMenu.SelectedTab == tabAdminMenu.TabPages["tabManage"])
             {
                 RefreshAdminLists();
             }
-            else if (tabControl1.SelectedTab.Text == "Pending Subjects")
+            else if (tabAdminMenu.SelectedTab.Text == "Pending Subjects")
             {
                 LoadPendingList();
             }
@@ -1192,21 +1192,21 @@ namespace SchedCCS
 
         private void cmbFilterType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            comboBox1.Items.Clear();
-            comboBox1.Text = "";
+            cmbScheduleView.Items.Clear();
+            cmbScheduleView.Text = "";
             string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
 
-            if (mode == "Section") foreach (var s in DataManager.Sections) comboBox1.Items.Add(s.Name);
-            else if (mode == "Teacher") foreach (var t in DataManager.Teachers) comboBox1.Items.Add(t.Name);
-            else if (mode == "Room") foreach (var r in DataManager.Rooms) comboBox1.Items.Add(r.Name);
+            if (mode == "Section") foreach (var s in DataManager.Sections) cmbScheduleView.Items.Add(s.Name);
+            else if (mode == "Teacher") foreach (var t in DataManager.Teachers) cmbScheduleView.Items.Add(t.Name);
+            else if (mode == "Room") foreach (var r in DataManager.Rooms) cmbScheduleView.Items.Add(r.Name);
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void cmbScheduleView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboBox1.SelectedItem != null)
+            if (cmbScheduleView.SelectedItem != null)
             {
                 string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
-                DisplayTimetable(comboBox1.SelectedItem.ToString(), mode);
+                DisplayTimetable(cmbScheduleView.SelectedItem.ToString(), mode);
             }
         }
 
@@ -1280,13 +1280,13 @@ namespace SchedCCS
 
         private void cmbSectionList_SelectedIndexChanged(object sender, EventArgs e) => RefreshSubjectList();
 
-        private void dataGridView1_Resize(object sender, EventArgs e)
+        private void dgvTimetable_Resize(object sender, EventArgs e)
         {
-            if (dataGridView1.Rows.Count == 0 || !dataGridView1.Visible) return;
+            if (dgvTimetable.Rows.Count == 0 || !dgvTimetable.Visible) return;
             try
             {
                 int newRowHeight = CalculateRowHeight();
-                foreach (DataGridViewRow row in dataGridView1.Rows) row.Height = newRowHeight;
+                foreach (DataGridViewRow row in dgvTimetable.Rows) row.Height = newRowHeight;
             }
             catch { }
         }

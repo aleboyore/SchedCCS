@@ -30,21 +30,22 @@
         {
             components = new System.ComponentModel.Container();
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            tabControl1 = new TabControl();
-            tabPage1 = new TabPage();
+            tabAdminMenu = new TabControl();
+            tabSchedule = new TabPage();
             btnRestoreDatabase = new Button();
+            btnClose = new Button();
             btnExportPdf = new Button();
             btnLogout = new Button();
             cmbFilterType = new ComboBox();
             btnGenerate = new Button();
-            dataGridView1 = new DataGridView();
+            dgvTimetable = new DataGridView();
             btnBackupDatabase = new Button();
-            comboBox1 = new ComboBox();
+            cmbScheduleView = new ComboBox();
             tabMaster = new TabPage();
             dgvMaster = new DataGridView();
-            tabPage2 = new TabPage();
-            tabControl2 = new TabControl();
-            tabPage3 = new TabPage();
+            tabManage = new TabPage();
+            tabDataManagers = new TabControl();
+            tabTeachers = new TabPage();
             groupBox4 = new GroupBox();
             btnDeleteTeacher = new Button();
             lstTeachers = new ListBox();
@@ -56,7 +57,7 @@
             txtTeacherName = new TextBox();
             label4 = new Label();
             label3 = new Label();
-            tabPage4 = new TabPage();
+            tabRooms = new TabPage();
             groupBox5 = new GroupBox();
             lstRooms = new ListBox();
             btnDeleteRoom = new Button();
@@ -68,7 +69,7 @@
             cmbRoomType = new ComboBox();
             label2 = new Label();
             txtRoomName = new TextBox();
-            tabPage5 = new TabPage();
+            tabSections = new TabPage();
             groupBox8 = new GroupBox();
             btnBatchAdd = new Button();
             chkBatchLab = new CheckBox();
@@ -111,21 +112,20 @@
             Subject = new DataGridViewTextBoxColumn();
             Reason = new DataGridViewTextBoxColumn();
             ctxMenuSchedule = new ContextMenuStrip(components);
-            btnClose = new Button();
-            tabControl1.SuspendLayout();
-            tabPage1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            tabAdminMenu.SuspendLayout();
+            tabSchedule.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvTimetable).BeginInit();
             tabMaster.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvMaster).BeginInit();
-            tabPage2.SuspendLayout();
-            tabControl2.SuspendLayout();
-            tabPage3.SuspendLayout();
+            tabManage.SuspendLayout();
+            tabDataManagers.SuspendLayout();
+            tabTeachers.SuspendLayout();
             groupBox4.SuspendLayout();
             groupBox2.SuspendLayout();
-            tabPage4.SuspendLayout();
+            tabRooms.SuspendLayout();
             groupBox5.SuspendLayout();
             groupBox1.SuspendLayout();
-            tabPage5.SuspendLayout();
+            tabSections.SuspendLayout();
             groupBox8.SuspendLayout();
             groupBox6.SuspendLayout();
             groupBox7.SuspendLayout();
@@ -134,38 +134,38 @@
             ((System.ComponentModel.ISupportInitialize)dgvPending).BeginInit();
             SuspendLayout();
             // 
-            // tabControl1
+            // tabAdminMenu
             // 
-            tabControl1.Controls.Add(tabPage1);
-            tabControl1.Controls.Add(tabMaster);
-            tabControl1.Controls.Add(tabPage2);
-            tabControl1.Controls.Add(tabPending);
-            tabControl1.Dock = DockStyle.Fill;
-            tabControl1.Location = new Point(0, 0);
-            tabControl1.Name = "tabControl1";
-            tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1280, 720);
-            tabControl1.TabIndex = 4;
-            tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
+            tabAdminMenu.Controls.Add(tabSchedule);
+            tabAdminMenu.Controls.Add(tabMaster);
+            tabAdminMenu.Controls.Add(tabManage);
+            tabAdminMenu.Controls.Add(tabPending);
+            tabAdminMenu.Dock = DockStyle.Fill;
+            tabAdminMenu.Location = new Point(0, 0);
+            tabAdminMenu.Name = "tabAdminMenu";
+            tabAdminMenu.SelectedIndex = 0;
+            tabAdminMenu.Size = new Size(1280, 720);
+            tabAdminMenu.TabIndex = 4;
+            tabAdminMenu.SelectedIndexChanged += tabAdminMenu_SelectedIndexChanged;
             // 
-            // tabPage1
+            // tabSchedule
             // 
-            tabPage1.Controls.Add(btnRestoreDatabase);
-            tabPage1.Controls.Add(btnClose);
-            tabPage1.Controls.Add(btnExportPdf);
-            tabPage1.Controls.Add(btnLogout);
-            tabPage1.Controls.Add(cmbFilterType);
-            tabPage1.Controls.Add(btnGenerate);
-            tabPage1.Controls.Add(dataGridView1);
-            tabPage1.Controls.Add(btnBackupDatabase);
-            tabPage1.Controls.Add(comboBox1);
-            tabPage1.Location = new Point(4, 24);
-            tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1272, 692);
-            tabPage1.TabIndex = 0;
-            tabPage1.Text = "Schedule View";
-            tabPage1.UseVisualStyleBackColor = true;
+            tabSchedule.Controls.Add(btnRestoreDatabase);
+            tabSchedule.Controls.Add(btnClose);
+            tabSchedule.Controls.Add(btnExportPdf);
+            tabSchedule.Controls.Add(btnLogout);
+            tabSchedule.Controls.Add(cmbFilterType);
+            tabSchedule.Controls.Add(btnGenerate);
+            tabSchedule.Controls.Add(dgvTimetable);
+            tabSchedule.Controls.Add(btnBackupDatabase);
+            tabSchedule.Controls.Add(cmbScheduleView);
+            tabSchedule.Location = new Point(4, 24);
+            tabSchedule.Name = "tabSchedule";
+            tabSchedule.Padding = new Padding(3);
+            tabSchedule.Size = new Size(1272, 692);
+            tabSchedule.TabIndex = 0;
+            tabSchedule.Text = "Schedule View";
+            tabSchedule.UseVisualStyleBackColor = true;
             // 
             // btnRestoreDatabase
             // 
@@ -176,6 +176,22 @@
             btnRestoreDatabase.Text = "Load Backup";
             btnRestoreDatabase.UseVisualStyleBackColor = true;
             btnRestoreDatabase.Click += btnRestoreDatabase_Click;
+            // 
+            // btnClose
+            // 
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnClose.BackColor = Color.Transparent;
+            btnClose.Cursor = Cursors.Hand;
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatStyle = FlatStyle.Flat;
+            btnClose.ForeColor = Color.Black;
+            btnClose.Location = new Point(1231, 3);
+            btnClose.Name = "btnClose";
+            btnClose.Size = new Size(35, 30);
+            btnClose.TabIndex = 13;
+            btnClose.Text = "✕";
+            btnClose.UseVisualStyleBackColor = false;
+            btnClose.Click += btnClose_Click;
             // 
             // btnExportPdf
             // 
@@ -219,12 +235,12 @@
             btnGenerate.UseVisualStyleBackColor = true;
             btnGenerate.Click += btnGenerate_Click;
             // 
-            // dataGridView1
+            // dgvTimetable
             // 
-            dataGridView1.AllowUserToAddRows = false;
-            dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvTimetable.AllowUserToAddRows = false;
+            dgvTimetable.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvTimetable.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgvTimetable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.BackColor = SystemColors.Window;
             dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
@@ -232,13 +248,13 @@
             dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle1;
-            dataGridView1.Location = new Point(6, 36);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.Size = new Size(1260, 610);
-            dataGridView1.TabIndex = 8;
-            dataGridView1.CellMouseClick += dataGridView1_CellMouseClick;
-            dataGridView1.Resize += dataGridView1_Resize;
+            dgvTimetable.DefaultCellStyle = dataGridViewCellStyle1;
+            dgvTimetable.Location = new Point(6, 36);
+            dgvTimetable.Name = "dgvTimetable";
+            dgvTimetable.Size = new Size(1260, 610);
+            dgvTimetable.TabIndex = 8;
+            dgvTimetable.CellMouseClick += dgvTimetable_CellMouseClick;
+            dgvTimetable.Resize += dgvTimetable_Resize;
             // 
             // btnBackupDatabase
             // 
@@ -250,14 +266,14 @@
             btnBackupDatabase.UseVisualStyleBackColor = true;
             btnBackupDatabase.Click += btnBackupDatabase_Click;
             // 
-            // comboBox1
+            // cmbScheduleView
             // 
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(928, 6);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(113, 23);
-            comboBox1.TabIndex = 6;
-            comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
+            cmbScheduleView.FormattingEnabled = true;
+            cmbScheduleView.Location = new Point(928, 6);
+            cmbScheduleView.Name = "cmbScheduleView";
+            cmbScheduleView.Size = new Size(113, 23);
+            cmbScheduleView.TabIndex = 6;
+            cmbScheduleView.SelectedIndexChanged += cmbScheduleView_SelectedIndexChanged;
             // 
             // tabMaster
             // 
@@ -280,42 +296,42 @@
             dgvMaster.TabIndex = 0;
             dgvMaster.ColumnHeaderMouseClick += dgvMaster_ColumnHeaderMouseClick;
             // 
-            // tabPage2
+            // tabManage
             // 
-            tabPage2.Controls.Add(tabControl2);
-            tabPage2.Location = new Point(4, 24);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1272, 692);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "Manage Data";
-            tabPage2.UseVisualStyleBackColor = true;
+            tabManage.Controls.Add(tabDataManagers);
+            tabManage.Location = new Point(4, 24);
+            tabManage.Name = "tabManage";
+            tabManage.Padding = new Padding(3);
+            tabManage.Size = new Size(1272, 692);
+            tabManage.TabIndex = 1;
+            tabManage.Text = "Manage Data";
+            tabManage.UseVisualStyleBackColor = true;
             // 
-            // tabControl2
+            // tabDataManagers
             // 
-            tabControl2.Alignment = TabAlignment.Left;
-            tabControl2.Controls.Add(tabPage3);
-            tabControl2.Controls.Add(tabPage4);
-            tabControl2.Controls.Add(tabPage5);
-            tabControl2.Dock = DockStyle.Fill;
-            tabControl2.Location = new Point(3, 3);
-            tabControl2.Multiline = true;
-            tabControl2.Name = "tabControl2";
-            tabControl2.SelectedIndex = 0;
-            tabControl2.Size = new Size(1266, 686);
-            tabControl2.TabIndex = 0;
+            tabDataManagers.Alignment = TabAlignment.Left;
+            tabDataManagers.Controls.Add(tabTeachers);
+            tabDataManagers.Controls.Add(tabRooms);
+            tabDataManagers.Controls.Add(tabSections);
+            tabDataManagers.Dock = DockStyle.Fill;
+            tabDataManagers.Location = new Point(3, 3);
+            tabDataManagers.Multiline = true;
+            tabDataManagers.Name = "tabDataManagers";
+            tabDataManagers.SelectedIndex = 0;
+            tabDataManagers.Size = new Size(1266, 686);
+            tabDataManagers.TabIndex = 0;
             // 
-            // tabPage3
+            // tabTeachers
             // 
-            tabPage3.Controls.Add(groupBox4);
-            tabPage3.Controls.Add(groupBox2);
-            tabPage3.Location = new Point(27, 4);
-            tabPage3.Name = "tabPage3";
-            tabPage3.Padding = new Padding(3);
-            tabPage3.Size = new Size(1235, 678);
-            tabPage3.TabIndex = 0;
-            tabPage3.Text = "Manage Teacher";
-            tabPage3.UseVisualStyleBackColor = true;
+            tabTeachers.Controls.Add(groupBox4);
+            tabTeachers.Controls.Add(groupBox2);
+            tabTeachers.Location = new Point(27, 4);
+            tabTeachers.Name = "tabTeachers";
+            tabTeachers.Padding = new Padding(3);
+            tabTeachers.Size = new Size(1235, 678);
+            tabTeachers.TabIndex = 0;
+            tabTeachers.Text = "Manage Teacher";
+            tabTeachers.UseVisualStyleBackColor = true;
             // 
             // groupBox4
             // 
@@ -426,17 +442,17 @@
             label3.TabIndex = 0;
             label3.Text = "Name";
             // 
-            // tabPage4
+            // tabRooms
             // 
-            tabPage4.Controls.Add(groupBox5);
-            tabPage4.Controls.Add(groupBox1);
-            tabPage4.Location = new Point(27, 4);
-            tabPage4.Name = "tabPage4";
-            tabPage4.Padding = new Padding(3);
-            tabPage4.Size = new Size(1235, 678);
-            tabPage4.TabIndex = 1;
-            tabPage4.Text = "Manage Rooms";
-            tabPage4.UseVisualStyleBackColor = true;
+            tabRooms.Controls.Add(groupBox5);
+            tabRooms.Controls.Add(groupBox1);
+            tabRooms.Location = new Point(27, 4);
+            tabRooms.Name = "tabRooms";
+            tabRooms.Padding = new Padding(3);
+            tabRooms.Size = new Size(1235, 678);
+            tabRooms.TabIndex = 1;
+            tabRooms.Text = "Manage Rooms";
+            tabRooms.UseVisualStyleBackColor = true;
             // 
             // groupBox5
             // 
@@ -550,18 +566,18 @@
             txtRoomName.Size = new Size(370, 23);
             txtRoomName.TabIndex = 3;
             // 
-            // tabPage5
+            // tabSections
             // 
-            tabPage5.Controls.Add(groupBox8);
-            tabPage5.Controls.Add(groupBox6);
-            tabPage5.Controls.Add(groupBox7);
-            tabPage5.Controls.Add(groupBox3);
-            tabPage5.Location = new Point(27, 4);
-            tabPage5.Name = "tabPage5";
-            tabPage5.Size = new Size(1235, 678);
-            tabPage5.TabIndex = 2;
-            tabPage5.Text = "Sections & Subjects";
-            tabPage5.UseVisualStyleBackColor = true;
+            tabSections.Controls.Add(groupBox8);
+            tabSections.Controls.Add(groupBox6);
+            tabSections.Controls.Add(groupBox7);
+            tabSections.Controls.Add(groupBox3);
+            tabSections.Location = new Point(27, 4);
+            tabSections.Name = "tabSections";
+            tabSections.Size = new Size(1235, 678);
+            tabSections.TabIndex = 2;
+            tabSections.Text = "Sections & Subjects";
+            tabSections.UseVisualStyleBackColor = true;
             // 
             // groupBox8
             // 
@@ -968,49 +984,33 @@
             ctxMenuSchedule.Name = "ctxMenuSchedule";
             ctxMenuSchedule.Size = new Size(61, 4);
             // 
-            // btnClose
-            // 
-            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnClose.BackColor = Color.Transparent;
-            btnClose.Cursor = Cursors.Hand;
-            btnClose.FlatAppearance.BorderSize = 0;
-            btnClose.FlatStyle = FlatStyle.Flat;
-            btnClose.ForeColor = Color.Black;
-            btnClose.Location = new Point(1231, 3);
-            btnClose.Name = "btnClose";
-            btnClose.Size = new Size(35, 30);
-            btnClose.TabIndex = 13;
-            btnClose.Text = "✕";
-            btnClose.UseVisualStyleBackColor = false;
-            btnClose.Click += btnClose_Click;
-            // 
             // AdminDashboard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1280, 720);
-            Controls.Add(tabControl1);
+            Controls.Add(tabAdminMenu);
             FormBorderStyle = FormBorderStyle.None;
             Name = "AdminDashboard";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Admin Dashboard";
             Load += Form1_Load_1;
-            tabControl1.ResumeLayout(false);
-            tabPage1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            tabAdminMenu.ResumeLayout(false);
+            tabSchedule.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgvTimetable).EndInit();
             tabMaster.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvMaster).EndInit();
-            tabPage2.ResumeLayout(false);
-            tabControl2.ResumeLayout(false);
-            tabPage3.ResumeLayout(false);
+            tabManage.ResumeLayout(false);
+            tabDataManagers.ResumeLayout(false);
+            tabTeachers.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
-            tabPage4.ResumeLayout(false);
+            tabRooms.ResumeLayout(false);
             groupBox5.ResumeLayout(false);
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
-            tabPage5.ResumeLayout(false);
+            tabSections.ResumeLayout(false);
             groupBox8.ResumeLayout(false);
             groupBox8.PerformLayout();
             groupBox6.ResumeLayout(false);
@@ -1024,17 +1024,17 @@
 
         #endregion
 
-        private TabControl tabControl1;
-        private TabPage tabPage1;
+        private TabControl tabAdminMenu;
+        private TabPage tabSchedule;
         private Button btnBackupDatabase;
-        private ComboBox comboBox1;
+        private ComboBox cmbScheduleView;
         private Button btnGenerate;
-        private TabPage tabPage2;
-        private DataGridView dataGridView1;
+        private TabPage tabManage;
+        private DataGridView dgvTimetable;
         private TabPage tabMaster;
         private DataGridView dgvMaster;
-        private TabControl tabControl2;
-        private TabPage tabPage3;
+        private TabControl tabDataManagers;
+        private TabPage tabTeachers;
         private GroupBox groupBox4;
         private ListBox lstTeachers;
         private GroupBox groupBox2;
@@ -1043,8 +1043,8 @@
         private TextBox txtTeacherName;
         private Label label4;
         private Label label3;
-        private TabPage tabPage4;
-        private TabPage tabPage5;
+        private TabPage tabRooms;
+        private TabPage tabSections;
         private GroupBox groupBox5;
         private ListBox lstRooms;
         private Button btnDeleteRoom;
