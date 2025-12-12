@@ -35,7 +35,7 @@ namespace SchedCCS
             }
         }
 
-        private void btnCreateAccount_Click(object sender, EventArgs e)
+        private void lnkCreateAccount_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             OpenRegistration();
         }
@@ -122,5 +122,6 @@ namespace SchedCCS
         }
 
         #endregion
+
     }
 }
