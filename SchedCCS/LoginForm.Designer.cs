@@ -109,6 +109,7 @@
             lnkCreateAccount.AutoSize = true;
             lnkCreateAccount.BackColor = Color.Transparent;
             lnkCreateAccount.LinkArea = new LinkArea(23, 33);
+            lnkCreateAccount.LinkBehavior = LinkBehavior.HoverUnderline;
             lnkCreateAccount.LinkColor = Color.FromArgb(0, 0, 64);
             lnkCreateAccount.Location = new Point(703, 506);
             lnkCreateAccount.Name = "lnkCreateAccount";

@@ -23,7 +23,7 @@ namespace SchedCCS
             RegisterStudent();
         }
 
-        private void btnBack_Click(object sender, EventArgs e)
+        private void lnkBackToLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             this.Close();
         }
@@ -119,5 +119,7 @@ namespace SchedCCS
         }
 
         #endregion
+
+        
     }
 }
