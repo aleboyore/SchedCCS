@@ -270,7 +270,7 @@
             // 
             // pnlBuildingB
             // 
-            pnlBuildingB.BackgroundImage = Properties.Resources.old_building;
+            pnlBuildingB.BackgroundImage = (Image)resources.GetObject("pnlBuildingB.BackgroundImage");
             pnlBuildingB.Controls.Add(pic_UnK);
             pnlBuildingB.Controls.Add(pic_LAB6);
             pnlBuildingB.Controls.Add(pic_LAB5);
@@ -289,7 +289,7 @@
             // pic_UnK
             // 
             pic_UnK.BackColor = Color.Transparent;
-            pic_UnK.Location = new Point(203, 322);
+            pic_UnK.Location = new Point(206, 319);
             pic_UnK.Name = "pic_UnK";
             pic_UnK.Size = new Size(132, 122);
             pic_UnK.TabIndex = 46;
@@ -299,7 +299,7 @@
             // pic_LAB6
             // 
             pic_LAB6.BackColor = Color.Transparent;
-            pic_LAB6.Location = new Point(715, 322);
+            pic_LAB6.Location = new Point(715, 318);
             pic_LAB6.Name = "pic_LAB6";
             pic_LAB6.Size = new Size(127, 122);
             pic_LAB6.TabIndex = 45;
@@ -309,7 +309,7 @@
             // pic_LAB5
             // 
             pic_LAB5.BackColor = Color.Transparent;
-            pic_LAB5.Location = new Point(529, 322);
+            pic_LAB5.Location = new Point(531, 315);
             pic_LAB5.Name = "pic_LAB5";
             pic_LAB5.Size = new Size(133, 122);
             pic_LAB5.TabIndex = 44;
@@ -319,7 +319,7 @@
             // pic_LEC1
             // 
             pic_LEC1.BackColor = Color.Transparent;
-            pic_LEC1.Location = new Point(388, 322);
+            pic_LEC1.Location = new Point(389, 318);
             pic_LEC1.Name = "pic_LEC1";
             pic_LEC1.Size = new Size(126, 122);
             pic_LEC1.TabIndex = 43;
@@ -329,7 +329,7 @@
             // pic_LAB4
             // 
             pic_LAB4.BackColor = Color.Transparent;
-            pic_LAB4.Location = new Point(714, 495);
+            pic_LAB4.Location = new Point(715, 489);
             pic_LAB4.Name = "pic_LAB4";
             pic_LAB4.Size = new Size(127, 116);
             pic_LAB4.TabIndex = 42;
@@ -339,7 +339,7 @@
             // pic_LAB3
             // 
             pic_LAB3.BackColor = Color.Transparent;
-            pic_LAB3.Location = new Point(529, 486);
+            pic_LAB3.Location = new Point(530, 483);
             pic_LAB3.Name = "pic_LAB3";
             pic_LAB3.Size = new Size(133, 125);
             pic_LAB3.TabIndex = 41;
@@ -349,7 +349,7 @@
             // pic_LAB2
             // 
             pic_LAB2.BackColor = Color.Transparent;
-            pic_LAB2.Location = new Point(388, 486);
+            pic_LAB2.Location = new Point(388, 483);
             pic_LAB2.Name = "pic_LAB2";
             pic_LAB2.Size = new Size(126, 125);
             pic_LAB2.TabIndex = 40;
@@ -359,7 +359,7 @@
             // pic_LAB1
             // 
             pic_LAB1.BackColor = Color.Transparent;
-            pic_LAB1.Location = new Point(203, 496);
+            pic_LAB1.Location = new Point(208, 491);
             pic_LAB1.Name = "pic_LAB1";
             pic_LAB1.Size = new Size(132, 116);
             pic_LAB1.TabIndex = 39;
@@ -394,9 +394,9 @@
             // pic_OCTA
             // 
             pic_OCTA.BackColor = Color.Transparent;
-            pic_OCTA.Location = new Point(811, 527);
+            pic_OCTA.Location = new Point(809, 523);
             pic_OCTA.Name = "pic_OCTA";
-            pic_OCTA.Size = new Size(113, 110);
+            pic_OCTA.Size = new Size(105, 110);
             pic_OCTA.TabIndex = 47;
             pic_OCTA.TabStop = false;
             pic_OCTA.Tag = "OCTA Office";
@@ -404,9 +404,9 @@
             // pic_LEC3
             // 
             pic_LEC3.BackColor = Color.Transparent;
-            pic_LEC3.Location = new Point(689, 527);
+            pic_LEC3.Location = new Point(687, 523);
             pic_LEC3.Name = "pic_LEC3";
-            pic_LEC3.Size = new Size(112, 110);
+            pic_LEC3.Size = new Size(110, 110);
             pic_LEC3.TabIndex = 46;
             pic_LEC3.TabStop = false;
             pic_LEC3.Tag = "Lecture Room 3";
@@ -414,9 +414,9 @@
             // pic_LEC8
             // 
             pic_LEC8.BackColor = Color.Transparent;
-            pic_LEC8.Location = new Point(811, 397);
+            pic_LEC8.Location = new Point(809, 394);
             pic_LEC8.Name = "pic_LEC8";
-            pic_LEC8.Size = new Size(113, 112);
+            pic_LEC8.Size = new Size(105, 112);
             pic_LEC8.TabIndex = 45;
             pic_LEC8.TabStop = false;
             pic_LEC8.Tag = "Lecture Room 8";
@@ -424,9 +424,9 @@
             // pic_LEC7
             // 
             pic_LEC7.BackColor = Color.Transparent;
-            pic_LEC7.Location = new Point(689, 397);
+            pic_LEC7.Location = new Point(689, 394);
             pic_LEC7.Name = "pic_LEC7";
-            pic_LEC7.Size = new Size(112, 112);
+            pic_LEC7.Size = new Size(108, 112);
             pic_LEC7.TabIndex = 44;
             pic_LEC7.TabStop = false;
             pic_LEC7.Tag = "Lecture Room 7";
@@ -434,9 +434,9 @@
             // pic_LEC12
             // 
             pic_LEC12.BackColor = Color.Transparent;
-            pic_LEC12.Location = new Point(811, 265);
+            pic_LEC12.Location = new Point(809, 265);
             pic_LEC12.Name = "pic_LEC12";
-            pic_LEC12.Size = new Size(113, 111);
+            pic_LEC12.Size = new Size(105, 111);
             pic_LEC12.TabIndex = 43;
             pic_LEC12.TabStop = false;
             pic_LEC12.Tag = "Lecture Room 12";
@@ -446,7 +446,7 @@
             pic_LEC11.BackColor = Color.Transparent;
             pic_LEC11.Location = new Point(689, 265);
             pic_LEC11.Name = "pic_LEC11";
-            pic_LEC11.Size = new Size(112, 111);
+            pic_LEC11.Size = new Size(108, 111);
             pic_LEC11.TabIndex = 42;
             pic_LEC11.TabStop = false;
             pic_LEC11.Tag = "Lecture Room 11";
@@ -484,7 +484,7 @@
             // pic_LEC6
             // 
             pic_LEC6.BackColor = Color.Transparent;
-            pic_LEC6.Location = new Point(266, 397);
+            pic_LEC6.Location = new Point(266, 394);
             pic_LEC6.Name = "pic_LEC6";
             pic_LEC6.Size = new Size(111, 110);
             pic_LEC6.TabIndex = 38;
@@ -494,7 +494,7 @@
             // pic_LEC5
             // 
             pic_LEC5.BackColor = Color.Transparent;
-            pic_LEC5.Location = new Point(147, 397);
+            pic_LEC5.Location = new Point(148, 394);
             pic_LEC5.Name = "pic_LEC5";
             pic_LEC5.Size = new Size(109, 110);
             pic_LEC5.TabIndex = 37;
@@ -504,7 +504,7 @@
             // pic_LEC4
             // 
             pic_LEC4.BackColor = Color.Transparent;
-            pic_LEC4.Location = new Point(27, 397);
+            pic_LEC4.Location = new Point(29, 394);
             pic_LEC4.Name = "pic_LEC4";
             pic_LEC4.Size = new Size(109, 110);
             pic_LEC4.TabIndex = 36;
@@ -514,7 +514,7 @@
             // pic_LEC2
             // 
             pic_LEC2.BackColor = Color.Transparent;
-            pic_LEC2.Location = new Point(266, 527);
+            pic_LEC2.Location = new Point(267, 523);
             pic_LEC2.Name = "pic_LEC2";
             pic_LEC2.Size = new Size(111, 110);
             pic_LEC2.TabIndex = 35;
@@ -524,7 +524,7 @@
             // pic_ACCRED
             // 
             pic_ACCRED.BackColor = Color.Transparent;
-            pic_ACCRED.Location = new Point(147, 527);
+            pic_ACCRED.Location = new Point(147, 523);
             pic_ACCRED.Name = "pic_ACCRED";
             pic_ACCRED.Size = new Size(109, 110);
             pic_ACCRED.TabIndex = 34;
@@ -534,7 +534,7 @@
             // pic_DEAN
             // 
             pic_DEAN.BackColor = Color.Transparent;
-            pic_DEAN.Location = new Point(27, 527);
+            pic_DEAN.Location = new Point(29, 524);
             pic_DEAN.Name = "pic_DEAN";
             pic_DEAN.Size = new Size(109, 110);
             pic_DEAN.TabIndex = 33;
