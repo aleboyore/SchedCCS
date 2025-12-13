@@ -36,12 +36,23 @@
             btnMySchedule = new Button();
             btnDashboard = new Button();
             lblStudentName = new Label();
-            picProfile = new PictureBox();
+            picLogo = new PictureBox();
             pnlContent = new Panel();
             btnClose = new Button();
+            pnlViewSettings = new Panel();
+            btnEdit = new Button();
+            chkShowPass = new CheckBox();
+            btnSaveChanges = new Button();
+            label4 = new Label();
+            label3 = new Label();
+            txtEditConfirm = new TextBox();
+            txtEditPass = new TextBox();
+            txtEditName = new TextBox();
+            label2 = new Label();
+            label1 = new Label();
             pnlViewHome = new Panel();
-            cmbBuilding = new ComboBox();
             pnlBuildingB = new Panel();
+            cmbBuilding = new ComboBox();
             pic_UnK = new PictureBox();
             pic_LAB6 = new PictureBox();
             pic_LAB5 = new PictureBox();
@@ -70,22 +81,12 @@
             btnExportPdf = new Button();
             dgvStudentSchedule = new DataGridView();
             lblNoSchedule = new Label();
-            pnlViewSettings = new Panel();
-            btnEdit = new Button();
-            chkShowPass = new CheckBox();
-            btnSaveChanges = new Button();
-            label4 = new Label();
-            label3 = new Label();
-            txtEditConfirm = new TextBox();
-            txtEditPass = new TextBox();
-            txtEditName = new TextBox();
-            label2 = new Label();
-            label1 = new Label();
             lblPageTitle = new Label();
             toolTip1 = new ToolTip(components);
             pnlSidebar.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)picProfile).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picLogo).BeginInit();
             pnlContent.SuspendLayout();
+            pnlViewSettings.SuspendLayout();
             pnlViewHome.SuspendLayout();
             pnlBuildingB.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pic_UnK).BeginInit();
@@ -114,18 +115,19 @@
             ((System.ComponentModel.ISupportInitialize)pic_DEAN).BeginInit();
             pnlViewSchedule.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvStudentSchedule).BeginInit();
-            pnlViewSettings.SuspendLayout();
             SuspendLayout();
             // 
             // pnlSidebar
             // 
-            pnlSidebar.BackColor = SystemColors.ControlDark;
+            pnlSidebar.BackColor = Color.Transparent;
+            pnlSidebar.BackgroundImage = (Image)resources.GetObject("pnlSidebar.BackgroundImage");
+            pnlSidebar.BackgroundImageLayout = ImageLayout.Zoom;
             pnlSidebar.Controls.Add(btnLogout);
             pnlSidebar.Controls.Add(btnSettings);
             pnlSidebar.Controls.Add(btnMySchedule);
             pnlSidebar.Controls.Add(btnDashboard);
             pnlSidebar.Controls.Add(lblStudentName);
-            pnlSidebar.Controls.Add(picProfile);
+            pnlSidebar.Controls.Add(picLogo);
             pnlSidebar.Dock = DockStyle.Left;
             pnlSidebar.Location = new Point(0, 0);
             pnlSidebar.Name = "pnlSidebar";
@@ -153,7 +155,7 @@
             btnSettings.FlatAppearance.BorderSize = 0;
             btnSettings.FlatStyle = FlatStyle.Flat;
             btnSettings.ForeColor = Color.White;
-            btnSettings.Location = new Point(0, 209);
+            btnSettings.Location = new Point(0, 229);
             btnSettings.Name = "btnSettings";
             btnSettings.Size = new Size(200, 45);
             btnSettings.TabIndex = 4;
@@ -168,7 +170,7 @@
             btnMySchedule.FlatAppearance.BorderSize = 0;
             btnMySchedule.FlatStyle = FlatStyle.Flat;
             btnMySchedule.ForeColor = Color.White;
-            btnMySchedule.Location = new Point(0, 164);
+            btnMySchedule.Location = new Point(0, 184);
             btnMySchedule.Name = "btnMySchedule";
             btnMySchedule.Size = new Size(200, 45);
             btnMySchedule.TabIndex = 3;
@@ -183,7 +185,7 @@
             btnDashboard.FlatAppearance.BorderSize = 0;
             btnDashboard.FlatStyle = FlatStyle.Flat;
             btnDashboard.ForeColor = Color.White;
-            btnDashboard.Location = new Point(0, 119);
+            btnDashboard.Location = new Point(0, 139);
             btnDashboard.Name = "btnDashboard";
             btnDashboard.Size = new Size(200, 45);
             btnDashboard.TabIndex = 2;
@@ -200,27 +202,30 @@
             lblStudentName.ForeColor = Color.White;
             lblStudentName.Location = new Point(0, 100);
             lblStudentName.Name = "lblStudentName";
-            lblStudentName.Size = new Size(104, 19);
+            lblStudentName.Padding = new Padding(0, 10, 0, 10);
+            lblStudentName.Size = new Size(104, 39);
             lblStudentName.TabIndex = 1;
             lblStudentName.Text = "Student Name";
             lblStudentName.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // picProfile
+            // picLogo
             // 
-            picProfile.Dock = DockStyle.Top;
-            picProfile.Location = new Point(0, 0);
-            picProfile.Name = "picProfile";
-            picProfile.Size = new Size(200, 100);
-            picProfile.SizeMode = PictureBoxSizeMode.Zoom;
-            picProfile.TabIndex = 0;
-            picProfile.TabStop = false;
+            picLogo.BackColor = Color.Transparent;
+            picLogo.BackgroundImage = (Image)resources.GetObject("picLogo.BackgroundImage");
+            picLogo.Dock = DockStyle.Top;
+            picLogo.Location = new Point(0, 0);
+            picLogo.Name = "picLogo";
+            picLogo.Size = new Size(200, 100);
+            picLogo.SizeMode = PictureBoxSizeMode.Zoom;
+            picLogo.TabIndex = 0;
+            picLogo.TabStop = false;
             // 
             // pnlContent
             // 
             pnlContent.BackColor = Color.White;
             pnlContent.Controls.Add(btnClose);
-            pnlContent.Controls.Add(pnlViewHome);
             pnlContent.Controls.Add(pnlViewSchedule);
+            pnlContent.Controls.Add(pnlViewHome);
             pnlContent.Controls.Add(pnlViewSettings);
             pnlContent.Controls.Add(lblPageTitle);
             pnlContent.Dock = DockStyle.Fill;
@@ -237,7 +242,7 @@
             btnClose.FlatAppearance.BorderSize = 0;
             btnClose.FlatStyle = FlatStyle.Flat;
             btnClose.ForeColor = Color.Black;
-            btnClose.Location = new Point(1022, 0);
+            btnClose.Location = new Point(1020, 12);
             btnClose.Name = "btnClose";
             btnClose.Size = new Size(35, 30);
             btnClose.TabIndex = 4;
@@ -245,32 +250,133 @@
             btnClose.UseVisualStyleBackColor = false;
             btnClose.Click += btnClose_Click;
             // 
+            // pnlViewSettings
+            // 
+            pnlViewSettings.BackgroundImage = (Image)resources.GetObject("pnlViewSettings.BackgroundImage");
+            pnlViewSettings.BackgroundImageLayout = ImageLayout.Zoom;
+            pnlViewSettings.Controls.Add(btnEdit);
+            pnlViewSettings.Controls.Add(chkShowPass);
+            pnlViewSettings.Controls.Add(btnSaveChanges);
+            pnlViewSettings.Controls.Add(label4);
+            pnlViewSettings.Controls.Add(label3);
+            pnlViewSettings.Controls.Add(txtEditConfirm);
+            pnlViewSettings.Controls.Add(txtEditPass);
+            pnlViewSettings.Controls.Add(txtEditName);
+            pnlViewSettings.Controls.Add(label2);
+            pnlViewSettings.Controls.Add(label1);
+            pnlViewSettings.Dock = DockStyle.Fill;
+            pnlViewSettings.Location = new Point(0, 50);
+            pnlViewSettings.Name = "pnlViewSettings";
+            pnlViewSettings.Size = new Size(1064, 631);
+            pnlViewSettings.TabIndex = 3;
+            pnlViewSettings.Visible = false;
+            // 
+            // btnEdit
+            // 
+            btnEdit.Location = new Point(367, 400);
+            btnEdit.Name = "btnEdit";
+            btnEdit.Size = new Size(152, 23);
+            btnEdit.TabIndex = 9;
+            btnEdit.Text = "Edit Info";
+            btnEdit.UseVisualStyleBackColor = true;
+            btnEdit.Click += btnEdit_Click;
+            // 
+            // chkShowPass
+            // 
+            chkShowPass.AutoSize = true;
+            chkShowPass.Location = new Point(367, 371);
+            chkShowPass.Name = "chkShowPass";
+            chkShowPass.Size = new Size(108, 19);
+            chkShowPass.TabIndex = 8;
+            chkShowPass.Text = "Show Password";
+            chkShowPass.UseVisualStyleBackColor = true;
+            chkShowPass.Click += chkShowPass_CheckedChanged;
+            // 
+            // btnSaveChanges
+            // 
+            btnSaveChanges.Location = new Point(536, 400);
+            btnSaveChanges.Name = "btnSaveChanges";
+            btnSaveChanges.Size = new Size(158, 23);
+            btnSaveChanges.TabIndex = 7;
+            btnSaveChanges.Text = "Save Changes";
+            btnSaveChanges.UseVisualStyleBackColor = true;
+            btnSaveChanges.Visible = false;
+            btnSaveChanges.Click += btnSaveChanges_Click;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(367, 318);
+            label4.Name = "label4";
+            label4.Size = new Size(51, 15);
+            label4.TabIndex = 6;
+            label4.Text = "Confirm";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(367, 273);
+            label3.Name = "label3";
+            label3.Size = new Size(57, 15);
+            label3.TabIndex = 5;
+            label3.Text = "Password";
+            // 
+            // txtEditConfirm
+            // 
+            txtEditConfirm.Location = new Point(367, 336);
+            txtEditConfirm.Name = "txtEditConfirm";
+            txtEditConfirm.Size = new Size(327, 23);
+            txtEditConfirm.TabIndex = 4;
+            txtEditConfirm.UseSystemPasswordChar = true;
+            // 
+            // txtEditPass
+            // 
+            txtEditPass.Location = new Point(367, 291);
+            txtEditPass.Name = "txtEditPass";
+            txtEditPass.Size = new Size(327, 23);
+            txtEditPass.TabIndex = 3;
+            txtEditPass.UseSystemPasswordChar = true;
+            // 
+            // txtEditName
+            // 
+            txtEditName.Location = new Point(367, 246);
+            txtEditName.Name = "txtEditName";
+            txtEditName.Size = new Size(327, 23);
+            txtEditName.TabIndex = 2;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(367, 228);
+            label2.Name = "label2";
+            label2.Size = new Size(61, 15);
+            label2.TabIndex = 1;
+            label2.Text = "Full Name";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            label1.Location = new Point(385, 180);
+            label1.Name = "label1";
+            label1.Size = new Size(291, 32);
+            label1.TabIndex = 0;
+            label1.Text = "UPDATE ACCOUNT INFO";
+            // 
             // pnlViewHome
             // 
-            pnlViewHome.Controls.Add(cmbBuilding);
             pnlViewHome.Controls.Add(pnlBuildingB);
             pnlViewHome.Controls.Add(pnlBuildingA);
             pnlViewHome.Dock = DockStyle.Fill;
-            pnlViewHome.Location = new Point(0, 30);
+            pnlViewHome.Location = new Point(0, 50);
             pnlViewHome.Name = "pnlViewHome";
-            pnlViewHome.Size = new Size(1064, 651);
+            pnlViewHome.Size = new Size(1064, 631);
             pnlViewHome.TabIndex = 3;
-            // 
-            // cmbBuilding
-            // 
-            cmbBuilding.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            cmbBuilding.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbBuilding.FormattingEnabled = true;
-            cmbBuilding.Items.AddRange(new object[] { "Building A", "Building B" });
-            cmbBuilding.Location = new Point(976, 10);
-            cmbBuilding.Name = "cmbBuilding";
-            cmbBuilding.Size = new Size(79, 23);
-            cmbBuilding.TabIndex = 1;
-            cmbBuilding.SelectedIndexChanged += cmbBuilding_SelectedIndexChanged;
             // 
             // pnlBuildingB
             // 
             pnlBuildingB.BackgroundImage = (Image)resources.GetObject("pnlBuildingB.BackgroundImage");
+            pnlBuildingB.Controls.Add(cmbBuilding);
             pnlBuildingB.Controls.Add(pic_UnK);
             pnlBuildingB.Controls.Add(pic_LAB6);
             pnlBuildingB.Controls.Add(pic_LAB5);
@@ -282,9 +388,21 @@
             pnlBuildingB.Dock = DockStyle.Fill;
             pnlBuildingB.Location = new Point(0, 0);
             pnlBuildingB.Name = "pnlBuildingB";
-            pnlBuildingB.Size = new Size(1064, 651);
+            pnlBuildingB.Size = new Size(1064, 631);
             pnlBuildingB.TabIndex = 33;
             pnlBuildingB.Visible = false;
+            // 
+            // cmbBuilding
+            // 
+            cmbBuilding.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            cmbBuilding.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbBuilding.FormattingEnabled = true;
+            cmbBuilding.Items.AddRange(new object[] { "Building A", "Building B" });
+            cmbBuilding.Location = new Point(973, 13);
+            cmbBuilding.Name = "cmbBuilding";
+            cmbBuilding.Size = new Size(79, 23);
+            cmbBuilding.TabIndex = 1;
+            cmbBuilding.SelectedIndexChanged += cmbBuilding_SelectedIndexChanged;
             // 
             // pic_UnK
             // 
@@ -388,7 +506,7 @@
             pnlBuildingA.Dock = DockStyle.Fill;
             pnlBuildingA.Location = new Point(0, 0);
             pnlBuildingA.Name = "pnlBuildingA";
-            pnlBuildingA.Size = new Size(1064, 651);
+            pnlBuildingA.Size = new Size(1064, 631);
             pnlBuildingA.TabIndex = 21;
             // 
             // pic_OCTA
@@ -547,15 +665,15 @@
             pnlViewSchedule.Controls.Add(dgvStudentSchedule);
             pnlViewSchedule.Controls.Add(lblNoSchedule);
             pnlViewSchedule.Dock = DockStyle.Fill;
-            pnlViewSchedule.Location = new Point(0, 30);
+            pnlViewSchedule.Location = new Point(0, 50);
             pnlViewSchedule.Name = "pnlViewSchedule";
-            pnlViewSchedule.Size = new Size(1064, 651);
+            pnlViewSchedule.Size = new Size(1064, 631);
             pnlViewSchedule.TabIndex = 3;
             // 
             // btnExportPdf
             // 
             btnExportPdf.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnExportPdf.Location = new Point(911, 4);
+            btnExportPdf.Location = new Point(900, 3);
             btnExportPdf.Name = "btnExportPdf";
             btnExportPdf.Size = new Size(146, 23);
             btnExportPdf.TabIndex = 3;
@@ -572,9 +690,9 @@
             dgvStudentSchedule.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dgvStudentSchedule.BackgroundColor = Color.White;
             dgvStudentSchedule.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvStudentSchedule.Location = new Point(7, 42);
+            dgvStudentSchedule.Location = new Point(17, 39);
             dgvStudentSchedule.Name = "dgvStudentSchedule";
-            dgvStudentSchedule.Size = new Size(1050, 595);
+            dgvStudentSchedule.Size = new Size(1029, 575);
             dgvStudentSchedule.TabIndex = 2;
             dgvStudentSchedule.Resize += dgvStudentSchedule_Resize;
             // 
@@ -585,129 +703,21 @@
             lblNoSchedule.ForeColor = Color.DarkGray;
             lblNoSchedule.Location = new Point(0, 0);
             lblNoSchedule.Name = "lblNoSchedule";
-            lblNoSchedule.Size = new Size(1064, 651);
+            lblNoSchedule.Size = new Size(1064, 631);
             lblNoSchedule.TabIndex = 2;
             lblNoSchedule.Text = "The Schedule is not yet available.\r\nPlease wait for the Admin to generate it.";
             lblNoSchedule.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // pnlViewSettings
-            // 
-            pnlViewSettings.Controls.Add(btnEdit);
-            pnlViewSettings.Controls.Add(chkShowPass);
-            pnlViewSettings.Controls.Add(btnSaveChanges);
-            pnlViewSettings.Controls.Add(label4);
-            pnlViewSettings.Controls.Add(label3);
-            pnlViewSettings.Controls.Add(txtEditConfirm);
-            pnlViewSettings.Controls.Add(txtEditPass);
-            pnlViewSettings.Controls.Add(txtEditName);
-            pnlViewSettings.Controls.Add(label2);
-            pnlViewSettings.Controls.Add(label1);
-            pnlViewSettings.Dock = DockStyle.Fill;
-            pnlViewSettings.Location = new Point(0, 30);
-            pnlViewSettings.Name = "pnlViewSettings";
-            pnlViewSettings.Size = new Size(1064, 651);
-            pnlViewSettings.TabIndex = 3;
-            pnlViewSettings.Visible = false;
-            // 
-            // btnEdit
-            // 
-            btnEdit.Location = new Point(429, 445);
-            btnEdit.Name = "btnEdit";
-            btnEdit.Size = new Size(75, 23);
-            btnEdit.TabIndex = 9;
-            btnEdit.Text = "Edit Info";
-            btnEdit.UseVisualStyleBackColor = true;
-            btnEdit.Click += btnEdit_Click;
-            // 
-            // chkShowPass
-            // 
-            chkShowPass.AutoSize = true;
-            chkShowPass.Location = new Point(429, 420);
-            chkShowPass.Name = "chkShowPass";
-            chkShowPass.Size = new Size(108, 19);
-            chkShowPass.TabIndex = 8;
-            chkShowPass.Text = "Show Password";
-            chkShowPass.UseVisualStyleBackColor = true;
-            chkShowPass.Click += chkShowPass_CheckedChanged;
-            // 
-            // btnSaveChanges
-            // 
-            btnSaveChanges.Location = new Point(560, 445);
-            btnSaveChanges.Name = "btnSaveChanges";
-            btnSaveChanges.Size = new Size(75, 23);
-            btnSaveChanges.TabIndex = 7;
-            btnSaveChanges.Text = "Save Changes";
-            btnSaveChanges.UseVisualStyleBackColor = true;
-            btnSaveChanges.Visible = false;
-            btnSaveChanges.Click += btnSaveChanges_Click;
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.Location = new Point(429, 367);
-            label4.Name = "label4";
-            label4.Size = new Size(51, 15);
-            label4.TabIndex = 6;
-            label4.Text = "Confirm";
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new Point(429, 322);
-            label3.Name = "label3";
-            label3.Size = new Size(57, 15);
-            label3.TabIndex = 5;
-            label3.Text = "Password";
-            // 
-            // txtEditConfirm
-            // 
-            txtEditConfirm.Location = new Point(429, 385);
-            txtEditConfirm.Name = "txtEditConfirm";
-            txtEditConfirm.Size = new Size(206, 23);
-            txtEditConfirm.TabIndex = 4;
-            txtEditConfirm.UseSystemPasswordChar = true;
-            // 
-            // txtEditPass
-            // 
-            txtEditPass.Location = new Point(429, 340);
-            txtEditPass.Name = "txtEditPass";
-            txtEditPass.Size = new Size(206, 23);
-            txtEditPass.TabIndex = 3;
-            txtEditPass.UseSystemPasswordChar = true;
-            // 
-            // txtEditName
-            // 
-            txtEditName.Location = new Point(429, 295);
-            txtEditName.Name = "txtEditName";
-            txtEditName.Size = new Size(206, 23);
-            txtEditName.TabIndex = 2;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(429, 277);
-            label2.Name = "label2";
-            label2.Size = new Size(61, 15);
-            label2.TabIndex = 1;
-            label2.Text = "Full Name";
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(471, 200);
-            label1.Name = "label1";
-            label1.Size = new Size(117, 15);
-            label1.TabIndex = 0;
-            label1.Text = "Update Account Info";
-            // 
             // lblPageTitle
             // 
             lblPageTitle.AutoSize = true;
+            lblPageTitle.BackColor = Color.Transparent;
             lblPageTitle.Dock = DockStyle.Top;
             lblPageTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             lblPageTitle.Location = new Point(0, 0);
             lblPageTitle.Name = "lblPageTitle";
-            lblPageTitle.Size = new Size(213, 30);
+            lblPageTitle.Padding = new Padding(10, 10, 0, 10);
+            lblPageTitle.Size = new Size(223, 50);
             lblPageTitle.TabIndex = 0;
             lblPageTitle.Text = "Student Dashboard";
             // 
@@ -724,9 +734,11 @@
             Text = "Student Dashboard";
             pnlSidebar.ResumeLayout(false);
             pnlSidebar.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)picProfile).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picLogo).EndInit();
             pnlContent.ResumeLayout(false);
             pnlContent.PerformLayout();
+            pnlViewSettings.ResumeLayout(false);
+            pnlViewSettings.PerformLayout();
             pnlViewHome.ResumeLayout(false);
             pnlBuildingB.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pic_UnK).EndInit();
@@ -755,8 +767,6 @@
             ((System.ComponentModel.ISupportInitialize)pic_DEAN).EndInit();
             pnlViewSchedule.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvStudentSchedule).EndInit();
-            pnlViewSettings.ResumeLayout(false);
-            pnlViewSettings.PerformLayout();
             ResumeLayout(false);
 
         }
@@ -765,7 +775,7 @@
 
         private System.Windows.Forms.Panel pnlSidebar;
         private System.Windows.Forms.Panel pnlContent;
-        private System.Windows.Forms.PictureBox picProfile;
+        private System.Windows.Forms.PictureBox picLogo;
         private System.Windows.Forms.Button btnLogout;
         private System.Windows.Forms.Button btnSettings;
         private System.Windows.Forms.Button btnMySchedule;
