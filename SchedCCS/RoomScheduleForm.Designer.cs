@@ -28,20 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            lblRoomName = new Label();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RoomScheduleForm));
             dgvRoomSchedule = new DataGridView();
             btnClose = new Button();
+            lblSemesterYear = new Label();
+            lblRoomName = new Label();
             ((System.ComponentModel.ISupportInitialize)dgvRoomSchedule).BeginInit();
             SuspendLayout();
-            // 
-            // lblRoomName
-            // 
-            lblRoomName.AutoSize = true;
-            lblRoomName.Location = new Point(12, 16);
-            lblRoomName.Name = "lblRoomName";
-            lblRoomName.Size = new Size(119, 15);
-            lblRoomName.TabIndex = 0;
-            lblRoomName.Text = "Schedule for LEC-101";
             // 
             // dgvRoomSchedule
             // 
@@ -49,10 +42,10 @@
             dgvRoomSchedule.AllowUserToDeleteRows = false;
             dgvRoomSchedule.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dgvRoomSchedule.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvRoomSchedule.Location = new Point(12, 52);
+            dgvRoomSchedule.Location = new Point(12, 177);
             dgvRoomSchedule.Name = "dgvRoomSchedule";
             dgvRoomSchedule.ReadOnly = true;
-            dgvRoomSchedule.Size = new Size(1256, 656);
+            dgvRoomSchedule.Size = new Size(1256, 531);
             dgvRoomSchedule.TabIndex = 1;
             // 
             // btnClose
@@ -71,14 +64,41 @@
             btnClose.UseVisualStyleBackColor = false;
             btnClose.Click += btnClose_Click;
             // 
+            // lblSemesterYear
+            // 
+            lblSemesterYear.AutoSize = true;
+            lblSemesterYear.BackColor = Color.Transparent;
+            lblSemesterYear.Font = new Font("Calibri", 9F);
+            lblSemesterYear.Location = new Point(562, 100);
+            lblSemesterYear.Name = "lblSemesterYear";
+            lblSemesterYear.Size = new Size(154, 14);
+            lblSemesterYear.TabIndex = 3;
+            lblSemesterYear.Text = "1st Semester, A.Y. 2025-2026";
+            // 
+            // lblRoomName
+            // 
+            lblRoomName.AutoSize = true;
+            lblRoomName.BackColor = Color.Transparent;
+            lblRoomName.Font = new Font("Calibri", 9F, FontStyle.Bold);
+            lblRoomName.ForeColor = Color.Black;
+            lblRoomName.Location = new Point(12, 160);
+            lblRoomName.Name = "lblRoomName";
+            lblRoomName.Size = new Size(110, 14);
+            lblRoomName.TabIndex = 5;
+            lblRoomName.Text = "Schedule for LEC-101";
+            // 
             // RoomScheduleForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
+            BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1280, 720);
+            Controls.Add(lblRoomName);
+            Controls.Add(lblSemesterYear);
             Controls.Add(btnClose);
             Controls.Add(dgvRoomSchedule);
-            Controls.Add(lblRoomName);
+            DoubleBuffered = true;
             FormBorderStyle = FormBorderStyle.None;
             Name = "RoomScheduleForm";
             StartPosition = FormStartPosition.CenterScreen;
@@ -89,9 +109,9 @@
         }
 
         #endregion
-
-        private Label lblRoomName;
         private DataGridView dgvRoomSchedule;
         private Button btnClose;
+        private Label lblSemesterYear;
+        private Label lblRoomName;
     }
 }

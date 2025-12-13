@@ -17,14 +17,28 @@ namespace SchedCCS
             InitializeComponent();
             _targetRoom = roomName;
 
-            // Update UI Title
-            lblRoomName.Text = $"Schedule: {_targetRoom}";
+            // 1. Setup the Labels
+            lblRoomName.Text = $"ROOM: {_targetRoom.ToUpper()}";
+            lblSemesterYear.Text = "1st Semester, A.Y. 2025-2026";
 
-            // Build Grid and Load Data
+            // 2. TRANSPARENCY FIX
+            Control headerParent = this.Controls["panel1"];
+
+            if (headerParent != null)
+            {
+                lblRoomName.Parent = headerParent;
+                lblSemesterYear.Parent = headerParent;
+            }
+            else
+            {
+                lblRoomName.Parent = this;
+                lblSemesterYear.Parent = this;
+            }
+
+            // 3. Grid Setup
             SetupGrid();
             LoadRoomSchedule();
 
-            // Wire events
             this.Resize += new EventHandler(RoomScheduleForm_Resize);
         }
 
@@ -76,6 +90,8 @@ namespace SchedCCS
                 int rowIndex = dgvRoomSchedule.Rows.Add(timeLabel, "", "", "", "", "", "", "");
                 dgvRoomSchedule.Rows[rowIndex].Height = exactRowHeight;
             }
+
+            dgvRoomSchedule.BackgroundColor = System.Drawing.Color.White;
         }
 
         #endregion
