@@ -177,15 +177,21 @@ namespace SchedCCS
             {
                 pnlBuildingA.Visible = true;
                 pnlBuildingB.Visible = false;
+
                 pnlBuildingA.BringToFront();
+
                 cmbBuilding.BringToFront();
+                lblSelectBuilding.BringToFront();
             }
             else if (selected == "Building B")
             {
                 pnlBuildingB.Visible = true;
                 pnlBuildingA.Visible = false;
+
                 pnlBuildingB.BringToFront();
+
                 cmbBuilding.BringToFront();
+                lblSelectBuilding.BringToFront();
             }
         }
 
