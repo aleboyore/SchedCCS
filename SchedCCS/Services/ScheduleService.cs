@@ -213,7 +213,11 @@ namespace SchedCCS
         #region 4. Helpers
 
         private string CleanSubjectName(string s) => s.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
-        private string GetDayName(int d) => (d >= 1 && d <= 7) ? new[] { "", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }[d] : "Err";
+
+        private string GetDayName(int d) => (d >= 1 && d <= 7)
+            ? new[] { "", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }[d]
+            : "Err";
+
         private string GetTimeLabel(int t) => $"{7 + t}:00 - {8 + t}:00";
 
         #endregion

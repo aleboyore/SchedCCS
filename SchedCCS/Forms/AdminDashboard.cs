@@ -3,15 +3,21 @@ using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Windows.Forms;
 
 namespace SchedCCS
 {
     public partial class AdminDashboard : Form
     {
-        private readonly ScheduleService _scheduleService;
+        #region Fields
 
-        #region 1. Fields & Properties
+        private readonly ScheduleService _scheduleService;
 
         // Grid Sorting
         private string currentSortColumn = "";
@@ -29,13 +35,38 @@ namespace SchedCCS
 
         #endregion
 
-        #region 2. Initialization
+        #region 1. Initialization
 
         public AdminDashboard()
         {
             InitializeComponent();
-            _scheduleService = new ScheduleService(); // Initialize Service
+
+            // --- DOUBLE BUFFERING (Anti-Flicker) ---
+            SetDoubleBuffered(pnlContent);      // Main Container
+            SetDoubleBuffered(pnlViewSchedule); // Grid View
+            SetDoubleBuffered(pnlViewMaster);   // Master List
+            SetDoubleBuffered(pnlViewManage);   // Manage Data
+            SetDoubleBuffered(pnlViewPending);  // Pending View
+
+            // Safety Check: Buffer sub-panels if they exist in the designer
+            // (Use reflection to avoid compile errors if controls are missing)
+            if (this.Controls.Find("pnlSubTeachers", true).Length > 0)
+                SetDoubleBuffered(this.Controls.Find("pnlSubTeachers", true)[0]);
+
+            if (this.Controls.Find("pnlSubRooms", true).Length > 0)
+                SetDoubleBuffered(this.Controls.Find("pnlSubRooms", true)[0]);
+
+            if (this.Controls.Find("pnlSubSections", true).Length > 0)
+                SetDoubleBuffered(this.Controls.Find("pnlSubSections", true)[0]);
+            // ---------------------------------------
+
+            // Initialize Logic
+            _scheduleService = new ScheduleService();
+            ClearManageInputs();
             RefreshAdminLists();
+
+            // Set Default View
+            ShowView(pnlViewSchedule);
         }
 
         private void Form1_Load_1(object sender, EventArgs e)
@@ -54,13 +85,92 @@ namespace SchedCCS
             RefreshSectionDropdown();
         }
 
+        private void ClearManageInputs()
+        {
+            cmbSectionProgram.SelectedIndex = -1;
+            cmbSectionYear.SelectedIndex = -1;
+            cmbRoomType.SelectedIndex = -1;
+            cmbBatchProgram.SelectedIndex = -1;
+            cmbBatchYear.SelectedIndex = -1;
+        }
+
         #endregion
 
-        #region 3. Schedule Operations (Service Layer)
+        #region 2. Navigation Logic
+
+        private void ShowView(Panel panelToShow)
+        {
+            // Hide all main panels
+            pnlViewSchedule.Visible = false;
+            pnlViewMaster.Visible = false;
+            pnlViewManage.Visible = false;
+            pnlViewPending.Visible = false;
+
+            // Show target
+            panelToShow.Visible = true;
+            panelToShow.BringToFront();
+        }
+
+        private void btnNavSchedule_Click(object sender, EventArgs e)
+        {
+            ShowView(pnlViewSchedule);
+
+            // Initialize filters if empty
+            if (cmbFilterType.SelectedIndex == -1) cmbFilterType.SelectedIndex = 0;
+            if (cmbScheduleView.Items.Count == 0) UpdateTimetableView();
+
+            // Refresh grid if data exists
+            if (DataManager.MasterSchedule != null && DataManager.MasterSchedule.Count > 0)
+            {
+                if (cmbScheduleView.SelectedItem != null)
+                {
+                    string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
+                    DisplayTimetable(cmbScheduleView.SelectedItem.ToString(), mode);
+                }
+            }
+        }
+
+        private void btnNavMaster_Click(object sender, EventArgs e)
+        {
+            ShowView(pnlViewMaster);
+            UpdateMasterGrid();
+        }
+
+        private void btnNavManage_Click(object sender, EventArgs e)
+        {
+            ShowView(pnlViewManage);
+            RefreshAdminLists();
+        }
+
+        private void btnNavPending_Click(object sender, EventArgs e)
+        {
+            ShowView(pnlViewPending);
+            LoadPendingList();
+        }
+
+        private void btnLogout_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Log out and return to Login screen?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                this.Close();
+        }
+
+        #endregion
+
+        #region 3. Schedule Generation Logic
 
         private void btnGenerate_Click(object sender, EventArgs e)
         {
-            // Prompt if overwriting a valid schedule
+            // Force refresh from database
+            DataManager.Initialize();
+
+            // Validation
+            if (DataManager.Rooms.Count == 0 || DataManager.Teachers.Count == 0 || DataManager.Sections.Count == 0)
+            {
+                MessageBox.Show("Cannot generate schedule: Missing Data.\nPlease check Rooms, Teachers, or Sections.", "Generation Failed");
+                return;
+            }
+
+            // Existing schedule warning
             if (!isDataDirty && DataManager.FailedAssignments.Count == 0 && DataManager.MasterSchedule.Count > 0)
             {
                 var result = MessageBox.Show("A valid schedule exists. Re-generating will attempt to find a better configuration.\n\nContinue?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -70,31 +180,23 @@ namespace SchedCCS
             RunScheduleGeneration();
         }
 
-        // CRITICAL: Added 'async' keyword here
         private async void RunScheduleGeneration()
         {
-            // 1. START LOADING STATE (UX Upgrade)
             Cursor.Current = Cursors.WaitCursor;
-            btnGenerate.Enabled = false;           // Prevent double-clicks
-            btnGenerate.Text = "Processing...";    // Give visual feedback
-
-            // Force the UI to repaint immediately so the text updates
+            btnGenerate.Enabled = false;
+            btnGenerate.Text = "Processing...";
             Application.DoEvents();
 
             try
             {
-                // 2. HEAVY LIFTING (Non-Blocking)
-                // The UI stays alive while we wait here
                 string resultMsg = await _scheduleService.GenerateScheduleAsync();
 
-                // 3. REFRESH UI (Only runs after math is done)
                 UpdateMasterGrid();
                 UpdateTimetableView();
                 LoadPendingList();
 
                 isDataDirty = false;
 
-                // 4. SHOW SUCCESS
                 MessageBox.Show(resultMsg.Contains("Success")
                     ? "Perfect Schedule Generated Successfully!"
                     : resultMsg);
@@ -105,19 +207,19 @@ namespace SchedCCS
             }
             finally
             {
-                // 5. RESET LOADING STATE (Always runs, even if error)
                 btnGenerate.Enabled = true;
-                btnGenerate.Text = "Generate Schedule"; // Restore original text
+                btnGenerate.Text = "Generate Schedule";
                 Cursor.Current = Cursors.Default;
             }
         }
 
+        #endregion
+
+        #region 4. Manual Operations & Grid Interaction
+
         private void UnassignSubject(ScheduleItem item)
         {
-            // Delegate to Service
             _scheduleService.UnassignSubject(item);
-
-            // Refresh UI
             UpdateMasterGrid();
             UpdateTimetableView();
             LoadPendingList();
@@ -125,7 +227,6 @@ namespace SchedCCS
 
         private void PerformSwap(ScheduleItem oldClass, FailedEntry newClass)
         {
-            // Delegate to Service
             bool success = _scheduleService.PerformSwap(oldClass, newClass);
 
             if (!success)
@@ -133,7 +234,6 @@ namespace SchedCCS
                 MessageBox.Show("Swap failed: The new subject requirements conflict with availability.");
             }
 
-            // Refresh UI
             UpdateMasterGrid();
             UpdateTimetableView();
             LoadPendingList();
@@ -149,7 +249,6 @@ namespace SchedCCS
             int targetTime = data.Time;
             string targetRoom = null;
 
-            // Determine Target Room
             if (cmbFilterType.SelectedItem?.ToString() == "Room")
             {
                 targetRoom = cmbScheduleView.SelectedItem.ToString();
@@ -167,7 +266,6 @@ namespace SchedCCS
                 targetRoom = validRoom.Name;
             }
 
-            // Delegate to Service
             bool success = _scheduleService.PlaceBlockManual(failEntry, targetDay, targetTime, targetRoom);
 
             if (success)
@@ -180,115 +278,6 @@ namespace SchedCCS
             {
                 MessageBox.Show("Cannot place here. The teacher is busy, the room is occupied, or the class duration exceeds the day.");
             }
-        }
-
-        #endregion
-
-        #region 4. Manual Scheduling (Grid Interaction)
-
-        private void dgvTimetable_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.Button != MouseButtons.Right || e.RowIndex < 0 || e.ColumnIndex <= 0) return;
-
-            // Force Selection
-            dgvTimetable.ClearSelection();
-            dgvTimetable.CurrentCell = dgvTimetable[e.ColumnIndex, e.RowIndex];
-            dgvTimetable.Rows[e.RowIndex].Cells[e.ColumnIndex].Selected = true;
-
-            int dayIndex = e.ColumnIndex;
-            int timeIndex = e.RowIndex;
-            string currentSectionName = cmbScheduleView.SelectedItem?.ToString();
-
-            // Identify Item in Slot
-            var existingClass = DataManager.MasterSchedule.FirstOrDefault(s =>
-                (s.Section == currentSectionName || cmbFilterType.Text != "Section") &&
-                s.DayIndex == dayIndex &&
-                s.TimeIndex == timeIndex &&
-                (s.Room == dgvTimetable.Rows[timeIndex].Cells[e.ColumnIndex].Value?.ToString().Split('\n').LastOrDefault()
-                 || cmbFilterType.Text == "Section")
-            );
-
-            if (cmbFilterType.Text == "Section" && !string.IsNullOrEmpty(currentSectionName))
-            {
-                existingClass = DataManager.MasterSchedule.FirstOrDefault(s =>
-                    s.Section == currentSectionName && s.DayIndex == dayIndex && s.TimeIndex == timeIndex);
-            }
-
-            // Build Menu
-            ctxMenuSchedule.Items.Clear();
-            ctxMenuSchedule.Items.Add(new ToolStripMenuItem($"Slot: {GetDayName(dayIndex)} @ {ToSimple12Hour(GetTimeLabel(timeIndex))}") { Enabled = false, BackColor = System.Drawing.Color.LightGray });
-            ctxMenuSchedule.Items.Add(new ToolStripSeparator());
-
-            if (existingClass != null)
-            {
-                // Unassign / Swap Options
-                ctxMenuSchedule.Items.Add(new ToolStripMenuItem($"Current: {existingClass.Subject} ({existingClass.Room})") { Enabled = false });
-
-                var unassignItem = new ToolStripMenuItem("Unassign Entire Block (Move to Pending)");
-                unassignItem.Click += (s, args) => UnassignSubject(existingClass);
-                ctxMenuSchedule.Items.Add(unassignItem);
-
-                ctxMenuSchedule.Items.Add(new ToolStripSeparator());
-
-                bool isLabSlot = existingClass.Subject.Contains("(Lab)");
-                var validSwaps = DataManager.FailedAssignments
-                    .Where(f => f.Section.Name == existingClass.Section && f.Subject.IsLab == isLabSlot)
-                    .ToList();
-
-                if (validSwaps.Count > 0)
-                {
-                    var swapRoot = new ToolStripMenuItem("Swap With...");
-                    foreach (var pending in validSwaps)
-                    {
-                        var swapItem = new ToolStripMenuItem($"{pending.Subject.Code} ({pending.Subject.Units} units)");
-                        swapItem.Click += (s, args) => PerformSwap(existingClass, pending);
-                        swapRoot.DropDownItems.Add(swapItem);
-                    }
-                    ctxMenuSchedule.Items.Add(swapRoot);
-                }
-            }
-            else
-            {
-                // Placement Options
-                string currentMode = cmbFilterType.SelectedItem?.ToString();
-                var relevantPending = new List<FailedEntry>();
-
-                if (currentMode == "Section")
-                {
-                    relevantPending = DataManager.FailedAssignments.Where(f => f.Section.Name == currentSectionName).ToList();
-                }
-                else if (currentMode == "Teacher")
-                {
-                    relevantPending = DataManager.FailedAssignments.Where(f =>
-                    {
-                        var t = DataManager.Teachers.FirstOrDefault(teacher => teacher.Name == currentSectionName);
-                        return t != null && t.QualifiedSubjects.Contains(CleanSubjectName(f.Subject.Code));
-                    }).ToList();
-                }
-                else // Room Mode
-                {
-                    relevantPending = DataManager.FailedAssignments.ToList();
-                }
-
-                if (relevantPending.Count == 0)
-                {
-                    ctxMenuSchedule.Items.Add("No pending subjects found.");
-                }
-                else
-                {
-                    foreach (var fail in relevantPending.OrderBy(f => f.Section.Name))
-                    {
-                        string label = $"Place {fail.Section.Name} - {fail.Subject.Code} ({fail.Subject.Units}u)";
-                        var item = new ToolStripMenuItem(label);
-                        item.Tag = new { FailEntry = fail, Day = dayIndex, Time = timeIndex };
-                        item.Click += ContextMenu_PlaceClick;
-                        ctxMenuSchedule.Items.Add(item);
-                    }
-                }
-            }
-
-            Rectangle cellRect = dgvTimetable.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
-            ctxMenuSchedule.Show(dgvTimetable, cellRect.Left + e.X, cellRect.Top + e.Y);
         }
 
         private void btnFindSlots_Click(object sender, EventArgs e)
@@ -341,9 +330,602 @@ namespace SchedCCS
                 MessageBox.Show(report, "Availability Cheat Sheet");
         }
 
+        private void dgvTimetable_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right || e.RowIndex < 0 || e.ColumnIndex <= 0) return;
+
+            dgvTimetable.ClearSelection();
+            dgvTimetable.CurrentCell = dgvTimetable[e.ColumnIndex, e.RowIndex];
+            dgvTimetable.Rows[e.RowIndex].Cells[e.ColumnIndex].Selected = true;
+
+            int dayIndex = e.ColumnIndex;
+            int timeIndex = e.RowIndex;
+            string currentSectionName = cmbScheduleView.SelectedItem?.ToString();
+
+            var existingClass = DataManager.MasterSchedule.FirstOrDefault(s =>
+                (s.Section == currentSectionName || cmbFilterType.Text != "Section") &&
+                s.DayIndex == dayIndex &&
+                s.TimeIndex == timeIndex &&
+                (s.Room == dgvTimetable.Rows[timeIndex].Cells[e.ColumnIndex].Value?.ToString().Split('\n').LastOrDefault()
+                 || cmbFilterType.Text == "Section")
+            );
+
+            if (cmbFilterType.Text == "Section" && !string.IsNullOrEmpty(currentSectionName))
+            {
+                existingClass = DataManager.MasterSchedule.FirstOrDefault(s =>
+                    s.Section == currentSectionName && s.DayIndex == dayIndex && s.TimeIndex == timeIndex);
+            }
+
+            ctxMenuSchedule.Items.Clear();
+            ctxMenuSchedule.Items.Add(new ToolStripMenuItem($"Slot: {GetDayName(dayIndex)} @ {ToSimple12Hour(GetTimeLabel(timeIndex))}") { Enabled = false, BackColor = System.Drawing.Color.LightGray });
+            ctxMenuSchedule.Items.Add(new ToolStripSeparator());
+
+            if (existingClass != null)
+            {
+                ctxMenuSchedule.Items.Add(new ToolStripMenuItem($"Current: {existingClass.Subject} ({existingClass.Room})") { Enabled = false });
+
+                var unassignItem = new ToolStripMenuItem("Unassign Entire Block (Move to Pending)");
+                unassignItem.Click += (s, args) => UnassignSubject(existingClass);
+                ctxMenuSchedule.Items.Add(unassignItem);
+
+                ctxMenuSchedule.Items.Add(new ToolStripSeparator());
+
+                bool isLabSlot = existingClass.Subject.Contains("(Lab)");
+                var validSwaps = DataManager.FailedAssignments
+                    .Where(f => f.Section.Name == existingClass.Section && f.Subject.IsLab == isLabSlot)
+                    .ToList();
+
+                if (validSwaps.Count > 0)
+                {
+                    var swapRoot = new ToolStripMenuItem("Swap With...");
+                    foreach (var pending in validSwaps)
+                    {
+                        var swapItem = new ToolStripMenuItem($"{pending.Subject.Code} ({pending.Subject.Units} units)");
+                        swapItem.Click += (s, args) => PerformSwap(existingClass, pending);
+                        swapRoot.DropDownItems.Add(swapItem);
+                    }
+                    ctxMenuSchedule.Items.Add(swapRoot);
+                }
+            }
+            else
+            {
+                string currentMode = cmbFilterType.SelectedItem?.ToString();
+                var relevantPending = new List<FailedEntry>();
+
+                if (currentMode == "Section")
+                {
+                    relevantPending = DataManager.FailedAssignments.Where(f => f.Section.Name == currentSectionName).ToList();
+                }
+                else if (currentMode == "Teacher")
+                {
+                    relevantPending = DataManager.FailedAssignments.Where(f =>
+                    {
+                        var t = DataManager.Teachers.FirstOrDefault(teacher => teacher.Name == currentSectionName);
+                        return t != null && t.QualifiedSubjects.Contains(CleanSubjectName(f.Subject.Code));
+                    }).ToList();
+                }
+                else
+                {
+                    relevantPending = DataManager.FailedAssignments.ToList();
+                }
+
+                if (relevantPending.Count == 0)
+                {
+                    ctxMenuSchedule.Items.Add("No pending subjects found.");
+                }
+                else
+                {
+                    foreach (var fail in relevantPending.OrderBy(f => f.Section.Name))
+                    {
+                        string label = $"Place {fail.Section.Name} - {fail.Subject.Code} ({fail.Subject.Units}u)";
+                        var item = new ToolStripMenuItem(label);
+                        item.Tag = new { FailEntry = fail, Day = dayIndex, Time = timeIndex };
+                        item.Click += ContextMenu_PlaceClick;
+                        ctxMenuSchedule.Items.Add(item);
+                    }
+                }
+            }
+
+            Rectangle cellRect = dgvTimetable.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+            ctxMenuSchedule.Show(dgvTimetable, cellRect.Left + e.X, cellRect.Top + e.Y);
+        }
+
         #endregion
 
-        #region 5. Visualization & Grid Rendering
+        #region 5. Data Management (CRUD)
+
+        // --- Teacher Management ---
+        private void btnAddTeacher_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtTeacherName.Text)) { MessageBox.Show("Please enter a teacher name."); return; }
+
+            Teacher newTeacher = new Teacher
+            {
+                Id = DataManager.Teachers.Count + 1,
+                Name = txtTeacherName.Text
+            };
+
+            if (!string.IsNullOrWhiteSpace(txtTeacherSubjects.Text))
+            {
+                foreach (var s in txtTeacherSubjects.Text.Split(',')) newTeacher.QualifiedSubjects.Add(s.Trim());
+            }
+
+            DataManager.Teachers.Add(newTeacher);
+            MessageBox.Show($"Teacher {newTeacher.Name} added!");
+            ResetTeacherForm();
+        }
+
+        private void btnUpdateTeacher_Click(object sender, EventArgs e)
+        {
+            var teacher = DataManager.Teachers.FirstOrDefault(t => t.Id == editingTeacherId);
+            if (teacher != null)
+            {
+                teacher.Name = txtTeacherName.Text;
+                teacher.QualifiedSubjects.Clear();
+                if (!string.IsNullOrWhiteSpace(txtTeacherSubjects.Text))
+                {
+                    foreach (var s in txtTeacherSubjects.Text.Split(',')) teacher.QualifiedSubjects.Add(s.Trim());
+                }
+
+                MessageBox.Show("Teacher Updated!");
+                ResetTeacherForm();
+            }
+        }
+
+        private void btnDeleteTeacher_Click(object sender, EventArgs e)
+        {
+            if (lstTeachers.SelectedItem == null) return;
+            string name = lstTeachers.SelectedItem.ToString().Split('(')[0].Trim();
+            var teacher = DataManager.Teachers.FirstOrDefault(t => t.Name == name);
+
+            if (teacher != null && MessageBox.Show($"Delete {name} and their schedule?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                DataManager.RemoveTeacher(teacher);
+                MessageBox.Show("Teacher removed.");
+                RefreshAdminLists();
+            }
+        }
+
+        private void btnCancelTeacher_Click(object sender, EventArgs e) => ResetTeacherForm();
+
+        private void ResetTeacherForm()
+        {
+            txtTeacherName.Clear();
+            txtTeacherSubjects.Clear();
+            editingTeacherId = -1;
+            btnUpdateTeacher.Enabled = false;
+            btnAddTeacher.Enabled = true;
+            RefreshAdminLists();
+            isDataDirty = true;
+        }
+
+        // --- Room Management ---
+        private void btnAddRoom_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtRoomName.Text) || cmbRoomType.SelectedItem == null)
+            {
+                MessageBox.Show("Please enter valid room details.");
+                return;
+            }
+
+            Room newRoom = new Room
+            {
+                Id = DataManager.Rooms.Count + 1,
+                Name = txtRoomName.Text,
+                Type = cmbRoomType.SelectedItem.ToString() == "Laboratory" ? RoomType.Laboratory : RoomType.Lecture
+            };
+
+            DataManager.Rooms.Add(newRoom);
+            MessageBox.Show($"Room '{newRoom.Name}' added!");
+            ResetRoomForm();
+        }
+
+        private void btnUpdateRoom_Click(object sender, EventArgs e)
+        {
+            var room = DataManager.Rooms.FirstOrDefault(r => r.Id == editingRoomId);
+            if (room != null)
+            {
+                room.Name = txtRoomName.Text;
+                room.Type = cmbRoomType.SelectedItem.ToString() == "Laboratory" ? RoomType.Laboratory : RoomType.Lecture;
+                MessageBox.Show("Room Updated!");
+                ResetRoomForm();
+            }
+        }
+
+        private void btnDeleteRoom_Click(object sender, EventArgs e)
+        {
+            if (lstRooms.SelectedItem == null) return;
+            string name = lstRooms.SelectedItem.ToString().Split('|')[0].Trim();
+            var room = DataManager.Rooms.FirstOrDefault(r => r.Name == name);
+
+            if (room != null && MessageBox.Show($"Delete {name} and its schedule?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                DataManager.RemoveRoom(room);
+                MessageBox.Show("Room deleted.");
+                ResetRoomForm();
+            }
+        }
+
+        private void btnCancelRoom_Click(object sender, EventArgs e) => ResetRoomForm();
+
+        private void ResetRoomForm()
+        {
+            txtRoomName.Clear();
+            cmbRoomType.SelectedIndex = -1;
+            editingRoomId = -1;
+            btnUpdateRoom.Enabled = false;
+            btnAddRoom.Enabled = true;
+            RefreshAdminLists();
+            isDataDirty = true;
+        }
+
+        // --- Section Management ---
+        private void btnCreateSection_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtSectionName.Text) || cmbSectionProgram.SelectedItem == null || cmbSectionYear.SelectedItem == null)
+            {
+                MessageBox.Show("Please complete all section fields.");
+                return;
+            }
+
+            string program = cmbSectionProgram.SelectedItem.ToString();
+            int yearLevel = int.Parse(cmbSectionYear.SelectedItem.ToString());
+
+            if (editingSectionId != -1)
+            {
+                var section = DataManager.Sections.FirstOrDefault(s => s.Id == editingSectionId);
+                if (section != null)
+                {
+                    section.Name = txtSectionName.Text;
+                    section.Program = program;
+                    section.YearLevel = yearLevel;
+                    MessageBox.Show("Section Updated!");
+                }
+                editingSectionId = -1;
+                btnCreateSection.Text = "Create";
+            }
+            else
+            {
+                Section newSection = new Section
+                {
+                    Id = DataManager.Sections.Count + 1,
+                    Name = txtSectionName.Text,
+                    Program = program,
+                    YearLevel = yearLevel
+                };
+                DataManager.Sections.Add(newSection);
+                MessageBox.Show($"Section {newSection.Name} created!");
+            }
+
+            ResetSectionForm();
+        }
+
+        private void btnSaveChanges_Click(object sender, EventArgs e)
+        {
+            if (editingSectionId != -1)
+            {
+                var section = DataManager.Sections.FirstOrDefault(s => s.Id == editingSectionId);
+                if (section != null)
+                {
+                    section.Name = txtSectionName.Text;
+
+                    if (!string.IsNullOrEmpty(editingSubjectCode))
+                    {
+                        var subject = section.SubjectsToTake.FirstOrDefault(s => s.Code.Contains(editingSubjectCode));
+                        if (subject != null)
+                        {
+                            string newCode = txtSubjCode.Text.Trim();
+                            subject.Code = chkIsLab.Checked && !newCode.Contains("(Lab)") ? newCode + " (Lab)" : newCode;
+                            int.TryParse(txtUnits.Text, out int u);
+                            subject.Units = u;
+                            subject.IsLab = chkIsLab.Checked;
+                        }
+                    }
+
+                    cmbSectionList.SelectedItem = section.Name;
+                    MessageBox.Show("Changes Saved!");
+                }
+            }
+            RefreshAdminLists();
+            RefreshSubjectList();
+            isDataDirty = true;
+        }
+
+        private void btnDeleteSection_Click(object sender, EventArgs e)
+        {
+            if (lstSections.SelectedItem == null) return;
+            string name = lstSections.SelectedItem.ToString();
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == name);
+
+            if (section != null && MessageBox.Show($"Delete {name} and its schedule?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                DataManager.RemoveSection(section);
+                MessageBox.Show("Section deleted.");
+                RefreshAdminLists();
+                isDataDirty = true;
+            }
+        }
+
+        private void ResetSectionForm()
+        {
+            txtSectionName.Clear();
+            cmbSectionProgram.SelectedIndex = -1;
+            cmbSectionYear.SelectedIndex = -1;
+            RefreshAdminLists();
+            RefreshSectionDropdown();
+        }
+
+        private void btnAddSubject_Click(object sender, EventArgs e)
+        {
+            if (cmbSectionList.SelectedItem == null) return;
+            if (!int.TryParse(txtUnits.Text, out int inputUnits) || string.IsNullOrWhiteSpace(txtSubjCode.Text)) return;
+
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
+            if (section == null) return;
+
+            if (chkIsLab.Checked)
+            {
+                section.SubjectsToTake.Add(new Subject { Code = txtSubjCode.Text + " (Lec)", IsLab = false, Units = inputUnits - 1 });
+                section.SubjectsToTake.Add(new Subject { Code = txtSubjCode.Text + " (Lab)", IsLab = true, Units = 3 });
+                MessageBox.Show($"Added {txtSubjCode.Text} (Lec/Lab split).");
+            }
+            else
+            {
+                section.SubjectsToTake.Add(new Subject { Code = txtSubjCode.Text, IsLab = false, Units = inputUnits });
+                MessageBox.Show($"Added {txtSubjCode.Text}.");
+            }
+
+            ResetSubjectInputs();
+            RefreshSubjectList();
+            isDataDirty = true;
+        }
+
+        private void btnRemoveSubject_Click(object sender, EventArgs e)
+        {
+            if (cmbSectionList.SelectedItem == null || lstSectionSubjects.SelectedItem == null) return;
+
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
+            string selectedText = lstSectionSubjects.SelectedItem.ToString();
+            var subject = section?.SubjectsToTake.FirstOrDefault(s => selectedText.Contains(s.Code));
+
+            if (subject != null)
+            {
+                section.SubjectsToTake.Remove(subject);
+                MessageBox.Show("Subject removed.");
+                RefreshSubjectList();
+                isDataDirty = true;
+            }
+        }
+
+        private void btnCancelSubject_Click(object sender, EventArgs e)
+        {
+            ResetSubjectInputs();
+            ResetSectionForm();
+        }
+
+        private void btnBatchAdd_Click(object sender, EventArgs e)
+        {
+            if (cmbBatchProgram.SelectedItem == null || cmbBatchYear.SelectedItem == null || string.IsNullOrWhiteSpace(txtBatchCode.Text))
+            {
+                MessageBox.Show("Please enter all subject details.");
+                return;
+            }
+
+            string program = cmbBatchProgram.SelectedItem.ToString();
+            int year = int.Parse(cmbBatchYear.SelectedItem.ToString());
+            string code = txtBatchCode.Text.Trim();
+            int.TryParse(txtBatchUnits.Text, out int units);
+            bool isLab = chkBatchLab.Checked;
+
+            var targetSections = DataManager.Sections.Where(s => s.Program == program && s.YearLevel == year).ToList();
+
+            if (targetSections.Count == 0)
+            {
+                MessageBox.Show("No sections found.");
+                return;
+            }
+
+            int count = 0;
+            foreach (var s in targetSections)
+            {
+                if (s.SubjectsToTake.Any(sub => sub.Code.Contains(code))) continue;
+
+                if (isLab)
+                {
+                    s.SubjectsToTake.Add(new Subject { Code = code + " (Lec)", Units = units - 1, IsLab = false });
+                    s.SubjectsToTake.Add(new Subject { Code = code + " (Lab)", Units = 3, IsLab = true });
+                }
+                else
+                {
+                    s.SubjectsToTake.Add(new Subject { Code = code, Units = units, IsLab = false });
+                }
+                count++;
+            }
+
+            MessageBox.Show($"Added {code} to {count} sections.");
+            ResetSubjectInputs();
+            RefreshSubjectList();
+            isDataDirty = true;
+        }
+
+        private void ResetSubjectInputs()
+        {
+            txtSubjCode.Clear();
+            txtUnits.Clear();
+            chkIsLab.Checked = false;
+            editingSubjectCode = "";
+            btnAddSubject.Enabled = true;
+        }
+
+        private void LoadPendingList()
+        {
+            dgvPending.DataSource = null;
+            dgvPending.Rows.Clear();
+            dgvPending.Columns.Clear();
+            dgvPending.Columns.Add("Section", "Section");
+            dgvPending.Columns.Add("Subject", "Subject");
+            dgvPending.Columns.Add("Reason", "Reason");
+            dgvPending.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            if (DataManager.FailedAssignments != null)
+            {
+                foreach (var fail in DataManager.FailedAssignments)
+                {
+                    int rowIndex = dgvPending.Rows.Add(fail.Section.Name, fail.Subject.Code, fail.Reason);
+                    dgvPending.Rows[rowIndex].Tag = fail;
+                }
+            }
+        }
+
+        private void RefreshAdminLists()
+        {
+            lstTeachers.Items.Clear();
+            foreach (var t in DataManager.Teachers) lstTeachers.Items.Add($"{t.Name} ({string.Join(", ", t.QualifiedSubjects)})");
+
+            lstRooms.Items.Clear();
+            foreach (var r in DataManager.Rooms) lstRooms.Items.Add($"{r.Name} | {r.Type}");
+
+            lstSections.Items.Clear();
+            foreach (var s in DataManager.Sections) lstSections.Items.Add(s.Name);
+
+            RefreshSectionDropdown();
+
+            // Dynamic Program Population
+            string currentBatchProg = cmbBatchProgram.SelectedItem?.ToString();
+            string currentSectProg = cmbSectionProgram.SelectedItem?.ToString();
+
+            cmbBatchProgram.Items.Clear();
+            cmbSectionProgram.Items.Clear();
+
+            foreach (var prog in DataManager.Programs)
+            {
+                cmbBatchProgram.Items.Add(prog);
+                cmbSectionProgram.Items.Add(prog);
+            }
+
+            if (currentBatchProg != null && cmbBatchProgram.Items.Contains(currentBatchProg))
+                cmbBatchProgram.SelectedItem = currentBatchProg;
+
+            if (currentSectProg != null && cmbSectionProgram.Items.Contains(currentSectProg))
+                cmbSectionProgram.SelectedItem = currentSectProg;
+        }
+
+        private void RefreshSectionDropdown()
+        {
+            cmbSectionList.Items.Clear();
+            foreach (var s in DataManager.Sections) cmbSectionList.Items.Add(s.Name);
+        }
+
+        private void RefreshSubjectList()
+        {
+            lstSectionSubjects.Items.Clear();
+            if (cmbSectionList.SelectedItem == null) return;
+
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
+            if (section != null)
+            {
+                foreach (var sub in section.SubjectsToTake)
+                {
+                    string type = sub.IsLab ? "Lab" : "Lec";
+                    lstSectionSubjects.Items.Add($"{sub.Code} - {type} ({sub.Units} units)");
+                }
+            }
+        }
+
+        // List & Combo Selection Events
+        private void cmbFilterType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            cmbScheduleView.Items.Clear();
+            cmbScheduleView.Text = "";
+            string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
+
+            if (mode == "Section") foreach (var s in DataManager.Sections) cmbScheduleView.Items.Add(s.Name);
+            else if (mode == "Teacher") foreach (var t in DataManager.Teachers) cmbScheduleView.Items.Add(t.Name);
+            else if (mode == "Room") foreach (var r in DataManager.Rooms) cmbScheduleView.Items.Add(r.Name);
+        }
+
+        private void cmbScheduleView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbScheduleView.SelectedItem != null)
+            {
+                string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
+                DisplayTimetable(cmbScheduleView.SelectedItem.ToString(), mode);
+            }
+        }
+
+        private void lstTeachers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lstTeachers.SelectedItem == null) return;
+            string name = lstTeachers.SelectedItem.ToString().Split('(')[0].Trim();
+            var teacher = DataManager.Teachers.FirstOrDefault(t => t.Name == name);
+
+            if (teacher != null)
+            {
+                editingTeacherId = teacher.Id;
+                txtTeacherName.Text = teacher.Name;
+                txtTeacherSubjects.Text = string.Join(", ", teacher.QualifiedSubjects);
+                btnUpdateTeacher.Enabled = true;
+                btnAddTeacher.Enabled = false;
+            }
+        }
+
+        private void lstRooms_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lstRooms.SelectedItem == null) return;
+            string name = lstRooms.SelectedItem.ToString().Split('|')[0].Trim();
+            var room = DataManager.Rooms.FirstOrDefault(r => r.Name == name);
+
+            if (room != null)
+            {
+                editingRoomId = room.Id;
+                txtRoomName.Text = room.Name;
+                cmbRoomType.SelectedItem = room.Type == RoomType.Laboratory ? "Laboratory" : "Lecture";
+                btnUpdateRoom.Enabled = true;
+                btnAddRoom.Enabled = false;
+            }
+        }
+
+        private void lstSections_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lstSections.SelectedItem == null) return;
+            string name = lstSections.SelectedItem.ToString();
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == name);
+
+            if (section != null)
+            {
+                editingSectionId = section.Id;
+                txtSectionName.Text = section.Name;
+                if (cmbSectionProgram.Items.Contains(section.Program)) cmbSectionProgram.SelectedItem = section.Program;
+                if (cmbSectionYear.Items.Contains(section.YearLevel.ToString())) cmbSectionYear.SelectedItem = section.YearLevel.ToString();
+                btnCreateSection.Text = "Update Section";
+                if (cmbSectionList.Items.Contains(section.Name)) cmbSectionList.SelectedItem = section.Name;
+            }
+        }
+
+        private void lstSectionSubjects_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lstSectionSubjects.SelectedItem == null || cmbSectionList.SelectedItem == null) return;
+
+            string code = lstSectionSubjects.SelectedItem.ToString().Split('-')[0].Trim();
+            editingSubjectCode = code;
+
+            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
+            var subject = section?.SubjectsToTake.FirstOrDefault(s => s.Code.Contains(code));
+
+            if (subject != null)
+            {
+                txtSubjCode.Text = subject.Code.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
+                txtUnits.Text = subject.Units.ToString();
+                chkIsLab.Checked = subject.IsLab;
+                btnAddSubject.Enabled = false;
+            }
+        }
+
+        private void cmbSectionList_SelectedIndexChanged(object sender, EventArgs e) => RefreshSubjectList();
+
+        #endregion
+
+        #region 6. Visualization & Helpers
 
         private void UpdateMasterGrid()
         {
@@ -483,6 +1065,17 @@ namespace SchedCCS
             return height < 20 ? 20 : height;
         }
 
+        private void dgvTimetable_Resize(object sender, EventArgs e)
+        {
+            if (dgvTimetable.Rows.Count == 0 || !dgvTimetable.Visible) return;
+            try
+            {
+                int newRowHeight = CalculateRowHeight();
+                foreach (DataGridViewRow row in dgvTimetable.Rows) row.Height = newRowHeight;
+            }
+            catch { }
+        }
+
         private void dgvMaster_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             string columnClicked = dgvMaster.Columns[e.ColumnIndex].Name;
@@ -533,412 +1126,71 @@ namespace SchedCCS
             dgvMaster.Columns[e.ColumnIndex].HeaderText += isAscending ? " ▲" : " ▼";
         }
 
-        #endregion
-
-        #region 6. Data Management (CRUD)
-
-        // --- Teacher Management ---
-        private void btnAddTeacher_Click(object sender, EventArgs e)
+        private int GetDayColumnIndex(string day)
         {
-            if (string.IsNullOrWhiteSpace(txtTeacherName.Text)) { MessageBox.Show("Please enter a teacher name."); return; }
-
-            Teacher newTeacher = new Teacher
-            {
-                Id = DataManager.Teachers.Count + 1,
-                Name = txtTeacherName.Text
-            };
-
-            if (!string.IsNullOrWhiteSpace(txtTeacherSubjects.Text))
-            {
-                foreach (var s in txtTeacherSubjects.Text.Split(',')) newTeacher.QualifiedSubjects.Add(s.Trim());
-            }
-
-            DataManager.Teachers.Add(newTeacher);
-            MessageBox.Show($"Teacher {newTeacher.Name} added!");
-            ResetTeacherForm();
+            if (day.StartsWith("Mon")) return 1;
+            if (day.StartsWith("Tue")) return 2;
+            if (day.StartsWith("Wed")) return 3;
+            if (day.StartsWith("Thu")) return 4;
+            if (day.StartsWith("Fri")) return 5;
+            if (day.StartsWith("Sat")) return 6;
+            if (day.StartsWith("Sun")) return 7;
+            return 0;
         }
 
-        private void btnUpdateTeacher_Click(object sender, EventArgs e)
+        private string ToSimple12Hour(string timeRange)
         {
-            var teacher = DataManager.Teachers.FirstOrDefault(t => t.Id == editingTeacherId);
-            if (teacher != null)
+            try
             {
-                teacher.Name = txtTeacherName.Text;
-                teacher.QualifiedSubjects.Clear();
-                if (!string.IsNullOrWhiteSpace(txtTeacherSubjects.Text))
-                {
-                    foreach (var s in txtTeacherSubjects.Text.Split(',')) teacher.QualifiedSubjects.Add(s.Trim());
-                }
-
-                MessageBox.Show("Teacher Updated!");
-                ResetTeacherForm();
+                var parts = timeRange.Split('-');
+                string start = DateTime.Parse(parts[0].Trim()).ToString("h:mm");
+                string end = DateTime.Parse(parts[1].Trim()).ToString("h:mm");
+                return $"{start} - {end}";
             }
+            catch { return timeRange; }
         }
 
-        private void btnDeleteTeacher_Click(object sender, EventArgs e)
+        private System.Drawing.Color GetSubjectColor(string subjectName)
         {
-            if (lstTeachers.SelectedItem == null) return;
-            string name = lstTeachers.SelectedItem.ToString().Split('(')[0].Trim();
-            var teacher = DataManager.Teachers.FirstOrDefault(t => t.Name == name);
-
-            if (teacher != null)
-            {
-                DataManager.Teachers.Remove(teacher);
-                MessageBox.Show("Teacher removed.");
-                RefreshAdminLists();
-            }
+            string baseName = subjectName.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
+            int seed = baseName.GetHashCode();
+            Random r = new Random(seed);
+            return System.Drawing.Color.FromArgb(r.Next(160, 255), r.Next(160, 255), r.Next(160, 255));
         }
 
-        private void btnCancelTeacher_Click(object sender, EventArgs e) => ResetTeacherForm();
+        private string CleanSubjectName(string s) => s.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
 
-        private void ResetTeacherForm()
+        private string GetDayName(int d)
         {
-            txtTeacherName.Clear();
-            txtTeacherSubjects.Clear();
-            editingTeacherId = -1;
-            btnUpdateTeacher.Enabled = false;
-            btnAddTeacher.Enabled = true;
-            RefreshAdminLists();
-            isDataDirty = true;
+            string[] shortNames = { "", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+            if (d >= 1 && d <= 7) return shortNames[d];
+            return "Err";
         }
 
-        // --- Room Management ---
-        private void btnAddRoom_Click(object sender, EventArgs e)
+        private string GetTimeLabel(int t) => $"{7 + t}:00 - {8 + t}:00";
+
+        // Helper to enable Double Buffering
+        public static void SetDoubleBuffered(System.Windows.Forms.Control control)
         {
-            if (string.IsNullOrWhiteSpace(txtRoomName.Text) || cmbRoomType.SelectedItem == null)
-            {
-                MessageBox.Show("Please enter valid room details.");
-                return;
-            }
+            if (System.Windows.Forms.SystemInformation.TerminalServerSession) return;
 
-            Room newRoom = new Room
-            {
-                Id = DataManager.Rooms.Count + 1,
-                Name = txtRoomName.Text,
-                Type = cmbRoomType.SelectedItem.ToString() == "Laboratory" ? RoomType.Laboratory : RoomType.Lecture
-            };
-
-            DataManager.Rooms.Add(newRoom);
-            MessageBox.Show($"Room '{newRoom.Name}' added!");
-            ResetRoomForm();
-        }
-
-        private void btnUpdateRoom_Click(object sender, EventArgs e)
-        {
-            var room = DataManager.Rooms.FirstOrDefault(r => r.Id == editingRoomId);
-            if (room != null)
-            {
-                room.Name = txtRoomName.Text;
-                room.Type = cmbRoomType.SelectedItem.ToString() == "Laboratory" ? RoomType.Laboratory : RoomType.Lecture;
-                MessageBox.Show("Room Updated!");
-                ResetRoomForm();
-            }
-        }
-
-        private void btnDeleteRoom_Click(object sender, EventArgs e)
-        {
-            if (lstRooms.SelectedItem == null) return;
-            string name = lstRooms.SelectedItem.ToString().Split('|')[0].Trim();
-            var room = DataManager.Rooms.FirstOrDefault(r => r.Name == name);
-
-            if (room != null)
-            {
-                DataManager.Rooms.Remove(room);
-                MessageBox.Show("Room deleted.");
-                ResetRoomForm();
-            }
-        }
-
-        private void btnCancelRoom_Click(object sender, EventArgs e) => ResetRoomForm();
-
-        private void ResetRoomForm()
-        {
-            txtRoomName.Clear();
-            cmbRoomType.SelectedIndex = -1;
-            editingRoomId = -1;
-            btnUpdateRoom.Enabled = false;
-            btnAddRoom.Enabled = true;
-            RefreshAdminLists();
-            isDataDirty = true;
-        }
-
-        // --- Section Management ---
-        private void btnCreateSection_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(txtSectionName.Text) || cmbSectionProgram.SelectedItem == null || cmbSectionYear.SelectedItem == null)
-            {
-                MessageBox.Show("Please complete all section fields.");
-                return;
-            }
-
-            string program = cmbSectionProgram.SelectedItem.ToString();
-            int yearLevel = int.Parse(cmbSectionYear.SelectedItem.ToString());
-
-            if (editingSectionId != -1)
-            {
-                var section = DataManager.Sections.FirstOrDefault(s => s.Id == editingSectionId);
-                if (section != null)
-                {
-                    section.Name = txtSectionName.Text;
-                    section.Program = program;
-                    section.YearLevel = yearLevel;
-                    MessageBox.Show("Section Updated!");
-                }
-                editingSectionId = -1;
-                btnCreateSection.Text = "Create";
-            }
-            else
-            {
-                Section newSection = new Section
-                {
-                    Id = DataManager.Sections.Count + 1,
-                    Name = txtSectionName.Text,
-                    Program = program,
-                    YearLevel = yearLevel
-                };
-                DataManager.Sections.Add(newSection);
-                MessageBox.Show($"Section {newSection.Name} created!");
-            }
-
-            ResetSectionForm();
-        }
-
-        private void btnSaveChanges_Click(object sender, EventArgs e)
-        {
-            if (editingSectionId != -1)
-            {
-                var section = DataManager.Sections.FirstOrDefault(s => s.Id == editingSectionId);
-                if (section != null)
-                {
-                    section.Name = txtSectionName.Text;
-
-                    if (!string.IsNullOrEmpty(editingSubjectCode))
-                    {
-                        var subject = section.SubjectsToTake.FirstOrDefault(s => s.Code.Contains(editingSubjectCode));
-                        if (subject != null)
-                        {
-                            string newCode = txtSubjCode.Text.Trim();
-                            subject.Code = chkIsLab.Checked && !newCode.Contains("(Lab)") ? newCode + " (Lab)" : newCode;
-                            int.TryParse(txtUnits.Text, out int u);
-                            subject.Units = u;
-                            subject.IsLab = chkIsLab.Checked;
-                        }
-                    }
-
-                    cmbSectionList.SelectedItem = section.Name;
-                    MessageBox.Show("Changes Saved!");
-                }
-            }
-            RefreshAdminLists();
-            RefreshSubjectList();
-            isDataDirty = true;
-        }
-
-        private void btnDeleteSection_Click(object sender, EventArgs e)
-        {
-            if (lstSections.SelectedItem == null) return;
-            string name = lstSections.SelectedItem.ToString();
-            var section = DataManager.Sections.FirstOrDefault(s => s.Name == name);
-
-            if (section != null && MessageBox.Show($"Delete {name}?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
-                DataManager.Sections.Remove(section);
-                MessageBox.Show("Section deleted.");
-                RefreshAdminLists();
-                isDataDirty = true;
-            }
-        }
-
-        private void ResetSectionForm()
-        {
-            txtSectionName.Clear();
-            cmbSectionProgram.SelectedIndex = -1;
-            cmbSectionYear.SelectedIndex = -1;
-            RefreshAdminLists();
-            RefreshSectionDropdown();
-        }
-
-        // --- Subject Management ---
-        private void btnAddSubject_Click(object sender, EventArgs e)
-        {
-            if (cmbSectionList.SelectedItem == null) return;
-            if (!int.TryParse(txtUnits.Text, out int inputUnits) || string.IsNullOrWhiteSpace(txtSubjCode.Text)) return;
-
-            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
-            if (section == null) return;
-
-            if (chkIsLab.Checked)
-            {
-                section.SubjectsToTake.Add(new Subject { Code = txtSubjCode.Text + " (Lec)", IsLab = false, Units = inputUnits - 1 });
-                section.SubjectsToTake.Add(new Subject { Code = txtSubjCode.Text + " (Lab)", IsLab = true, Units = 3 });
-                MessageBox.Show($"Added {txtSubjCode.Text} (Lec/Lab split).");
-            }
-            else
-            {
-                section.SubjectsToTake.Add(new Subject { Code = txtSubjCode.Text, IsLab = false, Units = inputUnits });
-                MessageBox.Show($"Added {txtSubjCode.Text}.");
-            }
-
-            ResetSubjectInputs();
-            RefreshSubjectList();
-            isDataDirty = true;
-        }
-
-        private void btnRemoveSubject_Click(object sender, EventArgs e)
-        {
-            if (cmbSectionList.SelectedItem == null || lstSectionSubjects.SelectedItem == null) return;
-
-            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
-            string selectedText = lstSectionSubjects.SelectedItem.ToString();
-            var subject = section?.SubjectsToTake.FirstOrDefault(s => selectedText.Contains(s.Code));
-
-            if (subject != null)
-            {
-                section.SubjectsToTake.Remove(subject);
-                MessageBox.Show("Subject removed.");
-                RefreshSubjectList();
-                isDataDirty = true;
-            }
-        }
-
-        private void btnCancelSubject_Click(object sender, EventArgs e)
-        {
-            ResetSubjectInputs();
-            ResetSectionForm();
-        }
-
-        private void btnBatchAdd_Click(object sender, EventArgs e)
-        {
-            if (cmbBatchProgram.SelectedItem == null || cmbBatchYear.SelectedItem == null || string.IsNullOrWhiteSpace(txtBatchCode.Text))
-            {
-                MessageBox.Show("Please enter all subject details.");
-                return;
-            }
-
-            string program = cmbBatchProgram.SelectedItem.ToString();
-            int year = int.Parse(cmbBatchYear.SelectedItem.ToString());
-            string code = txtBatchCode.Text.Trim();
-            int.TryParse(txtBatchUnits.Text, out int units);
-            bool isLab = chkBatchLab.Checked;
-
-            var targetSections = DataManager.Sections.Where(s => s.Program == program && s.YearLevel == year).ToList();
-
-            if (targetSections.Count == 0)
-            {
-                MessageBox.Show("No sections found.");
-                return;
-            }
-
-            int count = 0;
-            foreach (var s in targetSections)
-            {
-                if (s.SubjectsToTake.Any(sub => sub.Code.Contains(code))) continue;
-
-                if (isLab)
-                {
-                    s.SubjectsToTake.Add(new Subject { Code = code + " (Lec)", Units = units - 1, IsLab = false });
-                    s.SubjectsToTake.Add(new Subject { Code = code + " (Lab)", Units = 3, IsLab = true });
-                }
-                else
-                {
-                    s.SubjectsToTake.Add(new Subject { Code = code, Units = units, IsLab = false });
-                }
-                count++;
-            }
-
-            MessageBox.Show($"Added {code} to {count} sections.");
-            ResetSubjectInputs();
-            RefreshSubjectList();
-            isDataDirty = true;
-        }
-
-        private void ResetSubjectInputs()
-        {
-            txtSubjCode.Clear();
-            txtUnits.Clear();
-            chkIsLab.Checked = false;
-            editingSubjectCode = "";
-            btnAddSubject.Enabled = true;
-        }
-
-        private void LoadPendingList()
-        {
-            dgvPending.DataSource = null;
-            dgvPending.Rows.Clear();
-            dgvPending.Columns.Clear();
-            dgvPending.Columns.Add("Section", "Section");
-            dgvPending.Columns.Add("Subject", "Subject");
-            dgvPending.Columns.Add("Reason", "Reason");
-            dgvPending.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-            if (DataManager.FailedAssignments != null)
-            {
-                foreach (var fail in DataManager.FailedAssignments)
-                {
-                    int rowIndex = dgvPending.Rows.Add(fail.Section.Name, fail.Subject.Code, fail.Reason);
-                    dgvPending.Rows[rowIndex].Tag = fail;
-                }
-            }
-        }
-
-        private void RefreshAdminLists()
-        {
-            lstTeachers.Items.Clear();
-            foreach (var t in DataManager.Teachers) lstTeachers.Items.Add($"{t.Name} ({string.Join(", ", t.QualifiedSubjects)})");
-
-            lstRooms.Items.Clear();
-            foreach (var r in DataManager.Rooms) lstRooms.Items.Add($"{r.Name} | {r.Type}");
-
-            lstSections.Items.Clear();
-            foreach (var s in DataManager.Sections) lstSections.Items.Add(s.Name);
-
-            RefreshSectionDropdown();
-
-            // --- DYNAMIC PROGRAM POPULATION (Batch Add Fix) ---
-            string currentBatchProg = cmbBatchProgram.SelectedItem?.ToString();
-            string currentSectProg = cmbSectionProgram.SelectedItem?.ToString();
-
-            cmbBatchProgram.Items.Clear();
-            cmbSectionProgram.Items.Clear();
-
-            foreach (var prog in DataManager.Programs)
-            {
-                cmbBatchProgram.Items.Add(prog);
-                cmbSectionProgram.Items.Add(prog);
-            }
-
-            if (currentBatchProg != null && cmbBatchProgram.Items.Contains(currentBatchProg))
-                cmbBatchProgram.SelectedItem = currentBatchProg;
-
-            if (currentSectProg != null && cmbSectionProgram.Items.Contains(currentSectProg))
-                cmbSectionProgram.SelectedItem = currentSectProg;
-        }
-
-        private void RefreshSectionDropdown()
-        {
-            cmbSectionList.Items.Clear();
-            foreach (var s in DataManager.Sections) cmbSectionList.Items.Add(s.Name);
-        }
-
-        private void RefreshSubjectList()
-        {
-            lstSectionSubjects.Items.Clear();
-            if (cmbSectionList.SelectedItem == null) return;
-
-            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
-            if (section != null)
-            {
-                foreach (var sub in section.SubjectsToTake)
-                {
-                    string type = sub.IsLab ? "Lab" : "Lec";
-                    lstSectionSubjects.Items.Add($"{sub.Code} - {type} ({sub.Units} units)");
-                }
-            }
+            typeof(System.Windows.Forms.Control).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
+                null, control, new object[] { true });
         }
 
         #endregion
 
-        #region 7. System Operations & IO
+        #region 7. Backup & Restore (JSON)
+
+        private void btnRefreshData_Click(object sender, EventArgs e)
+        {
+            DataManager.Initialize();
+            RefreshAdminLists();
+            MessageBox.Show("Data refreshed from database!", "System Updated", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
 
         private void btnBackupDatabase_Click(object sender, EventArgs e)
         {
@@ -991,7 +1243,7 @@ namespace SchedCCS
                         DataManager.MasterSchedule = backup.MasterSchedule ?? new List<ScheduleItem>();
                         DataManager.FailedAssignments = backup.FailedAssignments ?? new List<FailedEntry>();
 
-                        _scheduleService.RebuildBusyArrays(); // Sync using Service
+                        _scheduleService.RebuildBusyArrays();
                         RefreshAdminLists();
                         UpdateMasterGrid();
                         UpdateTimetableView();
@@ -1005,6 +1257,10 @@ namespace SchedCCS
                 }
             }
         }
+
+        #endregion
+
+        #region 8. PDF Export
 
         private void btnExportPdf_Click(object sender, EventArgs e)
         {
@@ -1128,215 +1384,6 @@ namespace SchedCCS
             }
             return table;
         }
-
-        private void btnClose_Click(object sender, EventArgs e)
-        {
-            if (MessageBox.Show("Are you sure you want to exit the application?", "Exit", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
-                Application.Exit();
-            }
-        }
-
-        private void btnClose_MouseEnter(object sender, EventArgs e)
-        {
-            btnClose.BackColor = System.Drawing.Color.Red;
-            btnClose.ForeColor = System.Drawing.Color.White;
-        }
-
-        private void btnClose_MouseLeave(object sender, EventArgs e)
-        {
-            btnClose.BackColor = System.Drawing.Color.Transparent;
-            btnClose.ForeColor = System.Drawing.Color.Black;
-        }
-
-        private void btnLogout_Click(object sender, EventArgs e)
-        {
-            if (MessageBox.Show("Log out and return to Login screen?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                this.Close();
-        }
-
-        #endregion
-
-        #region 8. UI Interaction Events
-
-        private void tabAdminMenu_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (tabAdminMenu.SelectedTab == tabAdminMenu.TabPages["tabSchedule"])
-            {
-                if (cmbFilterType.SelectedIndex == -1) cmbFilterType.SelectedIndex = 0;
-                if (cmbScheduleView.Items.Count == 0) UpdateTimetableView();
-
-                if (DataManager.MasterSchedule != null && DataManager.MasterSchedule.Count > 0)
-                {
-                    if (cmbScheduleView.SelectedItem != null)
-                    {
-                        string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
-                        DisplayTimetable(cmbScheduleView.SelectedItem.ToString(), mode);
-                    }
-                }
-            }
-            else if (tabAdminMenu.SelectedTab == tabAdminMenu.TabPages["tabMaster"])
-            {
-                UpdateMasterGrid();
-                if (isDataDirty) RunScheduleGeneration();
-            }
-            else if (tabAdminMenu.SelectedTab == tabAdminMenu.TabPages["tabManage"])
-            {
-                RefreshAdminLists();
-            }
-            else if (tabAdminMenu.SelectedTab.Text == "Pending Subjects")
-            {
-                LoadPendingList();
-            }
-        }
-
-        private void cmbFilterType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            cmbScheduleView.Items.Clear();
-            cmbScheduleView.Text = "";
-            string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
-
-            if (mode == "Section") foreach (var s in DataManager.Sections) cmbScheduleView.Items.Add(s.Name);
-            else if (mode == "Teacher") foreach (var t in DataManager.Teachers) cmbScheduleView.Items.Add(t.Name);
-            else if (mode == "Room") foreach (var r in DataManager.Rooms) cmbScheduleView.Items.Add(r.Name);
-        }
-
-        private void cmbScheduleView_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbScheduleView.SelectedItem != null)
-            {
-                string mode = cmbFilterType.SelectedItem?.ToString() ?? "Section";
-                DisplayTimetable(cmbScheduleView.SelectedItem.ToString(), mode);
-            }
-        }
-
-        private void lstTeachers_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (lstTeachers.SelectedItem == null) return;
-            string name = lstTeachers.SelectedItem.ToString().Split('(')[0].Trim();
-            var teacher = DataManager.Teachers.FirstOrDefault(t => t.Name == name);
-
-            if (teacher != null)
-            {
-                editingTeacherId = teacher.Id;
-                txtTeacherName.Text = teacher.Name;
-                txtTeacherSubjects.Text = string.Join(", ", teacher.QualifiedSubjects);
-                btnUpdateTeacher.Enabled = true;
-                btnAddTeacher.Enabled = false;
-            }
-        }
-
-        private void lstRooms_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (lstRooms.SelectedItem == null) return;
-            string name = lstRooms.SelectedItem.ToString().Split('|')[0].Trim();
-            var room = DataManager.Rooms.FirstOrDefault(r => r.Name == name);
-
-            if (room != null)
-            {
-                editingRoomId = room.Id;
-                txtRoomName.Text = room.Name;
-                cmbRoomType.SelectedItem = room.Type == RoomType.Laboratory ? "Laboratory" : "Lecture";
-                btnUpdateRoom.Enabled = true;
-                btnAddRoom.Enabled = false;
-            }
-        }
-
-        private void lstSections_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (lstSections.SelectedItem == null) return;
-            string name = lstSections.SelectedItem.ToString();
-            var section = DataManager.Sections.FirstOrDefault(s => s.Name == name);
-
-            if (section != null)
-            {
-                editingSectionId = section.Id;
-                txtSectionName.Text = section.Name;
-                if (cmbSectionProgram.Items.Contains(section.Program)) cmbSectionProgram.SelectedItem = section.Program;
-                if (cmbSectionYear.Items.Contains(section.YearLevel.ToString())) cmbSectionYear.SelectedItem = section.YearLevel.ToString();
-                btnCreateSection.Text = "Update Section";
-                if (cmbSectionList.Items.Contains(section.Name)) cmbSectionList.SelectedItem = section.Name;
-            }
-        }
-
-        private void lstSectionSubjects_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (lstSectionSubjects.SelectedItem == null || cmbSectionList.SelectedItem == null) return;
-
-            string code = lstSectionSubjects.SelectedItem.ToString().Split('-')[0].Trim();
-            editingSubjectCode = code;
-
-            var section = DataManager.Sections.FirstOrDefault(s => s.Name == cmbSectionList.SelectedItem.ToString());
-            var subject = section?.SubjectsToTake.FirstOrDefault(s => s.Code.Contains(code));
-
-            if (subject != null)
-            {
-                txtSubjCode.Text = subject.Code.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
-                txtUnits.Text = subject.Units.ToString();
-                chkIsLab.Checked = subject.IsLab;
-                btnAddSubject.Enabled = false;
-            }
-        }
-
-        private void cmbSectionList_SelectedIndexChanged(object sender, EventArgs e) => RefreshSubjectList();
-
-        private void dgvTimetable_Resize(object sender, EventArgs e)
-        {
-            if (dgvTimetable.Rows.Count == 0 || !dgvTimetable.Visible) return;
-            try
-            {
-                int newRowHeight = CalculateRowHeight();
-                foreach (DataGridViewRow row in dgvTimetable.Rows) row.Height = newRowHeight;
-            }
-            catch { }
-        }
-
-        #endregion
-
-        #region 9. Helpers & Utilities
-
-        private int GetDayColumnIndex(string day)
-        {
-            if (day.StartsWith("Mon")) return 1;
-            if (day.StartsWith("Tue")) return 2;
-            if (day.StartsWith("Wed")) return 3;
-            if (day.StartsWith("Thu")) return 4;
-            if (day.StartsWith("Fri")) return 5;
-            if (day.StartsWith("Sat")) return 6;
-            if (day.StartsWith("Sun")) return 7;
-            return 0;
-        }
-
-        private string ToSimple12Hour(string timeRange)
-        {
-            try
-            {
-                var parts = timeRange.Split('-');
-                string start = DateTime.Parse(parts[0].Trim()).ToString("h:mm");
-                string end = DateTime.Parse(parts[1].Trim()).ToString("h:mm");
-                return $"{start} - {end}";
-            }
-            catch { return timeRange; }
-        }
-
-        private System.Drawing.Color GetSubjectColor(string subjectName)
-        {
-            string baseName = subjectName.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
-            int seed = baseName.GetHashCode();
-            Random r = new Random(seed);
-            return System.Drawing.Color.FromArgb(r.Next(160, 255), r.Next(160, 255), r.Next(160, 255));
-        }
-
-        private string CleanSubjectName(string s) => s.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
-
-        private string GetDayName(int d)
-        {
-            string[] shortNames = { "", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
-            if (d >= 1 && d <= 7) return shortNames[d];
-            return "Err";
-        }
-
-        private string GetTimeLabel(int t) => $"{7 + t}:00 - {8 + t}:00";
 
         #endregion
     }

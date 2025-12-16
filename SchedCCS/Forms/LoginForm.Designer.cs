@@ -43,47 +43,53 @@
             // 
             label1.AutoSize = true;
             label1.BackColor = Color.Transparent;
-            label1.Location = new Point(642, 318);
+            label1.Font = new Font("Ebrima", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label1.Location = new Point(479, 323);
             label1.Name = "label1";
-            label1.Size = new Size(62, 15);
+            label1.Size = new Size(68, 17);
             label1.TabIndex = 0;
             label1.Text = "Student ID";
             // 
             // txtStudentID
             // 
-            txtStudentID.Location = new Point(642, 342);
+            txtStudentID.Font = new Font("Ebrima", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            txtStudentID.Location = new Point(479, 347);
             txtStudentID.Name = "txtStudentID";
-            txtStudentID.Size = new Size(319, 23);
+            txtStudentID.Size = new Size(319, 24);
             txtStudentID.TabIndex = 1;
+            txtStudentID.TextAlign = HorizontalAlignment.Center;
             // 
             // label2
             // 
             label2.AutoSize = true;
             label2.BackColor = Color.Transparent;
-            label2.Location = new Point(642, 381);
+            label2.Font = new Font("Ebrima", 9.75F);
+            label2.Location = new Point(479, 386);
             label2.Name = "label2";
-            label2.Size = new Size(57, 15);
+            label2.Size = new Size(64, 17);
             label2.TabIndex = 2;
             label2.Text = "Password";
             // 
             // txtPassword
             // 
-            txtPassword.Location = new Point(642, 405);
+            txtPassword.Font = new Font("Ebrima", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            txtPassword.Location = new Point(479, 406);
             txtPassword.Name = "txtPassword";
             txtPassword.PasswordChar = '*';
-            txtPassword.Size = new Size(319, 23);
-            txtPassword.TabIndex = 3;
+            txtPassword.Size = new Size(319, 24);
+            txtPassword.TabIndex = 2;
             // 
             // btnLogin
             // 
-            btnLogin.BackColor = Color.FromArgb(12, 35, 64);
+            btnLogin.BackColor = Color.FromArgb(64, 0, 0);
             btnLogin.FlatStyle = FlatStyle.Flat;
+            btnLogin.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnLogin.ForeColor = Color.White;
-            btnLogin.Location = new Point(642, 449);
+            btnLogin.Location = new Point(479, 456);
             btnLogin.Name = "btnLogin";
             btnLogin.Size = new Size(319, 34);
-            btnLogin.TabIndex = 4;
-            btnLogin.Text = "Login";
+            btnLogin.TabIndex = 3;
+            btnLogin.Text = "LOGIN NOW";
             btnLogin.UseVisualStyleBackColor = false;
             btnLogin.Click += btnLogin_Click;
             // 
@@ -108,13 +114,14 @@
             lnkCreateAccount.ActiveLinkColor = Color.FromArgb(198, 168, 86);
             lnkCreateAccount.AutoSize = true;
             lnkCreateAccount.BackColor = Color.Transparent;
+            lnkCreateAccount.Font = new Font("Ebrima", 9.75F);
             lnkCreateAccount.LinkArea = new LinkArea(23, 33);
             lnkCreateAccount.LinkBehavior = LinkBehavior.HoverUnderline;
             lnkCreateAccount.LinkColor = Color.FromArgb(0, 0, 64);
-            lnkCreateAccount.Location = new Point(703, 506);
+            lnkCreateAccount.Location = new Point(536, 510);
             lnkCreateAccount.Name = "lnkCreateAccount";
-            lnkCreateAccount.Size = new Size(195, 21);
-            lnkCreateAccount.TabIndex = 7;
+            lnkCreateAccount.Size = new Size(211, 23);
+            lnkCreateAccount.TabIndex = 4;
             lnkCreateAccount.TabStop = true;
             lnkCreateAccount.Text = "Don't have an account? Create one";
             lnkCreateAccount.UseCompatibleTextRendering = true;
@@ -125,12 +132,13 @@
             // 
             label3.AutoSize = true;
             label3.BackColor = Color.Transparent;
-            label3.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            label3.Location = new Point(637, 263);
+            label3.Font = new Font("Ebrima", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label3.ForeColor = Color.White;
+            label3.Location = new Point(493, 252);
             label3.Name = "label3";
-            label3.Size = new Size(336, 32);
+            label3.Size = new Size(234, 21);
             label3.TabIndex = 8;
-            label3.Text = "SIGN IN TO YOUR ACCOUNT";
+            label3.Text = "Welcome to LetSched Started\r\n";
             // 
             // LoginForm
             // 

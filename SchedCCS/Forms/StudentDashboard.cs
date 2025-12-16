@@ -25,12 +25,26 @@ namespace SchedCCS
             InitializeComponent();
             currentUser = user;
 
-            // 1. Initialize UI components and Map first (Safe)
+            // --- DOUBLE BUFFERING (Anti-Flicker) ---
+            SetDoubleBuffered(pnlContent);      // Main container
+            SetDoubleBuffered(pnlViewHome);     // Map View
+            SetDoubleBuffered(pnlViewSchedule); // Grid View
+            SetDoubleBuffered(pnlViewSettings); // Settings View
+
+            // Buffer Building Panels (if they exist in designer)
+            if (this.Controls.Find("pnlBuildingA", true).Length > 0)
+                SetDoubleBuffered(pnlBuildingA);
+
+            if (this.Controls.Find("pnlBuildingB", true).Length > 0)
+                SetDoubleBuffered(pnlBuildingB);
+            // ---------------------------------------
+
+            // 1. Initialize UI components
             InitializeDashboardUI();
             InitializeMapHotspots();
             InitializeSettingsUI();
 
-            // 2. Load Data (Database dependency)
+            // 2. Load Data
             try
             {
                 SetupGrid();
@@ -61,12 +75,17 @@ namespace SchedCCS
 
         private void ShowView(Panel panelToShow)
         {
+            // Suspend layout to reduce lag during switch
+            this.SuspendLayout();
+
             pnlViewSchedule.Visible = false;
             pnlViewSettings.Visible = false;
             if (pnlViewHome != null) pnlViewHome.Visible = false;
 
             panelToShow.Visible = true;
             panelToShow.BringToFront();
+
+            this.ResumeLayout();
         }
 
         private void btnDashboard_Click(object sender, EventArgs e)
@@ -86,9 +105,7 @@ namespace SchedCCS
         {
             UpdatePageTitle("Account Settings");
             ShowView(pnlViewSettings);
-
-            // Revert settings UI to clean state every time tab is opened
-            InitializeSettingsUI();
+            InitializeSettingsUI(); // Revert to clean state
         }
 
         private void btnLogout_Click(object sender, EventArgs e)
@@ -157,6 +174,7 @@ namespace SchedCCS
             string roomName = hotspot.Tag?.ToString() ?? "Unknown Room";
             toolTip1.SetToolTip(hotspot, roomName);
 
+            // Prevent duplicate event subscription
             hotspot.Click -= Room_Click;
             hotspot.Click += Room_Click;
 
@@ -173,26 +191,27 @@ namespace SchedCCS
 
             string selected = cmbBuilding.SelectedItem.ToString();
 
+            // Suspend layout to prevent flicker when switching building images
+            pnlViewHome.SuspendLayout();
+
             if (selected == "Building A")
             {
                 pnlBuildingA.Visible = true;
                 pnlBuildingB.Visible = false;
-
                 pnlBuildingA.BringToFront();
-
-                cmbBuilding.BringToFront();
-                lblSelectBuilding.BringToFront();
             }
             else if (selected == "Building B")
             {
                 pnlBuildingB.Visible = true;
                 pnlBuildingA.Visible = false;
-
                 pnlBuildingB.BringToFront();
-
-                cmbBuilding.BringToFront();
-                lblSelectBuilding.BringToFront();
             }
+
+            // Ensure floating controls stay on top
+            cmbBuilding.BringToFront();
+            lblSelectBuilding.BringToFront();
+
+            pnlViewHome.ResumeLayout();
         }
 
         private void Room_Click(object sender, EventArgs e)
@@ -204,7 +223,7 @@ namespace SchedCCS
 
             string upperTag = rawTag.ToUpper();
 
-            // Special Room Handling
+            // Special Room Handling (Offices/Storage)
             if (upperTag.Contains("FACULTY") || upperTag.Contains("DEAN") ||
                 upperTag.Contains("ACCRED") || upperTag.Contains("OCTA") ||
                 upperTag.Contains("UNKNOWN") || upperTag.Contains("STORAGE") ||
@@ -227,6 +246,7 @@ namespace SchedCCS
             else if (dbRoomName.Contains("Lecture Room"))
                 dbRoomName = dbRoomName.Replace("Lecture Room", "LEC").Trim();
 
+            // Open Schedule Popup
             using (RoomScheduleForm popup = new RoomScheduleForm(dbRoomName))
             {
                 popup.ShowDialog();
@@ -236,6 +256,7 @@ namespace SchedCCS
         private void Room_MouseEnter(object sender, EventArgs e)
         {
             PictureBox p = (PictureBox)sender;
+            // Highlight color (Semi-transparent Yellow)
             p.BackColor = System.Drawing.Color.FromArgb(100, 255, 255, 0);
         }
 
@@ -302,6 +323,7 @@ namespace SchedCCS
                 if (lbl != null) lbl.Visible = false;
             }
 
+            // Reset Grid
             foreach (DataGridViewRow row in dgvStudentSchedule.Rows)
                 for (int c = 1; c < 8; c++)
                 {
@@ -309,6 +331,7 @@ namespace SchedCCS
                     row.Cells[c].Style.BackColor = defaultColor;
                 }
 
+            // Populate Data
             var myClasses = DataManager.MasterSchedule
                 .Where(x => x.Section == currentUser.StudentSection)
                 .ToList();
@@ -358,7 +381,7 @@ namespace SchedCCS
             txtEditPass.BackColor = System.Drawing.SystemColors.Control;
             txtEditConfirm.BackColor = System.Drawing.SystemColors.Control;
 
-            // 3. Load Data (Name only)
+            // 3. Load Data
             txtEditName.Text = currentUser.FullName;
 
             // 4. Force "Hidden" text state
@@ -403,7 +426,7 @@ namespace SchedCCS
                 txtEditPass.BackColor = System.Drawing.Color.White;
                 txtEditConfirm.BackColor = System.Drawing.Color.White;
 
-                // Reset Text Color to Black
+                // Reset Text Color
                 txtEditPass.ForeColor = System.Drawing.Color.Black;
                 txtEditConfirm.ForeColor = System.Drawing.Color.Black;
 
@@ -451,7 +474,6 @@ namespace SchedCCS
                         return;
                     }
 
-                    // Hash the NEW password
                     string newHash = SecurityHelper.HashPassword(txtEditPass.Text);
                     userInDb.Password = newHash;
                     currentUser.Password = newHash;
@@ -624,6 +646,17 @@ namespace SchedCCS
             int seed = baseName.GetHashCode();
             Random r = new Random(seed);
             return System.Drawing.Color.FromArgb(r.Next(160, 255), r.Next(160, 255), r.Next(160, 255));
+        }
+
+        public static void SetDoubleBuffered(System.Windows.Forms.Control control)
+        {
+            if (System.Windows.Forms.SystemInformation.TerminalServerSession) return;
+
+            typeof(System.Windows.Forms.Control).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
+                null, control, new object[] { true });
         }
 
         #endregion

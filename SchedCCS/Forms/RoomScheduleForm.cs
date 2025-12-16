@@ -7,8 +7,12 @@ namespace SchedCCS
 {
     public partial class RoomScheduleForm : Form
     {
+        #region Fields
+
         // Immutable field for the room being viewed
         private readonly string _targetRoom;
+
+        #endregion
 
         #region 1. Initialization
 
@@ -17,13 +21,24 @@ namespace SchedCCS
             InitializeComponent();
             _targetRoom = roomName;
 
-            // 1. Setup the Labels
+            // --- DOUBLE BUFFERING (Anti-Flicker) ---
+            SetDoubleBuffered(this);
+
+            // Buffer the header panel to stop image flickering
+            if (this.Controls.ContainsKey("panel1"))
+                SetDoubleBuffered(this.Controls["panel1"]);
+
+            // Buffer the Grid for smooth scrolling
+            if (this.Controls.ContainsKey("dgvRoomSchedule"))
+                SetDoubleBuffered(this.Controls["dgvRoomSchedule"]);
+            // ---------------------------------------
+
+            // 1. Setup Labels
             lblRoomName.Text = $"ROOM: {_targetRoom.ToUpper()}";
             lblSemesterYear.Text = "1st Semester, A.Y. 2025-2026";
 
-            // 2. TRANSPARENCY FIX
+            // 2. Transparency Fix (Parenting labels to the header image)
             Control headerParent = this.Controls["panel1"];
-
             if (headerParent != null)
             {
                 lblRoomName.Parent = headerParent;
@@ -35,7 +50,7 @@ namespace SchedCCS
                 lblSemesterYear.Parent = this;
             }
 
-            // 3. Grid Setup
+            // 3. Grid & Data Setup
             SetupGrid();
             LoadRoomSchedule();
 
@@ -44,7 +59,7 @@ namespace SchedCCS
 
         #endregion
 
-        #region 2. UI Configuration
+        #region 2. Grid Configuration
 
         private void SetupGrid()
         {
@@ -91,7 +106,7 @@ namespace SchedCCS
                 dgvRoomSchedule.Rows[rowIndex].Height = exactRowHeight;
             }
 
-            dgvRoomSchedule.BackgroundColor = System.Drawing.Color.White;
+            dgvRoomSchedule.BackgroundColor = Color.White;
         }
 
         #endregion
@@ -100,7 +115,7 @@ namespace SchedCCS
 
         private void LoadRoomSchedule()
         {
-            // Robust Search: Ignore casing and spaces to prevent mismatches
+            // Robust Search: Ignore casing and spaces
             var roomClasses = DataManager.MasterSchedule
                 .Where(s => s.Room.Trim().ToUpper() == _targetRoom.Trim().ToUpper())
                 .ToList();
@@ -128,7 +143,35 @@ namespace SchedCCS
 
         #endregion
 
-        #region 4. Helper Methods
+        #region 4. Window Events
+
+        private void RoomScheduleForm_Resize(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized) return;
+            SetupGrid();
+            LoadRoomSchedule();
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnClose_MouseEnter(object sender, EventArgs e)
+        {
+            btnClose.BackColor = Color.Red;
+            btnClose.ForeColor = Color.White;
+        }
+
+        private void btnClose_MouseLeave(object sender, EventArgs e)
+        {
+            btnClose.BackColor = Color.Transparent;
+            btnClose.ForeColor = Color.Black;
+        }
+
+        #endregion
+
+        #region 5. Helpers
 
         private int GetDayColumnIndex(string day)
         {
@@ -165,32 +208,15 @@ namespace SchedCCS
             return Color.FromArgb(r.Next(160, 255), r.Next(160, 255), r.Next(160, 255));
         }
 
-        #endregion
-
-        #region 5. Event Handlers
-
-        private void RoomScheduleForm_Resize(object sender, EventArgs e)
+        public static void SetDoubleBuffered(Control control)
         {
-            if (this.WindowState == FormWindowState.Minimized) return;
-            SetupGrid();
-            LoadRoomSchedule();
-        }
+            if (System.Windows.Forms.SystemInformation.TerminalServerSession) return;
 
-        private void btnClose_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
-        private void btnClose_MouseEnter(object sender, EventArgs e)
-        {
-            btnClose.BackColor = Color.Red;
-            btnClose.ForeColor = Color.White;
-        }
-
-        private void btnClose_MouseLeave(object sender, EventArgs e)
-        {
-            btnClose.BackColor = Color.Transparent;
-            btnClose.ForeColor = Color.Black;
+            typeof(Control).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
+                null, control, new object[] { true });
         }
 
         #endregion

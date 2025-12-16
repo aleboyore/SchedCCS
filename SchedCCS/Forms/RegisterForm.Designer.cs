@@ -41,30 +41,32 @@
             txtStudentID = new TextBox();
             txtPassword = new TextBox();
             txtConfirm = new TextBox();
-            cmbSection = new ComboBox();
             btnRegister = new Button();
             btnClose = new Button();
             lnkBackToLogin = new LinkLabel();
+            txtSection = new TextBox();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
             label1.BackColor = Color.Transparent;
-            label1.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label1.Location = new Point(682, 187);
+            label1.Font = new Font("Ebrima", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = Color.White;
+            label1.Location = new Point(547, 160);
             label1.Name = "label1";
-            label1.Size = new Size(240, 30);
+            label1.Size = new Size(203, 21);
             label1.TabIndex = 0;
-            label1.Text = "CREATE AN ACCOUNT";
+            label1.Text = "Create your User Account";
             // 
             // label2
             // 
             label2.AutoSize = true;
             label2.BackColor = Color.Transparent;
-            label2.Location = new Point(638, 239);
+            label2.Font = new Font("Ebrima", 9.75F);
+            label2.Location = new Point(478, 229);
             label2.Name = "label2";
-            label2.Size = new Size(64, 15);
+            label2.Size = new Size(71, 17);
             label2.TabIndex = 1;
             label2.Text = "First Name";
             // 
@@ -72,9 +74,10 @@
             // 
             label3.AutoSize = true;
             label3.BackColor = Color.Transparent;
-            label3.Location = new Point(809, 239);
+            label3.Font = new Font("Ebrima", 9.75F);
+            label3.Location = new Point(649, 229);
             label3.Name = "label3";
-            label3.Size = new Size(63, 15);
+            label3.Size = new Size(70, 17);
             label3.TabIndex = 2;
             label3.Text = "Last Name";
             // 
@@ -82,9 +85,10 @@
             // 
             label4.AutoSize = true;
             label4.BackColor = Color.Transparent;
-            label4.Location = new Point(638, 289);
+            label4.Font = new Font("Ebrima", 9.75F);
+            label4.Location = new Point(478, 294);
             label4.Name = "label4";
-            label4.Size = new Size(62, 15);
+            label4.Size = new Size(68, 17);
             label4.TabIndex = 3;
             label4.Text = "Student ID";
             // 
@@ -92,9 +96,10 @@
             // 
             label5.AutoSize = true;
             label5.BackColor = Color.Transparent;
-            label5.Location = new Point(638, 339);
+            label5.Font = new Font("Ebrima", 9.75F);
+            label5.Location = new Point(478, 360);
             label5.Name = "label5";
-            label5.Size = new Size(46, 15);
+            label5.Size = new Size(50, 17);
             label5.TabIndex = 4;
             label5.Text = "Section";
             // 
@@ -102,9 +107,10 @@
             // 
             label6.AutoSize = true;
             label6.BackColor = Color.Transparent;
-            label6.Location = new Point(638, 389);
+            label6.Font = new Font("Ebrima", 9.75F);
+            label6.Location = new Point(478, 424);
             label6.Name = "label6";
-            label6.Size = new Size(57, 15);
+            label6.Size = new Size(64, 17);
             label6.TabIndex = 5;
             label6.Text = "Password";
             // 
@@ -112,68 +118,67 @@
             // 
             label7.AutoSize = true;
             label7.BackColor = Color.Transparent;
-            label7.Location = new Point(638, 439);
+            label7.Font = new Font("Ebrima", 9.75F);
+            label7.Location = new Point(478, 490);
             label7.Name = "label7";
-            label7.Size = new Size(104, 15);
+            label7.Size = new Size(114, 17);
             label7.TabIndex = 6;
             label7.Text = "Confirm Password";
             // 
             // txtFirstName
             // 
-            txtFirstName.Location = new Point(638, 260);
+            txtFirstName.Font = new Font("Ebrima", 9F);
+            txtFirstName.Location = new Point(478, 250);
             txtFirstName.Name = "txtFirstName";
-            txtFirstName.Size = new Size(153, 23);
-            txtFirstName.TabIndex = 7;
+            txtFirstName.Size = new Size(153, 24);
+            txtFirstName.TabIndex = 1;
             // 
             // txtLastName
             // 
-            txtLastName.Location = new Point(809, 259);
+            txtLastName.Font = new Font("Ebrima", 9F);
+            txtLastName.Location = new Point(649, 250);
             txtLastName.Name = "txtLastName";
-            txtLastName.Size = new Size(158, 23);
-            txtLastName.TabIndex = 8;
+            txtLastName.Size = new Size(158, 24);
+            txtLastName.TabIndex = 2;
             // 
             // txtStudentID
             // 
-            txtStudentID.Location = new Point(638, 310);
+            txtStudentID.Font = new Font("Ebrima", 9F);
+            txtStudentID.Location = new Point(478, 314);
             txtStudentID.Name = "txtStudentID";
-            txtStudentID.Size = new Size(329, 23);
-            txtStudentID.TabIndex = 9;
+            txtStudentID.Size = new Size(329, 24);
+            txtStudentID.TabIndex = 3;
             // 
             // txtPassword
             // 
-            txtPassword.Location = new Point(638, 410);
+            txtPassword.Font = new Font("Ebrima", 9F);
+            txtPassword.Location = new Point(478, 444);
             txtPassword.Name = "txtPassword";
             txtPassword.PasswordChar = '*';
-            txtPassword.Size = new Size(329, 23);
-            txtPassword.TabIndex = 10;
+            txtPassword.Size = new Size(329, 24);
+            txtPassword.TabIndex = 5;
             // 
             // txtConfirm
             // 
-            txtConfirm.Location = new Point(638, 460);
+            txtConfirm.Font = new Font("Ebrima", 9F);
+            txtConfirm.Location = new Point(478, 510);
             txtConfirm.Name = "txtConfirm";
             txtConfirm.PasswordChar = '*';
-            txtConfirm.Size = new Size(329, 23);
-            txtConfirm.TabIndex = 11;
-            // 
-            // cmbSection
-            // 
-            cmbSection.FormattingEnabled = true;
-            cmbSection.Location = new Point(638, 360);
-            cmbSection.Name = "cmbSection";
-            cmbSection.Size = new Size(329, 23);
-            cmbSection.TabIndex = 12;
+            txtConfirm.Size = new Size(329, 24);
+            txtConfirm.TabIndex = 6;
             // 
             // btnRegister
             // 
-            btnRegister.BackColor = Color.FromArgb(12, 35, 64);
+            btnRegister.BackColor = Color.FromArgb(64, 0, 0);
             btnRegister.FlatAppearance.BorderSize = 0;
             btnRegister.FlatStyle = FlatStyle.Flat;
+            btnRegister.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnRegister.ForeColor = Color.White;
-            btnRegister.Location = new Point(638, 512);
+            btnRegister.Location = new Point(478, 559);
             btnRegister.Name = "btnRegister";
             btnRegister.Size = new Size(329, 34);
             btnRegister.TabIndex = 13;
-            btnRegister.Text = "Sign Up";
+            btnRegister.Text = "CREATE ACCOUNT";
             btnRegister.UseVisualStyleBackColor = false;
             btnRegister.Click += btnRegister_Click;
             // 
@@ -192,23 +197,35 @@
             btnClose.Text = "✕";
             btnClose.UseVisualStyleBackColor = false;
             btnClose.Click += btnClose_Click;
+            btnClose.MouseEnter += btnClose_MouseEnter;
+            btnClose.MouseLeave += btnClose_MouseLeave;
             // 
             // lnkBackToLogin
             // 
             lnkBackToLogin.ActiveLinkColor = Color.FromArgb(198, 168, 86);
             lnkBackToLogin.AutoSize = true;
             lnkBackToLogin.BackColor = Color.Transparent;
+            lnkBackToLogin.Font = new Font("Ebrima", 9.75F);
             lnkBackToLogin.LinkArea = new LinkArea(25, 31);
             lnkBackToLogin.LinkBehavior = LinkBehavior.HoverUnderline;
             lnkBackToLogin.LinkColor = Color.FromArgb(0, 0, 64);
-            lnkBackToLogin.Location = new Point(712, 575);
+            lnkBackToLogin.Location = new Point(547, 605);
             lnkBackToLogin.Name = "lnkBackToLogin";
-            lnkBackToLogin.Size = new Size(181, 21);
+            lnkBackToLogin.Size = new Size(196, 23);
             lnkBackToLogin.TabIndex = 16;
             lnkBackToLogin.TabStop = true;
             lnkBackToLogin.Text = "Already have an account? Log in";
             lnkBackToLogin.UseCompatibleTextRendering = true;
             lnkBackToLogin.LinkClicked += lnkBackToLogin_LinkClicked;
+            // 
+            // txtSection
+            // 
+            txtSection.Location = new Point(478, 380);
+            txtSection.Name = "txtSection";
+            txtSection.Size = new Size(329, 23);
+            txtSection.TabIndex = 17;
+            txtSection.MouseEnter += TxtSection_Enter;
+            txtSection.MouseLeave += TxtSection_Leave;
             // 
             // RegisterForm
             // 
@@ -217,10 +234,10 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1280, 720);
+            Controls.Add(txtSection);
             Controls.Add(lnkBackToLogin);
             Controls.Add(btnClose);
             Controls.Add(btnRegister);
-            Controls.Add(cmbSection);
             Controls.Add(txtConfirm);
             Controls.Add(txtPassword);
             Controls.Add(txtStudentID);
@@ -256,9 +273,9 @@
         private TextBox txtStudentID;
         private TextBox txtPassword;
         private TextBox txtConfirm;
-        private ComboBox cmbSection;
         private Button btnRegister;
         private Button btnClose;
         private LinkLabel lnkBackToLogin;
+        private TextBox txtSection;
     }
 }

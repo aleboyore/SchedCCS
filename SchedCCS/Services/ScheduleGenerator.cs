@@ -6,6 +6,8 @@ namespace SchedCCS
 {
     public class ScheduleGenerator
     {
+        #region Fields & Properties
+
         private List<Room> rooms;
         private List<Teacher> teachers;
         private List<Section> sections;
@@ -13,12 +15,18 @@ namespace SchedCCS
         public List<ScheduleItem> GeneratedSchedule { get; private set; } = new List<ScheduleItem>();
         public List<FailedEntry> FailedAssignments { get; private set; } = new List<FailedEntry>();
 
+        #endregion
+
+        #region Constructor
+
         public ScheduleGenerator(List<Room> r, List<Teacher> t, List<Section> s)
         {
             rooms = r;
             teachers = t;
             sections = s;
         }
+
+        #endregion
 
         #region 1. Main Execution Flow
 
@@ -85,7 +93,7 @@ namespace SchedCCS
                     {
                         if (IsBlockAvailable(section, teacher, d, startH, subject.Units, subject.IsLab, out Room foundRoom))
                         {
-                            // Enforce Gaps
+                            // Enforce Gaps between classes
                             if ((startH + subject.Units < 11 && section.IsBusy[d, startH + subject.Units]) ||
                                 (startH > 0 && section.IsBusy[d, startH - 1]))
                             {
@@ -296,7 +304,11 @@ namespace SchedCCS
         }
 
         private string CleanSubjectName(string raw) => raw.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
-        private string GetDayName(int d) => d >= 0 && d < 8 ? new[] { "", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }[d] : "Err";
+
+        private string GetDayName(int d) => d >= 0 && d < 8
+            ? new[] { "", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }[d]
+            : "Err";
+
         private string GetTimeLabel(int t) => $"{7 + t}:00 - {8 + t}:00";
 
         #endregion

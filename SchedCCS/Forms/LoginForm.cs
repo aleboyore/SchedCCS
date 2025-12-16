@@ -11,6 +11,13 @@ namespace SchedCCS
         public LoginForm()
         {
             InitializeComponent();
+
+            // --- DOUBLE BUFFERING (Anti-Flicker) ---
+            SetDoubleBuffered(this); // Buffer the Form itself
+
+            // Buffer Sidebar if it exists
+            if (this.Controls.ContainsKey("panelSidebar"))
+                SetDoubleBuffered(this.Controls["panelSidebar"]);
         }
 
         #endregion
@@ -31,7 +38,7 @@ namespace SchedCCS
             else
             {
                 MessageBox.Show("Invalid Student ID or Password.", "Login Failed",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -76,6 +83,7 @@ namespace SchedCCS
 
         private void ProceedToDashboard(User user)
         {
+            // Smoothly transition by hiding Login first
             this.Hide();
 
             if (user.Role == "Admin")
@@ -97,16 +105,21 @@ namespace SchedCCS
                 ClearFields(wipeUsername: false);
             }
 
+            // Re-show Login when dashboard closes
             this.Show();
         }
 
         private void OpenRegistration()
         {
+            RegisterForm regForm = new RegisterForm();
+
+            // 1. Hide Login (Smooth transition)
             this.Hide();
-            using (RegisterForm register = new RegisterForm())
-            {
-                register.ShowDialog();
-            }
+
+            // 2. Wait for Registration to finish
+            regForm.ShowDialog();
+
+            // 3. Re-show Login
             this.Show();
         }
 
@@ -123,5 +136,20 @@ namespace SchedCCS
 
         #endregion
 
+        #region 5. Helpers
+
+        // Helper to enable Double Buffering (Anti-Flicker)
+        public static void SetDoubleBuffered(System.Windows.Forms.Control control)
+        {
+            if (System.Windows.Forms.SystemInformation.TerminalServerSession) return;
+
+            typeof(System.Windows.Forms.Control).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
+                null, control, new object[] { true });
+        }
+
+        #endregion
     }
 }

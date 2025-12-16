@@ -18,7 +18,10 @@ namespace SchedCCS
                 byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawPassword));
 
                 StringBuilder builder = new StringBuilder();
-                foreach (byte b in bytes) builder.Append(b.ToString("x2"));
+                foreach (byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));
+                }
 
                 return builder.ToString();
             }
@@ -31,8 +34,13 @@ namespace SchedCCS
         // Compares a plain text input against a stored hash
         public static bool VerifyPassword(string inputPassword, string storedHash)
         {
+            if (string.IsNullOrEmpty(inputPassword) || string.IsNullOrEmpty(storedHash))
+                return false;
+
             string hashOfInput = HashPassword(inputPassword);
-            return hashOfInput == storedHash;
+
+            // Use OrdinalIgnoreCase to be safe against casing differences in DB storage
+            return string.Equals(hashOfInput, storedHash, StringComparison.OrdinalIgnoreCase);
         }
 
         #endregion
