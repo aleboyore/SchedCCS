@@ -9,16 +9,22 @@ namespace SchedCCS
 {
     /// <summary>
     /// Static utility class for MySQL database operations using the Dapper ORM.
-    /// Handles authentication, resource management, and schedule persistence.
+    /// Manages data persistence, resource synchronization, and transactional integrity.
     /// </summary>
     public static class DatabaseHelper
     {
         private const string ConnectionString = "Server=localhost;Database=sched_ccs_db;User=root;Password=;";
 
+        /// <summary>
+        /// Initializes and returns a new IDbConnection instance using the configured connection string.
+        /// </summary>
         public static IDbConnection GetConnection() => new MySqlConnection(ConnectionString);
 
-        #region 1. Users & Authentication
+        #region 1. Identity & Access Management
 
+        /// <summary>
+        /// Retrieves all registered users from the persistence layer.
+        /// </summary>
         public static List<User> LoadUsers()
         {
             using (IDbConnection db = GetConnection())
@@ -28,6 +34,9 @@ namespace SchedCCS
             }
         }
 
+        /// <summary>
+        /// Persists a new user record to the database.
+        /// </summary>
         public static void SaveUser(User user)
         {
             using (IDbConnection db = GetConnection())
@@ -38,10 +47,13 @@ namespace SchedCCS
             }
         }
 
+        /// <summary>
+        /// Removes a user record. Prevents deletion of the primary administrator for system safety.
+        /// </summary>
         public static bool DeleteUser(string username)
         {
             if (string.Equals(username.Trim(), "admin", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Security Alert: The Root Administrator account cannot be deleted.");
+                throw new InvalidOperationException("Security Violation: The Root Administrator account cannot be removed.");
 
             using (IDbConnection db = GetConnection())
             {
@@ -50,6 +62,9 @@ namespace SchedCCS
             }
         }
 
+        /// <summary>
+        /// Updates the password hash for the root administrator account.
+        /// </summary>
         public static void UpdateAdminPassword(string newHash)
         {
             using (IDbConnection db = GetConnection())
@@ -61,8 +76,11 @@ namespace SchedCCS
 
         #endregion
 
-        #region 2. Resource Loading
+        #region 2. Institutional Resource Loading
 
+        /// <summary>
+        /// Retrieves physical room resources and parses their respective types.
+        /// </summary>
         public static List<Room> LoadRooms()
         {
             using (IDbConnection db = GetConnection())
@@ -85,6 +103,9 @@ namespace SchedCCS
             }
         }
 
+        /// <summary>
+        /// Loads faculty members and populates their qualification lists from the bridge table.
+        /// </summary>
         public static List<Teacher> LoadTeachers()
         {
             using (IDbConnection db = GetConnection())
@@ -101,6 +122,9 @@ namespace SchedCCS
             }
         }
 
+        /// <summary>
+        /// Loads academic sections and their associated curriculum subjects.
+        /// </summary>
         public static List<Section> LoadSections()
         {
             using (IDbConnection db = GetConnection())
@@ -127,7 +151,7 @@ namespace SchedCCS
 
         #endregion
 
-        #region 3. Creation Methods
+        #region 3. Resource Creation
 
         public static void CreateRoom(string name, string type)
         {
@@ -147,10 +171,10 @@ namespace SchedCCS
 
         #endregion
 
-        #region 4. Deletion & Transactions
+        #region 4. Transactional Deletion Logic
 
         /// <summary>
-        /// Deletes a teacher and cascades removal of associated schedule and qualification data.
+        /// Deletes a teacher and maintains data integrity by cascading removal to qualifications and the schedule.
         /// </summary>
         public static bool DeleteTeacher(int teacherId, string teacherName)
         {
@@ -173,7 +197,7 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Deletes a room and cascades removal of associated schedule data.
+        /// Deletes a room resource and maintains integrity by removing associated schedule assignments.
         /// </summary>
         public static bool DeleteRoom(int roomId, string roomName)
         {
@@ -195,7 +219,7 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Deletes a section and cascades removal of associated schedule and subject data.
+        /// Deletes a section and cascades removal to scheduled classes and curriculum definitions.
         /// </summary>
         public static bool DeleteSection(int sectionId, string sectionName)
         {
@@ -219,8 +243,11 @@ namespace SchedCCS
 
         #endregion
 
-        #region 5. General Utilities
+        #region 5. Administrative Utilities
 
+        /// <summary>
+        /// Executes a raw SQL query with provided parameters.
+        /// </summary>
         public static void ExecuteQuery(string sql, object parameters)
         {
             using (IDbConnection db = GetConnection())
@@ -230,7 +257,7 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Clears current schedule and persists the new collection to the master_schedule table.
+        /// Replaces the current master schedule with a newly generated collection within a transaction.
         /// </summary>
         public static void SaveMasterSchedule(List<ScheduleItem> schedule)
         {

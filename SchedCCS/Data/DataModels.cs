@@ -7,7 +7,7 @@ namespace SchedCCS
     #region 1. Foundation Interfaces & Enums
 
     /// <summary>
-    /// Defines a standardized contract for identifiable entities within the scheduling system.
+    /// Contract for entities requiring unique identification and basic detail reporting.
     /// </summary>
     public interface IIdentifiable
     {
@@ -25,7 +25,7 @@ namespace SchedCCS
     #region 2. Base & Person Entities
 
     /// <summary>
-    /// Abstract base class providing common identity properties for all people in the system.
+    /// Abstract representation of a person within the system.
     /// </summary>
     public abstract class Person : IIdentifiable
     {
@@ -36,15 +36,15 @@ namespace SchedCCS
     }
 
     /// <summary>
-    /// Represents a faculty member including their subject qualifications and schedule availability.
+    /// Represents faculty members, including subject specializations and availability.
     /// </summary>
     public class Teacher : Person
     {
         public List<string> QualifiedSubjects { get; set; }
 
         /// <summary>
-        /// Availability Matrix: [7 Days, 13 Hours] (7:00 AM to 7:00 PM).
-        /// Ignored during JSON backup to save space.
+        /// Availability Matrix: [7 Days, 13 Hours] representing 7:00 AM to 7:00 PM.
+        /// Excluded from JSON serialization to optimize storage.
         /// </summary>
         [JsonIgnore]
         public bool[,] IsBusy { get; set; }
@@ -66,7 +66,7 @@ namespace SchedCCS
     #region 3. Infrastructure & Academic Entities
 
     /// <summary>
-    /// Represents a physical classroom or laboratory within the campus.
+    /// Represents a physical classroom or laboratory resource.
     /// </summary>
     public class Room : IIdentifiable
     {
@@ -105,7 +105,7 @@ namespace SchedCCS
     }
 
     /// <summary>
-    /// Represents a specific class group or student section.
+    /// Represents a student section, including its assigned curriculum and occupied slots.
     /// </summary>
     public class Section : IIdentifiable
     {
@@ -135,7 +135,7 @@ namespace SchedCCS
     }
 
     /// <summary>
-    /// Represents a course or subject within a curriculum.
+    /// Defines a course subject, its credit units, and facility requirements.
     /// </summary>
     public class Subject
     {
@@ -149,7 +149,7 @@ namespace SchedCCS
     #region 4. Data Transfer Objects (DTOs)
 
     /// <summary>
-    /// Optimized flat structure for UI grid displays, database persistence, and exports.
+    /// Flat structure optimized for UI display, database persistence, and exports.
     /// </summary>
     public class ScheduleItem
     {
@@ -160,18 +160,17 @@ namespace SchedCCS
         public string Day { get; set; } = string.Empty;
         public string Time { get; set; } = string.Empty;
 
-        // Logical indices for schedule positioning
         public int DayIndex { get; set; }
         public int TimeIndex { get; set; }
 
         /// <summary>
-        /// Reference to the actual Room object for conflict checking.
+        /// Associated Room object for conflict validation.
         /// </summary>
         public Room? RoomObj { get; set; }
     }
 
     /// <summary>
-    /// Encapsulates details regarding subjects that could not be assigned a valid schedule slot.
+    /// Represents a subject assignment that failed validation during schedule generation.
     /// </summary>
     public class FailedEntry
     {

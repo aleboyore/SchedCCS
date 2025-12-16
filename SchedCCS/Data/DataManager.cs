@@ -7,8 +7,10 @@ using System.Text;
 
 namespace SchedCCS
 {
+    #region 1. Core Models
+
     /// <summary>
-    /// Represents a system user, either an Administrator or a Student.
+    /// Represents an authenticated system user with role-based access levels.
     /// </summary>
     public class User
     {
@@ -19,15 +21,17 @@ namespace SchedCCS
         public string? StudentSection { get; set; }
     }
 
+    #endregion
+
     /// <summary>
-    /// Centralized data management class. Handles in-memory repositories, 
-    /// application initialization, and database synchronization logic.
+    /// Orchestrates application data state. Manages in-memory repositories and 
+    /// ensures synchronization between the volatile application state and the SQL persistence layer.
     /// </summary>
     public static class DataManager
     {
-        #region 1. Data Repositories
+        #region 2. Repositories & Constants
 
-        // In-memory collections synchronized with the database
+        // In-memory collections synchronized with the persistence layer
         public static List<Room> Rooms { get; set; } = new List<Room>();
         public static List<Teacher> Teachers { get; set; } = new List<Teacher>();
         public static List<Section> Sections { get; set; } = new List<Section>();
@@ -35,83 +39,62 @@ namespace SchedCCS
         public static List<ScheduleItem> MasterSchedule { get; set; } = new List<ScheduleItem>();
         public static List<FailedEntry> FailedAssignments { get; set; } = new List<FailedEntry>();
 
-        // Pre-defined academic programs
+        // System-wide academic program identifiers
         public static readonly List<string> Programs = new List<string>
         {
             "BSCS", "BSINFO", "GAV", "IS", "SMP", "WMAD", "NA"
         };
 
+        private const string ADMIN_HASH = "9922e395462d774d6b6377e868c5b9679f046b8565b93d09a05b38d33d596409";
+
         #endregion
 
-        #region 2. Smart Initialization
+        #region 3. Lifecycle & Initialization
 
         /// <summary>
-        /// Initializes the application data by attempting to load from the database.
-        /// Implements self-healing for Admin accounts and falls back to offline mode on connection failure.
+        /// Synchronizes the application state with the database. 
+        /// Prioritizes database loading and preserves current session data if the connection is unavailable.
         /// </summary>
         public static void Initialize()
         {
-            ClearMemory();
-
             try
             {
-                // Attempt to populate repositories from MySQL
-                Users = DatabaseHelper.LoadUsers();
-                Rooms = DatabaseHelper.LoadRooms();
-                Teachers = DatabaseHelper.LoadTeachers();
-                Sections = DatabaseHelper.LoadSections();
+                // Verify database connectivity and retrieve data
+                var dbUsers = DatabaseHelper.LoadUsers();
+                var dbRooms = DatabaseHelper.LoadRooms();
+                var dbTeachers = DatabaseHelper.LoadTeachers();
+                var dbSections = DatabaseHelper.LoadSections();
+
+                // On successful connection, refresh local memory with persistent data
+                ClearMemory();
+
+                Users = dbUsers;
+                Rooms = dbRooms;
+                Teachers = dbTeachers;
+                Sections = dbSections;
 
                 HandleAdminSecurity();
 
-                // Seed default rooms if the database table is empty
-                if (Rooms.Count == 0)
-                {
-                    SeedDefaultRooms_ToDatabase();
-                }
+                if (Rooms.Count == 0) SeedDefaultRooms_ToDatabase();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Handle database connection failure and proceed in offline mode
-                MessageBox.Show($"Database connection failed: {ex.Message}\n\nLaunching in Offline Mode.",
-                    "Offline Mode active", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-                LoadOfflineDefaults();
+                // Fallback: Preserves current session data in memory if DB connection fails
+                if (Users.Count == 0)
+                {
+                    LoadOfflineDefaults();
+                }
+                else
+                {
+                    MessageBox.Show("Database unreachable. Continuing with existing session data in offline mode.",
+                        "System Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
         }
 
         /// <summary>
-        /// Validates the existence and integrity of the Admin account.
+        /// Resets all in-memory collections to an empty state.
         /// </summary>
-        private static void HandleAdminSecurity()
-        {
-            string correctHash = ComputeLocalHash("@admin2025!");
-
-            if (Users.Count == 0)
-            {
-                // Create initial admin if no users exist
-                var admin = new User
-                {
-                    Username = "admin",
-                    Password = correctHash,
-                    Role = "Admin",
-                    FullName = "System Admin"
-                };
-
-                DatabaseHelper.SaveUser(admin);
-                Users.Add(admin);
-            }
-            else
-            {
-                // Self-healing: Reset admin password in DB if it does not match the system constant
-                var admin = Users.FirstOrDefault(u => u.Username == "admin");
-                if (admin != null && admin.Password != correctHash)
-                {
-                    DatabaseHelper.UpdateAdminPassword(correctHash);
-                    admin.Password = correctHash;
-                }
-            }
-        }
-
         private static void ClearMemory()
         {
             Rooms.Clear();
@@ -124,52 +107,85 @@ namespace SchedCCS
 
         #endregion
 
-        #region 3. Seeding Logic (Pre-Set Data)
-
-        private const string ADMIN_HASH = "9922e395462d774d6b6377e868c5b9679f046b8565b93d09a05b38d33d596409";
+        #region 4. Security & Administration Logic
 
         /// <summary>
-        /// Returns a standardized list of rooms used for initial system setup.
+        /// Ensures the root administrator account exists and maintains password integrity.
+        /// </summary>
+        private static void HandleAdminSecurity()
+        {
+            string correctHash = ComputeLocalHash("@admin2025!");
+
+            if (Users.Count == 0)
+            {
+                var admin = new User
+                {
+                    Username = "admin",
+                    Password = correctHash,
+                    Role = "Admin",
+                    FullName = "System Administrator"
+                };
+
+                DatabaseHelper.SaveUser(admin);
+                Users.Add(admin);
+            }
+            else
+            {
+                // Identity verification: synchronizes administrative credentials with system constants
+                var admin = Users.FirstOrDefault(u => u.Username == "admin");
+                if (admin != null && admin.Password != correctHash)
+                {
+                    DatabaseHelper.UpdateAdminPassword(correctHash);
+                    admin.Password = correctHash;
+                }
+            }
+        }
+
+        #endregion
+
+        #region 5. Data Seeding & Fallback Logic
+
+        /// <summary>
+        /// Generates standardized academic facilities for initial setup.
         /// </summary>
         private static List<Room> GetDefaultRooms()
         {
             var defaults = new List<Room>();
 
-            // Generate Building A Lecture Rooms
             for (int i = 1; i <= 12; i++)
                 defaults.Add(new Room { Name = $"LEC {i}", Type = RoomType.Lecture });
 
-            // Generate Building B Laboratory Rooms
             for (int i = 1; i <= 6; i++)
                 defaults.Add(new Room { Name = $"LAB {i}", Type = RoomType.Laboratory });
 
-            // Specialty rooms
             defaults.Add(new Room { Name = "GYM", Type = RoomType.Lecture });
             defaults.Add(new Room { Name = "FIELD", Type = RoomType.Lecture });
 
             return defaults;
         }
 
+        /// <summary>
+        /// Persists default facility data to the database.
+        /// </summary>
         private static void SeedDefaultRooms_ToDatabase()
         {
             foreach (var r in GetDefaultRooms())
             {
                 try { DatabaseHelper.CreateRoom(r.Name, r.Type.ToString()); }
-                catch { /* Ignore duplicates or schema errors during seeding */ }
+                catch { /* Prevents termination on duplicate entries */ }
             }
-            // Refresh memory after DB insert
             Rooms = DatabaseHelper.LoadRooms();
         }
 
+        /// <summary>
+        /// Initializes a default environment in memory when persistence is unavailable.
+        /// </summary>
         private static void LoadOfflineDefaults()
         {
-            // Ensure all repositories are empty before seeding
-            ClearMemory();
+            if (Users.Any(u => u.Username == "admin")) return;
 
-            // Generate the current system hash for the default password
             string offlinePasswordHash = ComputeLocalHash("@admin2025!");
 
-            // Seed the primary Administrator account into RAM
             Users.Add(new User
             {
                 Username = "admin",
@@ -178,22 +194,22 @@ namespace SchedCCS
                 FullName = "Offline Administrator"
             });
 
-            // Seed default classroom and laboratory resources
-            var defaults = GetDefaultRooms();
-            for (int i = 0; i < defaults.Count; i++)
+            foreach (var room in GetDefaultRooms())
             {
-                // Assign temporary incremental IDs for session management
-                defaults[i].Id = i + 1;
-                Rooms.Add(defaults[i]);
+                if (!Rooms.Any(r => r.Name == room.Name))
+                {
+                    room.Id = Rooms.Count + 1;
+                    Rooms.Add(room);
+                }
             }
         }
 
         #endregion
 
-        #region 4. CRUD Operations (Memory & DB Wrappers)
+        #region 6. Resource Management (CRUD)
 
         /// <summary>
-        /// Ensures a section exists in both memory and the database.
+        /// Synchronizes section existence between the interface and the persistence layer.
         /// </summary>
         public static void EnsureSectionExists(string sectionName)
         {
@@ -207,7 +223,7 @@ namespace SchedCCS
             }
             catch
             {
-                // Fallback for offline mode
+                // Offline fallback logic
                 Sections.Add(new Section { Id = Sections.Count + 1, Name = cleanName, Program = "N/A", YearLevel = 1 });
             }
         }
@@ -235,10 +251,10 @@ namespace SchedCCS
 
         #endregion
 
-        #region 5. Security Utilities
+        #region 7. Utility Methods
 
         /// <summary>
-        /// Computes a SHA-256 hash for a given string.
+        /// Generates a SHA-256 hexadecimal representation of a raw string.
         /// </summary>
         private static string ComputeLocalHash(string rawData)
         {
