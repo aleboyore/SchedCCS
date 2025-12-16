@@ -163,12 +163,26 @@ namespace SchedCCS
 
         private static void LoadOfflineDefaults()
         {
-            // Seed Admin and Rooms into RAM only
-            Users.Add(new User { Username = "admin", Password = ADMIN_HASH, Role = "Admin", FullName = "Offline Admin" });
+            // Ensure all repositories are empty before seeding
+            ClearMemory();
 
+            // Generate the current system hash for the default password
+            string offlinePasswordHash = ComputeLocalHash("@admin2025!");
+
+            // Seed the primary Administrator account into RAM
+            Users.Add(new User
+            {
+                Username = "admin",
+                Password = offlinePasswordHash,
+                Role = "Admin",
+                FullName = "Offline Administrator"
+            });
+
+            // Seed default classroom and laboratory resources
             var defaults = GetDefaultRooms();
             for (int i = 0; i < defaults.Count; i++)
             {
+                // Assign temporary incremental IDs for session management
                 defaults[i].Id = i + 1;
                 Rooms.Add(defaults[i]);
             }
