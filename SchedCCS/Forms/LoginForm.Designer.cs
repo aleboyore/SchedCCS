@@ -134,7 +134,7 @@
             label3.BackColor = Color.Transparent;
             label3.Font = new Font("Ebrima", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label3.ForeColor = Color.White;
-            label3.Location = new Point(493, 252);
+            label3.Location = new Point(521, 250);
             label3.Name = "label3";
             label3.Size = new Size(234, 21);
             label3.TabIndex = 8;

@@ -4,9 +4,11 @@ using System.Text.Json.Serialization;
 
 namespace SchedCCS
 {
-    #region 1. Interfaces & Enums
+    #region 1. Foundation Interfaces & Enums
 
-    // Defines a contract for objects that have an ID and Name
+    /// <summary>
+    /// Defines a standardized contract for identifiable entities within the scheduling system.
+    /// </summary>
     public interface IIdentifiable
     {
         int Id { get; set; }
@@ -20,9 +22,11 @@ namespace SchedCCS
 
     #endregion
 
-    #region 2. Base Classes
+    #region 2. Base & Person Entities
 
-    // Base class for any person entity in the system
+    /// <summary>
+    /// Abstract base class providing common identity properties for all people in the system.
+    /// </summary>
     public abstract class Person : IIdentifiable
     {
         public int Id { get; set; }
@@ -31,16 +35,17 @@ namespace SchedCCS
         public abstract string GetDetails();
     }
 
-    #endregion
-
-    #region 3. Derived Entities
-
-    // Represents a faculty member with specific subject qualifications
+    /// <summary>
+    /// Represents a faculty member including their subject qualifications and schedule availability.
+    /// </summary>
     public class Teacher : Person
     {
         public List<string> QualifiedSubjects { get; set; }
 
-        // Availability Matrix: [7 Days, 13 Hours] (Mon-Sun, 7am-7pm)
+        /// <summary>
+        /// Availability Matrix: [7 Days, 13 Hours] (7:00 AM to 7:00 PM).
+        /// Ignored during JSON backup to save space.
+        /// </summary>
         [JsonIgnore]
         public bool[,] IsBusy { get; set; }
 
@@ -58,9 +63,11 @@ namespace SchedCCS
 
     #endregion
 
-    #region 4. Resource & Structure Classes
+    #region 3. Infrastructure & Academic Entities
 
-    // Represents a physical room within the facility
+    /// <summary>
+    /// Represents a physical classroom or laboratory within the campus.
+    /// </summary>
     public class Room : IIdentifiable
     {
         private string _name = string.Empty;
@@ -69,7 +76,7 @@ namespace SchedCCS
 
         public string Name
         {
-            get { return _name; }
+            get => _name;
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
@@ -80,7 +87,9 @@ namespace SchedCCS
 
         public RoomType Type { get; set; }
 
-        // Availability Matrix: [7 Days, 13 Hours]
+        /// <summary>
+        /// Availability Matrix: [7 Days, 13 Hours].
+        /// </summary>
         [JsonIgnore]
         public bool[,] IsBusy { get; set; }
 
@@ -95,7 +104,9 @@ namespace SchedCCS
         }
     }
 
-    // Represents a student section (class group)
+    /// <summary>
+    /// Represents a specific class group or student section.
+    /// </summary>
     public class Section : IIdentifiable
     {
         public int Id { get; set; }
@@ -105,7 +116,9 @@ namespace SchedCCS
 
         public List<Subject> SubjectsToTake { get; set; }
 
-        // Availability Matrix: [7 Days, 13 Hours]
+        /// <summary>
+        /// Availability Matrix: [7 Days, 13 Hours].
+        /// </summary>
         [JsonIgnore]
         public bool[,] IsBusy { get; set; }
 
@@ -121,7 +134,9 @@ namespace SchedCCS
         }
     }
 
-    // Represents a specific subject or course
+    /// <summary>
+    /// Represents a course or subject within a curriculum.
+    /// </summary>
     public class Subject
     {
         public string Code { get; set; } = string.Empty;
@@ -131,28 +146,38 @@ namespace SchedCCS
 
     #endregion
 
-    #region 5. Data Transfer Objects (DTOs)
+    #region 4. Data Transfer Objects (DTOs)
 
-    // Flat structure for grid display and CSV export
+    /// <summary>
+    /// Optimized flat structure for UI grid displays, database persistence, and exports.
+    /// </summary>
     public class ScheduleItem
     {
-        public string? Section { get; set; }
-        public string? Subject { get; set; }
-        public string? Teacher { get; set; }
-        public string? Room { get; set; }
-        public string? Day { get; set; }
-        public string? Time { get; set; }
+        public string Section { get; set; } = string.Empty;
+        public string Subject { get; set; } = string.Empty;
+        public string Teacher { get; set; } = string.Empty;
+        public string Room { get; set; } = string.Empty;
+        public string Day { get; set; } = string.Empty;
+        public string Time { get; set; } = string.Empty;
+
+        // Logical indices for schedule positioning
         public int DayIndex { get; set; }
         public int TimeIndex { get; set; }
-        public Room RoomObj { get; set; }
+
+        /// <summary>
+        /// Reference to the actual Room object for conflict checking.
+        /// </summary>
+        public Room? RoomObj { get; set; }
     }
 
-    // Tracks assignment failures for the "Pending" list
+    /// <summary>
+    /// Encapsulates details regarding subjects that could not be assigned a valid schedule slot.
+    /// </summary>
     public class FailedEntry
     {
-        public Section Section { get; set; }
-        public Subject Subject { get; set; }
-        public string Reason { get; set; }
+        public Section Section { get; set; } = new Section();
+        public Subject Subject { get; set; } = new Subject();
+        public string Reason { get; set; } = string.Empty;
     }
 
     #endregion

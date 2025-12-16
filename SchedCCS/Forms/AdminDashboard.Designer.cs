@@ -29,85 +29,86 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AdminDashboard));
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AdminDashboard));
             ctxMenuSchedule = new ContextMenuStrip(components);
             pnlContent = new Panel();
+            pnlViewSchedule = new Panel();
+            panel1 = new Panel();
+            btnExportPdf = new Button();
+            btnBackupDatabase = new Button();
+            btnRestoreDatabase = new Button();
+            label19 = new Label();
+            label15 = new Label();
+            dgvTimetable = new DataGridView();
+            cmbFilterType = new ComboBox();
+            btnGenerate = new Button();
+            cmbScheduleView = new ComboBox();
+            pnlViewMaster = new Panel();
+            dgvMaster = new DataGridView();
             pnlViewManage = new Panel();
-            tabDataManagers = new TabControl();
-            tabTeachers = new TabPage();
-            btnCancelTeacher = new Button();
-            btnDeleteTeacher = new Button();
-            btnUpdateTeacher = new Button();
-            lstTeachers = new ListBox();
-            btnAddTeacher = new Button();
-            txtTeacherSubjects = new TextBox();
-            txtTeacherName = new TextBox();
-            label17 = new Label();
-            label16 = new Label();
-            tabRooms = new TabPage();
+            pnlViewRooms = new Panel();
+            label12 = new Label();
+            label1 = new Label();
+            label11 = new Label();
             lstRooms = new ListBox();
             btnDeleteRoom = new Button();
-            btnCancelRoom = new Button();
             btnUpdateRoom = new Button();
+            label2 = new Label();
+            btnCancelRoom = new Button();
             btnAddRoom = new Button();
-            label1 = new Label();
             txtRoomName = new TextBox();
             cmbRoomType = new ComboBox();
-            label2 = new Label();
-            tabSections = new TabPage();
-            groupBox8 = new GroupBox();
-            btnBatchAdd = new Button();
-            chkBatchLab = new CheckBox();
-            txtBatchUnits = new TextBox();
-            label12 = new Label();
-            txtBatchCode = new TextBox();
-            label11 = new Label();
-            cmbBatchYear = new ComboBox();
-            label10 = new Label();
-            cmbBatchProgram = new ComboBox();
-            label9 = new Label();
-            groupBox6 = new GroupBox();
-            btnRemoveSubject = new Button();
-            lstSectionSubjects = new ListBox();
-            groupBox7 = new GroupBox();
-            lstSections = new ListBox();
-            btnDeleteSection = new Button();
-            groupBox3 = new GroupBox();
+            pnlViewSections = new Panel();
+            label5 = new Label();
+            label4 = new Label();
+            label3 = new Label();
             cmbSectionYear = new ComboBox();
             label14 = new Label();
+            lstSections = new ListBox();
             cmbSectionProgram = new ComboBox();
+            btnRemoveSubject = new Button();
             label13 = new Label();
+            btnDeleteSection = new Button();
             btnSaveChanges = new Button();
+            btnBatchAdd = new Button();
             btnCancelSubject = new Button();
             btnAddSubject = new Button();
+            lstSectionSubjects = new ListBox();
             chkIsLab = new CheckBox();
             txtUnits = new TextBox();
             txtSubjCode = new TextBox();
             label8 = new Label();
             label7 = new Label();
+            cmbBatchYear = new ComboBox();
             cmbSectionList = new ComboBox();
+            label9 = new Label();
             label6 = new Label();
+            label10 = new Label();
             btnCreateSection = new Button();
+            cmbBatchProgram = new ComboBox();
             txtSectionName = new TextBox();
-            label5 = new Label();
-            pnlViewSchedule = new Panel();
-            btnExportPdf = new Button();
-            label15 = new Label();
-            dgvTimetable = new DataGridView();
-            btnRestoreDatabase = new Button();
-            cmbFilterType = new ComboBox();
-            btnGenerate = new Button();
-            btnBackupDatabase = new Button();
-            cmbScheduleView = new ComboBox();
+            pnlViewTeachers = new Panel();
+            label18 = new Label();
+            lstTeachers = new ListBox();
+            btnUpdateTeacher = new Button();
+            btnDeleteTeacher = new Button();
+            btnCancelTeacher = new Button();
+            btnAddTeacher = new Button();
+            txtTeacherSubjects = new TextBox();
+            txtTeacherName = new TextBox();
+            label17 = new Label();
+            label16 = new Label();
+            pnlManageDataNav = new Panel();
+            btnSubNavSections = new Button();
+            btnSubNavTeachers = new Button();
+            btnSubNavRooms = new Button();
             pnlViewPending = new Panel();
             btnFindSlots = new Button();
             dgvPending = new DataGridView();
             Section = new DataGridViewTextBoxColumn();
             Subject = new DataGridViewTextBoxColumn();
             Reason = new DataGridViewTextBoxColumn();
-            pnlViewMaster = new Panel();
-            dgvMaster = new DataGridView();
             btnLogout = new Button();
             pnlNavBar = new Panel();
             btnNavPending = new Button();
@@ -115,21 +116,18 @@
             btnNavMaster = new Button();
             btnNavSchedule = new Button();
             pnlContent.SuspendLayout();
-            pnlViewManage.SuspendLayout();
-            tabDataManagers.SuspendLayout();
-            tabTeachers.SuspendLayout();
-            tabRooms.SuspendLayout();
-            tabSections.SuspendLayout();
-            groupBox8.SuspendLayout();
-            groupBox6.SuspendLayout();
-            groupBox7.SuspendLayout();
-            groupBox3.SuspendLayout();
             pnlViewSchedule.SuspendLayout();
+            panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvTimetable).BeginInit();
-            pnlViewPending.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)dgvPending).BeginInit();
             pnlViewMaster.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvMaster).BeginInit();
+            pnlViewManage.SuspendLayout();
+            pnlViewRooms.SuspendLayout();
+            pnlViewSections.SuspendLayout();
+            pnlViewTeachers.SuspendLayout();
+            pnlManageDataNav.SuspendLayout();
+            pnlViewPending.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvPending).BeginInit();
             pnlNavBar.SuspendLayout();
             SuspendLayout();
             // 
@@ -140,649 +138,24 @@
             // 
             // pnlContent
             // 
-            pnlContent.Controls.Add(pnlViewSchedule);
             pnlContent.Controls.Add(pnlViewManage);
-            pnlContent.Controls.Add(pnlViewPending);
+            pnlContent.Controls.Add(pnlViewSchedule);
             pnlContent.Controls.Add(pnlViewMaster);
+            pnlContent.Controls.Add(pnlViewPending);
             pnlContent.Dock = DockStyle.Fill;
             pnlContent.Location = new Point(0, 64);
             pnlContent.Name = "pnlContent";
             pnlContent.Size = new Size(1280, 656);
             pnlContent.TabIndex = 5;
             // 
-            // pnlViewManage
-            // 
-            pnlViewManage.BackColor = Color.FromArgb(215, 216, 216);
-            pnlViewManage.Controls.Add(tabDataManagers);
-            pnlViewManage.Dock = DockStyle.Fill;
-            pnlViewManage.Location = new Point(0, 0);
-            pnlViewManage.Name = "pnlViewManage";
-            pnlViewManage.Size = new Size(1280, 656);
-            pnlViewManage.TabIndex = 2;
-            // 
-            // tabDataManagers
-            // 
-            tabDataManagers.Controls.Add(tabTeachers);
-            tabDataManagers.Controls.Add(tabRooms);
-            tabDataManagers.Controls.Add(tabSections);
-            tabDataManagers.Location = new Point(84, 16);
-            tabDataManagers.Multiline = true;
-            tabDataManagers.Name = "tabDataManagers";
-            tabDataManagers.SelectedIndex = 0;
-            tabDataManagers.Size = new Size(1098, 592);
-            tabDataManagers.TabIndex = 1;
-            // 
-            // tabTeachers
-            // 
-            tabTeachers.BackColor = Color.FromArgb(215, 216, 216);
-            tabTeachers.BackgroundImage = (Image)resources.GetObject("tabTeachers.BackgroundImage");
-            tabTeachers.Controls.Add(btnCancelTeacher);
-            tabTeachers.Controls.Add(btnDeleteTeacher);
-            tabTeachers.Controls.Add(btnUpdateTeacher);
-            tabTeachers.Controls.Add(lstTeachers);
-            tabTeachers.Controls.Add(btnAddTeacher);
-            tabTeachers.Controls.Add(txtTeacherSubjects);
-            tabTeachers.Controls.Add(txtTeacherName);
-            tabTeachers.Controls.Add(label17);
-            tabTeachers.Controls.Add(label16);
-            tabTeachers.Location = new Point(4, 24);
-            tabTeachers.Name = "tabTeachers";
-            tabTeachers.Padding = new Padding(3);
-            tabTeachers.Size = new Size(1090, 564);
-            tabTeachers.TabIndex = 0;
-            tabTeachers.Text = "Manage Teacher";
-            // 
-            // btnCancelTeacher
-            // 
-            btnCancelTeacher.FlatAppearance.BorderSize = 0;
-            btnCancelTeacher.FlatStyle = FlatStyle.Flat;
-            btnCancelTeacher.Font = new Font("Ebrima", 9.75F);
-            btnCancelTeacher.Location = new Point(928, 186);
-            btnCancelTeacher.Name = "btnCancelTeacher";
-            btnCancelTeacher.Size = new Size(89, 25);
-            btnCancelTeacher.TabIndex = 13;
-            btnCancelTeacher.Text = "Cancel";
-            btnCancelTeacher.UseVisualStyleBackColor = true;
-            btnCancelTeacher.Click += btnCancelTeacher_Click;
-            // 
-            // btnDeleteTeacher
-            // 
-            btnDeleteTeacher.FlatAppearance.BorderSize = 0;
-            btnDeleteTeacher.FlatStyle = FlatStyle.Flat;
-            btnDeleteTeacher.Font = new Font("Ebrima", 9.75F);
-            btnDeleteTeacher.Location = new Point(571, 516);
-            btnDeleteTeacher.Name = "btnDeleteTeacher";
-            btnDeleteTeacher.Size = new Size(137, 25);
-            btnDeleteTeacher.TabIndex = 4;
-            btnDeleteTeacher.Text = "Delete Selected";
-            btnDeleteTeacher.UseVisualStyleBackColor = true;
-            btnDeleteTeacher.Click += btnDeleteTeacher_Click;
-            // 
-            // btnUpdateTeacher
-            // 
-            btnUpdateTeacher.BackColor = Color.Silver;
-            btnUpdateTeacher.Enabled = false;
-            btnUpdateTeacher.FlatAppearance.BorderSize = 0;
-            btnUpdateTeacher.FlatStyle = FlatStyle.Popup;
-            btnUpdateTeacher.Font = new Font("Ebrima", 9.75F);
-            btnUpdateTeacher.Location = new Point(415, 516);
-            btnUpdateTeacher.Name = "btnUpdateTeacher";
-            btnUpdateTeacher.Size = new Size(137, 25);
-            btnUpdateTeacher.TabIndex = 12;
-            btnUpdateTeacher.Text = "Update Teacher";
-            btnUpdateTeacher.UseVisualStyleBackColor = false;
-            btnUpdateTeacher.Click += btnUpdateTeacher_Click;
-            // 
-            // lstTeachers
-            // 
-            lstTeachers.Font = new Font("Ebrima", 9.75F);
-            lstTeachers.FormattingEnabled = true;
-            lstTeachers.ItemHeight = 17;
-            lstTeachers.Location = new Point(85, 233);
-            lstTeachers.Name = "lstTeachers";
-            lstTeachers.Size = new Size(932, 259);
-            lstTeachers.TabIndex = 3;
-            lstTeachers.SelectedIndexChanged += lstTeachers_SelectedIndexChanged;
-            // 
-            // btnAddTeacher
-            // 
-            btnAddTeacher.BackColor = Color.FromArgb(64, 0, 0);
-            btnAddTeacher.FlatAppearance.BorderSize = 0;
-            btnAddTeacher.FlatStyle = FlatStyle.Popup;
-            btnAddTeacher.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnAddTeacher.ForeColor = Color.White;
-            btnAddTeacher.Location = new Point(785, 186);
-            btnAddTeacher.Name = "btnAddTeacher";
-            btnAddTeacher.Size = new Size(137, 25);
-            btnAddTeacher.TabIndex = 11;
-            btnAddTeacher.Text = "Add Teacher";
-            btnAddTeacher.UseVisualStyleBackColor = false;
-            btnAddTeacher.Click += btnAddTeacher_Click;
-            // 
-            // txtTeacherSubjects
-            // 
-            txtTeacherSubjects.Font = new Font("Ebrima", 9.75F);
-            txtTeacherSubjects.Location = new Point(406, 187);
-            txtTeacherSubjects.Name = "txtTeacherSubjects";
-            txtTeacherSubjects.Size = new Size(344, 25);
-            txtTeacherSubjects.TabIndex = 10;
-            // 
-            // txtTeacherName
-            // 
-            txtTeacherName.Font = new Font("Ebrima", 9.75F);
-            txtTeacherName.Location = new Point(85, 187);
-            txtTeacherName.Name = "txtTeacherName";
-            txtTeacherName.Size = new Size(288, 25);
-            txtTeacherName.TabIndex = 9;
-            // 
-            // label17
-            // 
-            label17.AutoSize = true;
-            label17.BackColor = Color.Transparent;
-            label17.Font = new Font("Ebrima", 9.75F);
-            label17.Location = new Point(85, 158);
-            label17.Name = "label17";
-            label17.Size = new Size(43, 17);
-            label17.TabIndex = 7;
-            label17.Text = "Name";
-            // 
-            // label16
-            // 
-            label16.AutoSize = true;
-            label16.BackColor = Color.Transparent;
-            label16.Font = new Font("Ebrima", 9.75F);
-            label16.Location = new Point(406, 158);
-            label16.Name = "label16";
-            label16.Size = new Size(177, 17);
-            label16.TabIndex = 8;
-            label16.Text = "Subjects (comma separated):";
-            // 
-            // tabRooms
-            // 
-            tabRooms.BackgroundImage = (Image)resources.GetObject("tabRooms.BackgroundImage");
-            tabRooms.Controls.Add(lstRooms);
-            tabRooms.Controls.Add(btnDeleteRoom);
-            tabRooms.Controls.Add(btnCancelRoom);
-            tabRooms.Controls.Add(btnUpdateRoom);
-            tabRooms.Controls.Add(btnAddRoom);
-            tabRooms.Controls.Add(label1);
-            tabRooms.Controls.Add(txtRoomName);
-            tabRooms.Controls.Add(cmbRoomType);
-            tabRooms.Controls.Add(label2);
-            tabRooms.Location = new Point(4, 24);
-            tabRooms.Name = "tabRooms";
-            tabRooms.Padding = new Padding(3);
-            tabRooms.Size = new Size(1090, 564);
-            tabRooms.TabIndex = 1;
-            tabRooms.Text = "Manage Rooms";
-            tabRooms.UseVisualStyleBackColor = true;
-            // 
-            // lstRooms
-            // 
-            lstRooms.Font = new Font("Ebrima", 9.75F);
-            lstRooms.FormattingEnabled = true;
-            lstRooms.ItemHeight = 17;
-            lstRooms.Location = new Point(91, 222);
-            lstRooms.Name = "lstRooms";
-            lstRooms.Size = new Size(919, 276);
-            lstRooms.TabIndex = 1;
-            lstRooms.SelectedIndexChanged += lstRooms_SelectedIndexChanged;
-            // 
-            // btnDeleteRoom
-            // 
-            btnDeleteRoom.BackColor = Color.FromArgb(215, 216, 216);
-            btnDeleteRoom.FlatAppearance.BorderSize = 0;
-            btnDeleteRoom.FlatStyle = FlatStyle.Popup;
-            btnDeleteRoom.Font = new Font("Ebrima", 9.75F);
-            btnDeleteRoom.Location = new Point(587, 520);
-            btnDeleteRoom.Name = "btnDeleteRoom";
-            btnDeleteRoom.Size = new Size(120, 25);
-            btnDeleteRoom.TabIndex = 0;
-            btnDeleteRoom.Text = "Delete Selected";
-            btnDeleteRoom.UseVisualStyleBackColor = false;
-            btnDeleteRoom.Click += btnDeleteRoom_Click;
-            // 
-            // btnCancelRoom
-            // 
-            btnCancelRoom.Font = new Font("Ebrima", 9.75F);
-            btnCancelRoom.Location = new Point(935, 180);
-            btnCancelRoom.Name = "btnCancelRoom";
-            btnCancelRoom.Size = new Size(75, 25);
-            btnCancelRoom.TabIndex = 7;
-            btnCancelRoom.Text = "Cancel";
-            btnCancelRoom.UseVisualStyleBackColor = true;
-            btnCancelRoom.Click += btnCancelRoom_Click;
-            // 
-            // btnUpdateRoom
-            // 
-            btnUpdateRoom.BackColor = Color.Silver;
-            btnUpdateRoom.Enabled = false;
-            btnUpdateRoom.FlatAppearance.BorderSize = 0;
-            btnUpdateRoom.FlatStyle = FlatStyle.Popup;
-            btnUpdateRoom.Font = new Font("Ebrima", 9.75F);
-            btnUpdateRoom.Location = new Point(445, 520);
-            btnUpdateRoom.Name = "btnUpdateRoom";
-            btnUpdateRoom.Size = new Size(122, 25);
-            btnUpdateRoom.TabIndex = 6;
-            btnUpdateRoom.Text = "Update Room";
-            btnUpdateRoom.UseVisualStyleBackColor = false;
-            btnUpdateRoom.Click += btnUpdateRoom_Click;
-            // 
-            // btnAddRoom
-            // 
-            btnAddRoom.BackColor = Color.FromArgb(64, 0, 0);
-            btnAddRoom.FlatAppearance.BorderSize = 0;
-            btnAddRoom.FlatStyle = FlatStyle.Popup;
-            btnAddRoom.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnAddRoom.ForeColor = Color.White;
-            btnAddRoom.Location = new Point(802, 180);
-            btnAddRoom.Name = "btnAddRoom";
-            btnAddRoom.Size = new Size(117, 25);
-            btnAddRoom.TabIndex = 5;
-            btnAddRoom.Text = "Add Room";
-            btnAddRoom.UseVisualStyleBackColor = false;
-            btnAddRoom.Click += btnAddRoom_Click;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Ebrima", 9.75F);
-            label1.Location = new Point(91, 165);
-            label1.Name = "label1";
-            label1.Size = new Size(82, 17);
-            label1.TabIndex = 1;
-            label1.Text = "Room Name";
-            // 
-            // txtRoomName
-            // 
-            txtRoomName.Font = new Font("Ebrima", 9.75F);
-            txtRoomName.Location = new Point(91, 183);
-            txtRoomName.Name = "txtRoomName";
-            txtRoomName.Size = new Size(336, 25);
-            txtRoomName.TabIndex = 3;
-            // 
-            // cmbRoomType
-            // 
-            cmbRoomType.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbRoomType.Font = new Font("Ebrima", 9.75F);
-            cmbRoomType.FormattingEnabled = true;
-            cmbRoomType.Items.AddRange(new object[] { "Lecture", "Laboratory" });
-            cmbRoomType.Location = new Point(459, 182);
-            cmbRoomType.Name = "cmbRoomType";
-            cmbRoomType.Size = new Size(324, 25);
-            cmbRoomType.TabIndex = 4;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Ebrima", 9.75F);
-            label2.Location = new Point(459, 164);
-            label2.Name = "label2";
-            label2.Size = new Size(75, 17);
-            label2.TabIndex = 2;
-            label2.Text = "Room Type";
-            // 
-            // tabSections
-            // 
-            tabSections.Controls.Add(groupBox8);
-            tabSections.Controls.Add(groupBox6);
-            tabSections.Controls.Add(groupBox7);
-            tabSections.Controls.Add(groupBox3);
-            tabSections.Location = new Point(4, 24);
-            tabSections.Name = "tabSections";
-            tabSections.Size = new Size(1090, 564);
-            tabSections.TabIndex = 2;
-            tabSections.Text = "Sections & Subjects";
-            tabSections.UseVisualStyleBackColor = true;
-            // 
-            // groupBox8
-            // 
-            groupBox8.Controls.Add(btnBatchAdd);
-            groupBox8.Controls.Add(chkBatchLab);
-            groupBox8.Controls.Add(txtBatchUnits);
-            groupBox8.Controls.Add(label12);
-            groupBox8.Controls.Add(txtBatchCode);
-            groupBox8.Controls.Add(label11);
-            groupBox8.Controls.Add(cmbBatchYear);
-            groupBox8.Controls.Add(label10);
-            groupBox8.Controls.Add(cmbBatchProgram);
-            groupBox8.Controls.Add(label9);
-            groupBox8.Location = new Point(787, 25);
-            groupBox8.Name = "groupBox8";
-            groupBox8.Size = new Size(409, 394);
-            groupBox8.TabIndex = 17;
-            groupBox8.TabStop = false;
-            groupBox8.Text = "Batch Subject Entry";
-            // 
-            // btnBatchAdd
-            // 
-            btnBatchAdd.Location = new Point(143, 294);
-            btnBatchAdd.Name = "btnBatchAdd";
-            btnBatchAdd.Size = new Size(123, 23);
-            btnBatchAdd.TabIndex = 9;
-            btnBatchAdd.Text = "Add to ALL Sections";
-            btnBatchAdd.UseVisualStyleBackColor = true;
-            // 
-            // chkBatchLab
-            // 
-            chkBatchLab.AutoSize = true;
-            chkBatchLab.Location = new Point(29, 215);
-            chkBatchLab.Name = "chkBatchLab";
-            chkBatchLab.Size = new Size(61, 19);
-            chkBatchLab.TabIndex = 8;
-            chkBatchLab.Text = "Is Lab?";
-            chkBatchLab.UseVisualStyleBackColor = true;
-            // 
-            // txtBatchUnits
-            // 
-            txtBatchUnits.Location = new Point(134, 162);
-            txtBatchUnits.Name = "txtBatchUnits";
-            txtBatchUnits.Size = new Size(255, 23);
-            txtBatchUnits.TabIndex = 7;
-            // 
-            // label12
-            // 
-            label12.AutoSize = true;
-            label12.Location = new Point(29, 165);
-            label12.Name = "label12";
-            label12.Size = new Size(37, 15);
-            label12.TabIndex = 6;
-            label12.Text = "Units:";
-            // 
-            // txtBatchCode
-            // 
-            txtBatchCode.Location = new Point(134, 118);
-            txtBatchCode.Name = "txtBatchCode";
-            txtBatchCode.Size = new Size(255, 23);
-            txtBatchCode.TabIndex = 5;
-            // 
-            // label11
-            // 
-            label11.AutoSize = true;
-            label11.Location = new Point(29, 120);
-            label11.Name = "label11";
-            label11.Size = new Size(80, 15);
-            label11.TabIndex = 4;
-            label11.Text = "Subject Code:";
-            // 
-            // cmbBatchYear
-            // 
-            cmbBatchYear.FormattingEnabled = true;
-            cmbBatchYear.Items.AddRange(new object[] { "1", "2", "3", "4" });
-            cmbBatchYear.Location = new Point(134, 74);
-            cmbBatchYear.Name = "cmbBatchYear";
-            cmbBatchYear.Size = new Size(255, 23);
-            cmbBatchYear.TabIndex = 3;
-            // 
-            // label10
-            // 
-            label10.AutoSize = true;
-            label10.Location = new Point(29, 75);
-            label10.Name = "label10";
-            label10.Size = new Size(67, 15);
-            label10.TabIndex = 2;
-            label10.Text = "Target Year:";
-            // 
-            // cmbBatchProgram
-            // 
-            cmbBatchProgram.FormattingEnabled = true;
-            cmbBatchProgram.Items.AddRange(new object[] { "BSCS", "BSIT" });
-            cmbBatchProgram.Location = new Point(134, 30);
-            cmbBatchProgram.Name = "cmbBatchProgram";
-            cmbBatchProgram.Size = new Size(255, 23);
-            cmbBatchProgram.TabIndex = 1;
-            // 
-            // label9
-            // 
-            label9.AutoSize = true;
-            label9.Location = new Point(29, 30);
-            label9.Name = "label9";
-            label9.Size = new Size(91, 15);
-            label9.TabIndex = 0;
-            label9.Text = "Target Program:";
-            // 
-            // groupBox6
-            // 
-            groupBox6.Controls.Add(btnRemoveSubject);
-            groupBox6.Controls.Add(lstSectionSubjects);
-            groupBox6.Location = new Point(415, 209);
-            groupBox6.Name = "groupBox6";
-            groupBox6.Size = new Size(355, 210);
-            groupBox6.TabIndex = 16;
-            groupBox6.TabStop = false;
-            groupBox6.Text = "Existing Subjects";
-            // 
-            // btnRemoveSubject
-            // 
-            btnRemoveSubject.Location = new Point(127, 181);
-            btnRemoveSubject.Name = "btnRemoveSubject";
-            btnRemoveSubject.Size = new Size(104, 23);
-            btnRemoveSubject.TabIndex = 1;
-            btnRemoveSubject.Text = "Remove Subject";
-            btnRemoveSubject.UseVisualStyleBackColor = true;
-            // 
-            // lstSectionSubjects
-            // 
-            lstSectionSubjects.FormattingEnabled = true;
-            lstSectionSubjects.ItemHeight = 15;
-            lstSectionSubjects.Location = new Point(6, 31);
-            lstSectionSubjects.Name = "lstSectionSubjects";
-            lstSectionSubjects.Size = new Size(346, 109);
-            lstSectionSubjects.TabIndex = 0;
-            // 
-            // groupBox7
-            // 
-            groupBox7.Controls.Add(lstSections);
-            groupBox7.Controls.Add(btnDeleteSection);
-            groupBox7.Location = new Point(415, 13);
-            groupBox7.Name = "groupBox7";
-            groupBox7.Size = new Size(355, 210);
-            groupBox7.TabIndex = 15;
-            groupBox7.TabStop = false;
-            groupBox7.Text = "Existing Sections";
-            // 
-            // lstSections
-            // 
-            lstSections.FormattingEnabled = true;
-            lstSections.ItemHeight = 15;
-            lstSections.Location = new Point(6, 31);
-            lstSections.Name = "lstSections";
-            lstSections.Size = new Size(346, 109);
-            lstSections.TabIndex = 1;
-            // 
-            // btnDeleteSection
-            // 
-            btnDeleteSection.Location = new Point(131, 167);
-            btnDeleteSection.Name = "btnDeleteSection";
-            btnDeleteSection.Size = new Size(96, 23);
-            btnDeleteSection.TabIndex = 0;
-            btnDeleteSection.Text = "Delete Selected";
-            btnDeleteSection.UseVisualStyleBackColor = true;
-            // 
-            // groupBox3
-            // 
-            groupBox3.Controls.Add(cmbSectionYear);
-            groupBox3.Controls.Add(label14);
-            groupBox3.Controls.Add(cmbSectionProgram);
-            groupBox3.Controls.Add(label13);
-            groupBox3.Controls.Add(btnSaveChanges);
-            groupBox3.Controls.Add(btnCancelSubject);
-            groupBox3.Controls.Add(btnAddSubject);
-            groupBox3.Controls.Add(chkIsLab);
-            groupBox3.Controls.Add(txtUnits);
-            groupBox3.Controls.Add(txtSubjCode);
-            groupBox3.Controls.Add(label8);
-            groupBox3.Controls.Add(label7);
-            groupBox3.Controls.Add(cmbSectionList);
-            groupBox3.Controls.Add(label6);
-            groupBox3.Controls.Add(btnCreateSection);
-            groupBox3.Controls.Add(txtSectionName);
-            groupBox3.Controls.Add(label5);
-            groupBox3.Location = new Point(16, 13);
-            groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(393, 562);
-            groupBox3.TabIndex = 11;
-            groupBox3.TabStop = false;
-            groupBox3.Text = "Add Section & Subjects";
-            // 
-            // cmbSectionYear
-            // 
-            cmbSectionYear.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbSectionYear.FormattingEnabled = true;
-            cmbSectionYear.Items.AddRange(new object[] { "1", "2", "3", "4" });
-            cmbSectionYear.Location = new Point(74, 99);
-            cmbSectionYear.Name = "cmbSectionYear";
-            cmbSectionYear.Size = new Size(313, 23);
-            cmbSectionYear.TabIndex = 16;
-            // 
-            // label14
-            // 
-            label14.AutoSize = true;
-            label14.Location = new Point(6, 103);
-            label14.Name = "label14";
-            label14.Size = new Size(62, 15);
-            label14.TabIndex = 15;
-            label14.Text = "Year Level:";
-            // 
-            // cmbSectionProgram
-            // 
-            cmbSectionProgram.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbSectionProgram.FormattingEnabled = true;
-            cmbSectionProgram.Items.AddRange(new object[] { "BSCS", "BSIT" });
-            cmbSectionProgram.Location = new Point(74, 71);
-            cmbSectionProgram.Name = "cmbSectionProgram";
-            cmbSectionProgram.Size = new Size(313, 23);
-            cmbSectionProgram.TabIndex = 14;
-            // 
-            // label13
-            // 
-            label13.AutoSize = true;
-            label13.Location = new Point(6, 75);
-            label13.Name = "label13";
-            label13.Size = new Size(56, 15);
-            label13.TabIndex = 13;
-            label13.Text = "Program:";
-            // 
-            // btnSaveChanges
-            // 
-            btnSaveChanges.Location = new Point(124, 401);
-            btnSaveChanges.Name = "btnSaveChanges";
-            btnSaveChanges.Size = new Size(75, 23);
-            btnSaveChanges.TabIndex = 12;
-            btnSaveChanges.Text = "Update";
-            btnSaveChanges.UseVisualStyleBackColor = true;
-            // 
-            // btnCancelSubject
-            // 
-            btnCancelSubject.Location = new Point(43, 401);
-            btnCancelSubject.Name = "btnCancelSubject";
-            btnCancelSubject.Size = new Size(75, 23);
-            btnCancelSubject.TabIndex = 11;
-            btnCancelSubject.Text = "Cancel";
-            btnCancelSubject.UseVisualStyleBackColor = true;
-            // 
-            // btnAddSubject
-            // 
-            btnAddSubject.Location = new Point(205, 401);
-            btnAddSubject.Name = "btnAddSubject";
-            btnAddSubject.Size = new Size(145, 23);
-            btnAddSubject.TabIndex = 10;
-            btnAddSubject.Text = "Add Subject to Section";
-            btnAddSubject.UseVisualStyleBackColor = true;
-            // 
-            // chkIsLab
-            // 
-            chkIsLab.AutoSize = true;
-            chkIsLab.Location = new Point(6, 369);
-            chkIsLab.Name = "chkIsLab";
-            chkIsLab.Size = new Size(61, 19);
-            chkIsLab.TabIndex = 9;
-            chkIsLab.Text = "Is Lab?";
-            chkIsLab.UseVisualStyleBackColor = true;
-            // 
-            // txtUnits
-            // 
-            txtUnits.Location = new Point(6, 333);
-            txtUnits.Name = "txtUnits";
-            txtUnits.Size = new Size(381, 23);
-            txtUnits.TabIndex = 8;
-            // 
-            // txtSubjCode
-            // 
-            txtSubjCode.Location = new Point(6, 269);
-            txtSubjCode.Name = "txtSubjCode";
-            txtSubjCode.Size = new Size(381, 23);
-            txtSubjCode.TabIndex = 7;
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Location = new Point(6, 305);
-            label8.Name = "label8";
-            label8.Size = new Size(37, 15);
-            label8.TabIndex = 6;
-            label8.Text = "Units:";
-            // 
-            // label7
-            // 
-            label7.AutoSize = true;
-            label7.Location = new Point(6, 241);
-            label7.Name = "label7";
-            label7.Size = new Size(64, 15);
-            label7.TabIndex = 5;
-            label7.Text = "Subj Code:";
-            // 
-            // cmbSectionList
-            // 
-            cmbSectionList.FormattingEnabled = true;
-            cmbSectionList.Location = new Point(6, 205);
-            cmbSectionList.Name = "cmbSectionList";
-            cmbSectionList.Size = new Size(381, 23);
-            cmbSectionList.TabIndex = 4;
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Location = new Point(6, 177);
-            label6.Name = "label6";
-            label6.Size = new Size(83, 15);
-            label6.TabIndex = 3;
-            label6.Text = "Select Section:";
-            // 
-            // btnCreateSection
-            // 
-            btnCreateSection.Location = new Point(159, 132);
-            btnCreateSection.Name = "btnCreateSection";
-            btnCreateSection.Size = new Size(75, 23);
-            btnCreateSection.TabIndex = 2;
-            btnCreateSection.Text = "Create Section";
-            btnCreateSection.UseVisualStyleBackColor = true;
-            // 
-            // txtSectionName
-            // 
-            txtSectionName.Location = new Point(6, 42);
-            txtSectionName.Name = "txtSectionName";
-            txtSectionName.Size = new Size(381, 23);
-            txtSectionName.TabIndex = 1;
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Location = new Point(6, 18);
-            label5.Name = "label5";
-            label5.Size = new Size(111, 15);
-            label5.TabIndex = 0;
-            label5.Text = "New Section Name:";
-            // 
             // pnlViewSchedule
             // 
-            pnlViewSchedule.Controls.Add(btnExportPdf);
+            pnlViewSchedule.Controls.Add(panel1);
+            pnlViewSchedule.Controls.Add(label19);
             pnlViewSchedule.Controls.Add(label15);
             pnlViewSchedule.Controls.Add(dgvTimetable);
-            pnlViewSchedule.Controls.Add(btnRestoreDatabase);
             pnlViewSchedule.Controls.Add(cmbFilterType);
             pnlViewSchedule.Controls.Add(btnGenerate);
-            pnlViewSchedule.Controls.Add(btnBackupDatabase);
             pnlViewSchedule.Controls.Add(cmbScheduleView);
             pnlViewSchedule.Dock = DockStyle.Fill;
             pnlViewSchedule.Location = new Point(0, 0);
@@ -790,22 +163,78 @@
             pnlViewSchedule.Size = new Size(1280, 656);
             pnlViewSchedule.TabIndex = 0;
             // 
+            // panel1
+            // 
+            panel1.BackColor = Color.FromArgb(245, 243, 244);
+            panel1.Controls.Add(btnExportPdf);
+            panel1.Controls.Add(btnBackupDatabase);
+            panel1.Controls.Add(btnRestoreDatabase);
+            panel1.Dock = DockStyle.Top;
+            panel1.Location = new Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(1280, 56);
+            panel1.TabIndex = 4;
+            // 
             // btnExportPdf
             // 
-            btnExportPdf.Font = new Font("Ebrima", 9.75F);
-            btnExportPdf.Location = new Point(1094, 43);
+            btnExportPdf.BackColor = Color.Transparent;
+            btnExportPdf.FlatAppearance.BorderSize = 0;
+            btnExportPdf.FlatStyle = FlatStyle.Flat;
+            btnExportPdf.Font = new Font("Ebrima", 12F);
+            btnExportPdf.ForeColor = Color.Maroon;
+            btnExportPdf.Location = new Point(724, 9);
             btnExportPdf.Name = "btnExportPdf";
-            btnExportPdf.Size = new Size(84, 23);
+            btnExportPdf.Size = new Size(113, 37);
             btnExportPdf.TabIndex = 20;
             btnExportPdf.Text = "Export PDF";
-            btnExportPdf.UseVisualStyleBackColor = true;
+            btnExportPdf.UseVisualStyleBackColor = false;
             btnExportPdf.Click += btnExportPdf_Click;
+            // 
+            // btnBackupDatabase
+            // 
+            btnBackupDatabase.BackColor = Color.Transparent;
+            btnBackupDatabase.FlatAppearance.BorderSize = 0;
+            btnBackupDatabase.FlatStyle = FlatStyle.Flat;
+            btnBackupDatabase.Font = new Font("Ebrima", 12F);
+            btnBackupDatabase.ForeColor = Color.Maroon;
+            btnBackupDatabase.Location = new Point(402, 9);
+            btnBackupDatabase.Name = "btnBackupDatabase";
+            btnBackupDatabase.Size = new Size(142, 37);
+            btnBackupDatabase.TabIndex = 16;
+            btnBackupDatabase.Text = "Create Backup";
+            btnBackupDatabase.UseVisualStyleBackColor = false;
+            btnBackupDatabase.Click += btnBackupDatabase_Click;
+            // 
+            // btnRestoreDatabase
+            // 
+            btnRestoreDatabase.BackColor = Color.Transparent;
+            btnRestoreDatabase.FlatAppearance.BorderSize = 0;
+            btnRestoreDatabase.FlatStyle = FlatStyle.Flat;
+            btnRestoreDatabase.Font = new Font("Ebrima", 12F);
+            btnRestoreDatabase.ForeColor = Color.Maroon;
+            btnRestoreDatabase.Location = new Point(571, 9);
+            btnRestoreDatabase.Name = "btnRestoreDatabase";
+            btnRestoreDatabase.Size = new Size(119, 37);
+            btnRestoreDatabase.TabIndex = 21;
+            btnRestoreDatabase.Text = "Load Backup";
+            btnRestoreDatabase.UseVisualStyleBackColor = false;
+            btnRestoreDatabase.Click += btnRestoreDatabase_Click;
+            // 
+            // label19
+            // 
+            label19.AutoSize = true;
+            label19.Font = new Font("Ebrima", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label19.Location = new Point(493, 106);
+            label19.Name = "label19";
+            label19.Size = new Size(57, 17);
+            label19.TabIndex = 23;
+            label19.Text = "Selected";
             // 
             // label15
             // 
             label15.AutoSize = true;
             label15.Font = new Font("Ebrima", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label15.Location = new Point(84, 46);
+            label15.Location = new Point(115, 105);
             label15.Name = "label15";
             label15.Size = new Size(54, 17);
             label15.TabIndex = 22;
@@ -816,6 +245,8 @@
             dgvTimetable.AllowUserToAddRows = false;
             dgvTimetable.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dgvTimetable.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgvTimetable.BackgroundColor = Color.FromArgb(224, 224, 224);
+            dgvTimetable.BorderStyle = BorderStyle.None;
             dgvTimetable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.BackColor = SystemColors.Window;
@@ -825,28 +256,19 @@
             dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
             dgvTimetable.DefaultCellStyle = dataGridViewCellStyle1;
-            dgvTimetable.Location = new Point(84, 89);
+            dgvTimetable.Location = new Point(116, 133);
             dgvTimetable.Name = "dgvTimetable";
-            dgvTimetable.Size = new Size(1098, 474);
+            dgvTimetable.Size = new Size(1066, 463);
             dgvTimetable.TabIndex = 17;
-            // 
-            // btnRestoreDatabase
-            // 
-            btnRestoreDatabase.Font = new Font("Ebrima", 9.75F);
-            btnRestoreDatabase.Location = new Point(988, 43);
-            btnRestoreDatabase.Name = "btnRestoreDatabase";
-            btnRestoreDatabase.Size = new Size(90, 23);
-            btnRestoreDatabase.TabIndex = 21;
-            btnRestoreDatabase.Text = "Load Backup";
-            btnRestoreDatabase.UseVisualStyleBackColor = true;
-            btnRestoreDatabase.Click += btnRestoreDatabase_Click;
+            dgvTimetable.CellMouseClick += dgvTimetable_CellMouseClick;
+            dgvTimetable.Resize += dgvTimetable_Resize;
             // 
             // cmbFilterType
             // 
             cmbFilterType.Font = new Font("Ebrima", 9.75F);
             cmbFilterType.FormattingEnabled = true;
             cmbFilterType.Items.AddRange(new object[] { "Section", "Teacher", "Room" });
-            cmbFilterType.Location = new Point(151, 43);
+            cmbFilterType.Location = new Point(187, 102);
             cmbFilterType.Name = "cmbFilterType";
             cmbFilterType.Size = new Size(265, 25);
             cmbFilterType.TabIndex = 18;
@@ -861,33 +283,773 @@
             btnGenerate.FlatStyle = FlatStyle.Popup;
             btnGenerate.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnGenerate.ForeColor = Color.White;
-            btnGenerate.Location = new Point(513, 590);
+            btnGenerate.Location = new Point(866, 102);
             btnGenerate.Name = "btnGenerate";
-            btnGenerate.Size = new Size(217, 37);
+            btnGenerate.Size = new Size(316, 25);
             btnGenerate.TabIndex = 14;
             btnGenerate.Text = "Generate Schedule";
             btnGenerate.UseVisualStyleBackColor = false;
             btnGenerate.Click += btnGenerate_Click;
             // 
-            // btnBackupDatabase
-            // 
-            btnBackupDatabase.Font = new Font("Ebrima", 9.75F);
-            btnBackupDatabase.Location = new Point(851, 43);
-            btnBackupDatabase.Name = "btnBackupDatabase";
-            btnBackupDatabase.Size = new Size(113, 23);
-            btnBackupDatabase.TabIndex = 16;
-            btnBackupDatabase.Text = "Create Backup";
-            btnBackupDatabase.UseVisualStyleBackColor = true;
-            btnBackupDatabase.Click += btnBackupDatabase_Click;
-            // 
             // cmbScheduleView
             // 
             cmbScheduleView.Font = new Font("Ebrima", 9.75F);
             cmbScheduleView.FormattingEnabled = true;
-            cmbScheduleView.Location = new Point(457, 43);
+            cmbScheduleView.Location = new Point(577, 103);
             cmbScheduleView.Name = "cmbScheduleView";
-            cmbScheduleView.Size = new Size(247, 25);
+            cmbScheduleView.Size = new Size(274, 25);
             cmbScheduleView.TabIndex = 15;
+            cmbScheduleView.SelectedIndexChanged += cmbScheduleView_SelectedIndexChanged;
+            // 
+            // pnlViewMaster
+            // 
+            pnlViewMaster.Controls.Add(dgvMaster);
+            pnlViewMaster.Dock = DockStyle.Fill;
+            pnlViewMaster.Location = new Point(0, 0);
+            pnlViewMaster.Name = "pnlViewMaster";
+            pnlViewMaster.Size = new Size(1280, 656);
+            pnlViewMaster.TabIndex = 1;
+            // 
+            // dgvMaster
+            // 
+            dgvMaster.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvMaster.BackgroundColor = Color.FromArgb(224, 224, 224);
+            dgvMaster.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvMaster.Location = new Point(106, 56);
+            dgvMaster.Name = "dgvMaster";
+            dgvMaster.ReadOnly = true;
+            dgvMaster.Size = new Size(1076, 527);
+            dgvMaster.TabIndex = 1;
+            dgvMaster.ColumnHeaderMouseClick += dgvMaster_ColumnHeaderMouseClick;
+            // 
+            // pnlViewManage
+            // 
+            pnlViewManage.BackColor = Color.FromArgb(215, 216, 216);
+            pnlViewManage.Controls.Add(pnlViewSections);
+            pnlViewManage.Controls.Add(pnlViewRooms);
+            pnlViewManage.Controls.Add(pnlViewTeachers);
+            pnlViewManage.Controls.Add(pnlManageDataNav);
+            pnlViewManage.Dock = DockStyle.Fill;
+            pnlViewManage.Location = new Point(0, 0);
+            pnlViewManage.Name = "pnlViewManage";
+            pnlViewManage.Size = new Size(1280, 656);
+            pnlViewManage.TabIndex = 2;
+            // 
+            // pnlViewRooms
+            // 
+            pnlViewRooms.BackgroundImage = (Image)resources.GetObject("pnlViewRooms.BackgroundImage");
+            pnlViewRooms.Controls.Add(label12);
+            pnlViewRooms.Controls.Add(label1);
+            pnlViewRooms.Controls.Add(label11);
+            pnlViewRooms.Controls.Add(lstRooms);
+            pnlViewRooms.Controls.Add(btnDeleteRoom);
+            pnlViewRooms.Controls.Add(btnUpdateRoom);
+            pnlViewRooms.Controls.Add(label2);
+            pnlViewRooms.Controls.Add(btnCancelRoom);
+            pnlViewRooms.Controls.Add(btnAddRoom);
+            pnlViewRooms.Controls.Add(txtRoomName);
+            pnlViewRooms.Controls.Add(cmbRoomType);
+            pnlViewRooms.Dock = DockStyle.Fill;
+            pnlViewRooms.Location = new Point(0, 56);
+            pnlViewRooms.Name = "pnlViewRooms";
+            pnlViewRooms.Size = new Size(1280, 600);
+            pnlViewRooms.TabIndex = 3;
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.BackColor = Color.Transparent;
+            label12.Font = new Font("Ebrima", 9.75F);
+            label12.Location = new Point(160, 202);
+            label12.Name = "label12";
+            label12.Size = new Size(96, 17);
+            label12.TabIndex = 19;
+            label12.Text = "- Room Name-";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.BackColor = Color.Transparent;
+            label1.Font = new Font("Ebrima", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = Color.Maroon;
+            label1.Location = new Point(591, 140);
+            label1.Name = "label1";
+            label1.Size = new Size(99, 20);
+            label1.TabIndex = 18;
+            label1.Text = "Room(s) List";
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.BackColor = Color.Transparent;
+            label11.Font = new Font("Ebrima", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label11.ForeColor = Color.Maroon;
+            label11.Location = new Point(164, 155);
+            label11.Name = "label11";
+            label11.Size = new Size(120, 20);
+            label11.TabIndex = 17;
+            label11.Text = "Add New Room";
+            // 
+            // lstRooms
+            // 
+            lstRooms.BackColor = Color.FromArgb(224, 224, 224);
+            lstRooms.BorderStyle = BorderStyle.None;
+            lstRooms.Font = new Font("Ebrima", 9.75F);
+            lstRooms.FormattingEnabled = true;
+            lstRooms.ItemHeight = 17;
+            lstRooms.Location = new Point(594, 174);
+            lstRooms.Name = "lstRooms";
+            lstRooms.Size = new Size(540, 255);
+            lstRooms.TabIndex = 8;
+            lstRooms.SelectedIndexChanged += lstRooms_SelectedIndexChanged;
+            // 
+            // btnDeleteRoom
+            // 
+            btnDeleteRoom.BackColor = Color.Maroon;
+            btnDeleteRoom.FlatAppearance.BorderSize = 0;
+            btnDeleteRoom.FlatStyle = FlatStyle.Popup;
+            btnDeleteRoom.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnDeleteRoom.ForeColor = Color.White;
+            btnDeleteRoom.Location = new Point(993, 140);
+            btnDeleteRoom.Name = "btnDeleteRoom";
+            btnDeleteRoom.Size = new Size(141, 25);
+            btnDeleteRoom.TabIndex = 13;
+            btnDeleteRoom.Text = "Delete Selected";
+            btnDeleteRoom.UseVisualStyleBackColor = false;
+            btnDeleteRoom.Click += btnDeleteRoom_Click;
+            // 
+            // btnUpdateRoom
+            // 
+            btnUpdateRoom.BackColor = Color.FromArgb(64, 0, 0);
+            btnUpdateRoom.Enabled = false;
+            btnUpdateRoom.FlatAppearance.BorderSize = 0;
+            btnUpdateRoom.FlatStyle = FlatStyle.Flat;
+            btnUpdateRoom.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnUpdateRoom.ForeColor = Color.White;
+            btnUpdateRoom.Location = new Point(866, 140);
+            btnUpdateRoom.Name = "btnUpdateRoom";
+            btnUpdateRoom.Size = new Size(121, 25);
+            btnUpdateRoom.TabIndex = 16;
+            btnUpdateRoom.Text = "Update";
+            btnUpdateRoom.UseVisualStyleBackColor = false;
+            btnUpdateRoom.Click += btnUpdateRoom_Click;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.BackColor = Color.Transparent;
+            label2.Font = new Font("Ebrima", 9.75F);
+            label2.Location = new Point(160, 280);
+            label2.Name = "label2";
+            label2.Size = new Size(93, 17);
+            label2.TabIndex = 15;
+            label2.Text = "- Room Type -";
+            // 
+            // btnCancelRoom
+            // 
+            btnCancelRoom.BackColor = Color.Maroon;
+            btnCancelRoom.FlatAppearance.BorderSize = 0;
+            btnCancelRoom.FlatStyle = FlatStyle.Flat;
+            btnCancelRoom.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnCancelRoom.ForeColor = Color.White;
+            btnCancelRoom.Location = new Point(164, 398);
+            btnCancelRoom.Name = "btnCancelRoom";
+            btnCancelRoom.Size = new Size(303, 25);
+            btnCancelRoom.TabIndex = 12;
+            btnCancelRoom.Text = "Cancel";
+            btnCancelRoom.UseVisualStyleBackColor = false;
+            btnCancelRoom.Click += btnCancelRoom_Click;
+            // 
+            // btnAddRoom
+            // 
+            btnAddRoom.BackColor = Color.FromArgb(64, 0, 0);
+            btnAddRoom.FlatAppearance.BorderSize = 0;
+            btnAddRoom.FlatStyle = FlatStyle.Popup;
+            btnAddRoom.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnAddRoom.ForeColor = Color.White;
+            btnAddRoom.Location = new Point(164, 360);
+            btnAddRoom.Name = "btnAddRoom";
+            btnAddRoom.Size = new Size(303, 25);
+            btnAddRoom.TabIndex = 11;
+            btnAddRoom.Text = "Add Room";
+            btnAddRoom.UseVisualStyleBackColor = false;
+            btnAddRoom.Click += btnAddRoom_Click;
+            // 
+            // txtRoomName
+            // 
+            txtRoomName.Font = new Font("Ebrima", 9.75F);
+            txtRoomName.Location = new Point(164, 229);
+            txtRoomName.Name = "txtRoomName";
+            txtRoomName.Size = new Size(299, 25);
+            txtRoomName.TabIndex = 9;
+            // 
+            // cmbRoomType
+            // 
+            cmbRoomType.Font = new Font("Ebrima", 9.75F);
+            cmbRoomType.FormattingEnabled = true;
+            cmbRoomType.Items.AddRange(new object[] { "Lecture", "Laboratory" });
+            cmbRoomType.Location = new Point(161, 307);
+            cmbRoomType.Name = "cmbRoomType";
+            cmbRoomType.Size = new Size(302, 25);
+            cmbRoomType.TabIndex = 10;
+            // 
+            // pnlViewSections
+            // 
+            pnlViewSections.BackgroundImage = (Image)resources.GetObject("pnlViewSections.BackgroundImage");
+            pnlViewSections.Controls.Add(label5);
+            pnlViewSections.Controls.Add(label4);
+            pnlViewSections.Controls.Add(label3);
+            pnlViewSections.Controls.Add(cmbSectionYear);
+            pnlViewSections.Controls.Add(label14);
+            pnlViewSections.Controls.Add(lstSections);
+            pnlViewSections.Controls.Add(cmbSectionProgram);
+            pnlViewSections.Controls.Add(btnRemoveSubject);
+            pnlViewSections.Controls.Add(label13);
+            pnlViewSections.Controls.Add(btnDeleteSection);
+            pnlViewSections.Controls.Add(btnSaveChanges);
+            pnlViewSections.Controls.Add(btnBatchAdd);
+            pnlViewSections.Controls.Add(btnCancelSubject);
+            pnlViewSections.Controls.Add(btnAddSubject);
+            pnlViewSections.Controls.Add(lstSectionSubjects);
+            pnlViewSections.Controls.Add(chkIsLab);
+            pnlViewSections.Controls.Add(txtUnits);
+            pnlViewSections.Controls.Add(txtSubjCode);
+            pnlViewSections.Controls.Add(label8);
+            pnlViewSections.Controls.Add(label7);
+            pnlViewSections.Controls.Add(cmbBatchYear);
+            pnlViewSections.Controls.Add(cmbSectionList);
+            pnlViewSections.Controls.Add(label9);
+            pnlViewSections.Controls.Add(label6);
+            pnlViewSections.Controls.Add(label10);
+            pnlViewSections.Controls.Add(btnCreateSection);
+            pnlViewSections.Controls.Add(cmbBatchProgram);
+            pnlViewSections.Controls.Add(txtSectionName);
+            pnlViewSections.Dock = DockStyle.Fill;
+            pnlViewSections.Font = new Font("Ebrima", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            pnlViewSections.Location = new Point(0, 56);
+            pnlViewSections.Name = "pnlViewSections";
+            pnlViewSections.Size = new Size(1280, 600);
+            pnlViewSections.TabIndex = 5;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.BackColor = Color.Transparent;
+            label5.Font = new Font("Ebrima", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label5.ForeColor = Color.Maroon;
+            label5.Location = new Point(121, 51);
+            label5.Name = "label5";
+            label5.Size = new Size(145, 20);
+            label5.TabIndex = 22;
+            label5.Text = "Create New Section";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.BackColor = Color.Transparent;
+            label4.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label4.ForeColor = Color.Maroon;
+            label4.Location = new Point(664, 332);
+            label4.Name = "label4";
+            label4.Size = new Size(95, 17);
+            label4.TabIndex = 21;
+            label4.Text = "Subject(s) List";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.BackColor = Color.Transparent;
+            label3.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label3.ForeColor = Color.Maroon;
+            label3.Location = new Point(128, 332);
+            label3.Name = "label3";
+            label3.Size = new Size(95, 17);
+            label3.TabIndex = 20;
+            label3.Text = "Section(s) List";
+            // 
+            // cmbSectionYear
+            // 
+            cmbSectionYear.BackColor = SystemColors.Window;
+            cmbSectionYear.FormattingEnabled = true;
+            cmbSectionYear.Items.AddRange(new object[] { "1", "2", "3", "4" });
+            cmbSectionYear.Location = new Point(124, 187);
+            cmbSectionYear.Name = "cmbSectionYear";
+            cmbSectionYear.Size = new Size(287, 25);
+            cmbSectionYear.TabIndex = 16;
+            // 
+            // label14
+            // 
+            label14.AutoSize = true;
+            label14.BackColor = Color.Transparent;
+            label14.Location = new Point(126, 163);
+            label14.Name = "label14";
+            label14.Size = new Size(123, 17);
+            label14.TabIndex = 15;
+            label14.Text = "- Select Year Level -";
+            // 
+            // lstSections
+            // 
+            lstSections.BackColor = Color.FromArgb(224, 224, 224);
+            lstSections.BorderStyle = BorderStyle.None;
+            lstSections.FormattingEnabled = true;
+            lstSections.ItemHeight = 17;
+            lstSections.Location = new Point(131, 366);
+            lstSections.Name = "lstSections";
+            lstSections.Size = new Size(470, 187);
+            lstSections.TabIndex = 19;
+            lstSections.SelectedIndexChanged += lstSections_SelectedIndexChanged;
+            // 
+            // cmbSectionProgram
+            // 
+            cmbSectionProgram.BackColor = SystemColors.Window;
+            cmbSectionProgram.FormattingEnabled = true;
+            cmbSectionProgram.Items.AddRange(new object[] { "BSCS", "BSIT" });
+            cmbSectionProgram.Location = new Point(128, 119);
+            cmbSectionProgram.Name = "cmbSectionProgram";
+            cmbSectionProgram.Size = new Size(283, 25);
+            cmbSectionProgram.TabIndex = 14;
+            // 
+            // btnRemoveSubject
+            // 
+            btnRemoveSubject.BackColor = Color.Maroon;
+            btnRemoveSubject.FlatAppearance.BorderSize = 0;
+            btnRemoveSubject.FlatStyle = FlatStyle.Flat;
+            btnRemoveSubject.Font = new Font("Ebrima", 9.75F, FontStyle.Bold);
+            btnRemoveSubject.ForeColor = Color.White;
+            btnRemoveSubject.Location = new Point(993, 324);
+            btnRemoveSubject.Name = "btnRemoveSubject";
+            btnRemoveSubject.Size = new Size(143, 25);
+            btnRemoveSubject.TabIndex = 1;
+            btnRemoveSubject.Text = "Remove Subject";
+            btnRemoveSubject.UseVisualStyleBackColor = false;
+            btnRemoveSubject.Click += btnRemoveSubject_Click;
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.BackColor = Color.Transparent;
+            label13.Location = new Point(126, 93);
+            label13.Name = "label13";
+            label13.Size = new Size(115, 17);
+            label13.TabIndex = 13;
+            label13.Text = "- Select Program -";
+            // 
+            // btnDeleteSection
+            // 
+            btnDeleteSection.BackColor = Color.Maroon;
+            btnDeleteSection.FlatAppearance.BorderSize = 0;
+            btnDeleteSection.FlatStyle = FlatStyle.Flat;
+            btnDeleteSection.Font = new Font("Ebrima", 9.75F, FontStyle.Bold);
+            btnDeleteSection.ForeColor = Color.White;
+            btnDeleteSection.Location = new Point(469, 326);
+            btnDeleteSection.Name = "btnDeleteSection";
+            btnDeleteSection.Size = new Size(129, 25);
+            btnDeleteSection.TabIndex = 0;
+            btnDeleteSection.Text = "Delete Section";
+            btnDeleteSection.UseVisualStyleBackColor = false;
+            btnDeleteSection.Click += btnDeleteSection_Click;
+            // 
+            // btnSaveChanges
+            // 
+            btnSaveChanges.BackColor = Color.FromArgb(64, 0, 0);
+            btnSaveChanges.FlatAppearance.BorderSize = 0;
+            btnSaveChanges.FlatStyle = FlatStyle.Flat;
+            btnSaveChanges.Font = new Font("Ebrima", 9.75F, FontStyle.Bold);
+            btnSaveChanges.ForeColor = Color.White;
+            btnSaveChanges.Location = new Point(974, 143);
+            btnSaveChanges.Name = "btnSaveChanges";
+            btnSaveChanges.Size = new Size(148, 25);
+            btnSaveChanges.TabIndex = 12;
+            btnSaveChanges.Text = "Update";
+            btnSaveChanges.UseVisualStyleBackColor = false;
+            btnSaveChanges.Click += btnSaveChanges_Click;
+            // 
+            // btnBatchAdd
+            // 
+            btnBatchAdd.BackColor = Color.FromArgb(64, 0, 0);
+            btnBatchAdd.FlatAppearance.BorderSize = 0;
+            btnBatchAdd.FlatStyle = FlatStyle.Flat;
+            btnBatchAdd.Font = new Font("Ebrima", 9.75F, FontStyle.Bold);
+            btnBatchAdd.ForeColor = Color.White;
+            btnBatchAdd.Location = new Point(974, 97);
+            btnBatchAdd.Name = "btnBatchAdd";
+            btnBatchAdd.Size = new Size(148, 25);
+            btnBatchAdd.TabIndex = 9;
+            btnBatchAdd.Text = "Add Multiple";
+            btnBatchAdd.UseVisualStyleBackColor = false;
+            btnBatchAdd.Click += btnBatchAdd_Click;
+            // 
+            // btnCancelSubject
+            // 
+            btnCancelSubject.BackColor = Color.Maroon;
+            btnCancelSubject.FlatAppearance.BorderSize = 0;
+            btnCancelSubject.FlatStyle = FlatStyle.Flat;
+            btnCancelSubject.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnCancelSubject.ForeColor = Color.White;
+            btnCancelSubject.Location = new Point(628, 235);
+            btnCancelSubject.Name = "btnCancelSubject";
+            btnCancelSubject.Size = new Size(494, 25);
+            btnCancelSubject.TabIndex = 11;
+            btnCancelSubject.Text = "Cancel";
+            btnCancelSubject.UseVisualStyleBackColor = false;
+            btnCancelSubject.Click += btnCancelSection_Click;
+            // 
+            // btnAddSubject
+            // 
+            btnAddSubject.BackColor = Color.FromArgb(64, 0, 0);
+            btnAddSubject.FlatAppearance.BorderSize = 0;
+            btnAddSubject.FlatStyle = FlatStyle.Flat;
+            btnAddSubject.Font = new Font("Ebrima", 9.75F, FontStyle.Bold);
+            btnAddSubject.ForeColor = Color.White;
+            btnAddSubject.Location = new Point(974, 52);
+            btnAddSubject.Name = "btnAddSubject";
+            btnAddSubject.Size = new Size(148, 25);
+            btnAddSubject.TabIndex = 10;
+            btnAddSubject.Text = "Add Subject";
+            btnAddSubject.UseVisualStyleBackColor = false;
+            btnAddSubject.Click += btnAddSubject_Click;
+            // 
+            // lstSectionSubjects
+            // 
+            lstSectionSubjects.BackColor = Color.FromArgb(224, 224, 224);
+            lstSectionSubjects.BorderStyle = BorderStyle.None;
+            lstSectionSubjects.FormattingEnabled = true;
+            lstSectionSubjects.ItemHeight = 17;
+            lstSectionSubjects.Location = new Point(666, 367);
+            lstSectionSubjects.Name = "lstSectionSubjects";
+            lstSectionSubjects.Size = new Size(470, 187);
+            lstSectionSubjects.TabIndex = 0;
+            lstSectionSubjects.SelectedIndexChanged += lstSectionSubjects_SelectedIndexChanged;
+            // 
+            // chkIsLab
+            // 
+            chkIsLab.AutoSize = true;
+            chkIsLab.BackColor = Color.Transparent;
+            chkIsLab.Location = new Point(501, 239);
+            chkIsLab.Name = "chkIsLab";
+            chkIsLab.Size = new Size(67, 21);
+            chkIsLab.TabIndex = 9;
+            chkIsLab.Text = "Is Lab?";
+            chkIsLab.UseVisualStyleBackColor = false;
+            // 
+            // txtUnits
+            // 
+            txtUnits.Location = new Point(974, 191);
+            txtUnits.Name = "txtUnits";
+            txtUnits.Size = new Size(148, 25);
+            txtUnits.TabIndex = 8;
+            // 
+            // txtSubjCode
+            // 
+            txtSubjCode.Location = new Point(628, 192);
+            txtSubjCode.Name = "txtSubjCode";
+            txtSubjCode.Size = new Size(180, 25);
+            txtSubjCode.TabIndex = 7;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.BackColor = Color.Transparent;
+            label8.Location = new Point(852, 194);
+            label8.Name = "label8";
+            label8.Size = new Size(96, 17);
+            label8.TabIndex = 6;
+            label8.Text = "- No. of Units -";
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.BackColor = Color.Transparent;
+            label7.Location = new Point(495, 196);
+            label7.Name = "label7";
+            label7.Size = new Size(102, 17);
+            label7.TabIndex = 5;
+            label7.Text = "- Course Code -";
+            // 
+            // cmbBatchYear
+            // 
+            cmbBatchYear.FormattingEnabled = true;
+            cmbBatchYear.Items.AddRange(new object[] { "1", "2", "3", "4" });
+            cmbBatchYear.Location = new Point(628, 144);
+            cmbBatchYear.Name = "cmbBatchYear";
+            cmbBatchYear.Size = new Size(326, 25);
+            cmbBatchYear.TabIndex = 3;
+            // 
+            // cmbSectionList
+            // 
+            cmbSectionList.FormattingEnabled = true;
+            cmbSectionList.Location = new Point(628, 51);
+            cmbSectionList.Name = "cmbSectionList";
+            cmbSectionList.Size = new Size(326, 25);
+            cmbSectionList.TabIndex = 4;
+            cmbSectionList.SelectedIndexChanged += cmbSectionList_SelectedIndexChanged;
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.BackColor = Color.Transparent;
+            label9.Location = new Point(495, 100);
+            label9.Name = "label9";
+            label9.Size = new Size(119, 17);
+            label9.TabIndex = 0;
+            label9.Text = "- Target Program -";
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.BackColor = Color.Transparent;
+            label6.Font = new Font("Ebrima", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label6.ForeColor = Color.Maroon;
+            label6.Location = new Point(493, 52);
+            label6.Name = "label6";
+            label6.Size = new Size(122, 20);
+            label6.TabIndex = 3;
+            label6.Text = "Selected Section";
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.BackColor = Color.Transparent;
+            label10.Location = new Point(496, 148);
+            label10.Name = "label10";
+            label10.Size = new Size(94, 17);
+            label10.TabIndex = 2;
+            label10.Text = "- Target Year -";
+            // 
+            // btnCreateSection
+            // 
+            btnCreateSection.BackColor = Color.FromArgb(64, 0, 0);
+            btnCreateSection.FlatAppearance.BorderSize = 0;
+            btnCreateSection.FlatStyle = FlatStyle.Flat;
+            btnCreateSection.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnCreateSection.ForeColor = Color.White;
+            btnCreateSection.Location = new Point(125, 235);
+            btnCreateSection.Name = "btnCreateSection";
+            btnCreateSection.Size = new Size(285, 25);
+            btnCreateSection.TabIndex = 2;
+            btnCreateSection.Text = "Create Section";
+            btnCreateSection.UseVisualStyleBackColor = false;
+            btnCreateSection.Click += btnCreateSection_Click;
+            // 
+            // cmbBatchProgram
+            // 
+            cmbBatchProgram.FormattingEnabled = true;
+            cmbBatchProgram.Items.AddRange(new object[] { "BSCS", "BSIT" });
+            cmbBatchProgram.Location = new Point(628, 97);
+            cmbBatchProgram.Name = "cmbBatchProgram";
+            cmbBatchProgram.Size = new Size(326, 25);
+            cmbBatchProgram.TabIndex = 1;
+            // 
+            // txtSectionName
+            // 
+            txtSectionName.BackColor = Color.White;
+            txtSectionName.BorderStyle = BorderStyle.FixedSingle;
+            txtSectionName.Location = new Point(272, 49);
+            txtSectionName.Name = "txtSectionName";
+            txtSectionName.PlaceholderText = "  Input section here";
+            txtSectionName.Size = new Size(138, 25);
+            txtSectionName.TabIndex = 1;
+            // 
+            // pnlViewTeachers
+            // 
+            pnlViewTeachers.BackgroundImage = (Image)resources.GetObject("pnlViewTeachers.BackgroundImage");
+            pnlViewTeachers.Controls.Add(label18);
+            pnlViewTeachers.Controls.Add(lstTeachers);
+            pnlViewTeachers.Controls.Add(btnUpdateTeacher);
+            pnlViewTeachers.Controls.Add(btnDeleteTeacher);
+            pnlViewTeachers.Controls.Add(btnCancelTeacher);
+            pnlViewTeachers.Controls.Add(btnAddTeacher);
+            pnlViewTeachers.Controls.Add(txtTeacherSubjects);
+            pnlViewTeachers.Controls.Add(txtTeacherName);
+            pnlViewTeachers.Controls.Add(label17);
+            pnlViewTeachers.Controls.Add(label16);
+            pnlViewTeachers.Dock = DockStyle.Fill;
+            pnlViewTeachers.Location = new Point(0, 56);
+            pnlViewTeachers.Name = "pnlViewTeachers";
+            pnlViewTeachers.Size = new Size(1280, 600);
+            pnlViewTeachers.TabIndex = 4;
+            // 
+            // label18
+            // 
+            label18.AutoSize = true;
+            label18.BackColor = Color.Transparent;
+            label18.Font = new Font("Ebrima", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label18.ForeColor = Color.Maroon;
+            label18.Location = new Point(154, 153);
+            label18.Name = "label18";
+            label18.Size = new Size(97, 20);
+            label18.TabIndex = 23;
+            label18.Text = "Add Teacher";
+            // 
+            // lstTeachers
+            // 
+            lstTeachers.BackColor = Color.FromArgb(224, 224, 224);
+            lstTeachers.BorderStyle = BorderStyle.None;
+            lstTeachers.Font = new Font("Ebrima", 9.75F);
+            lstTeachers.FormattingEnabled = true;
+            lstTeachers.ItemHeight = 17;
+            lstTeachers.Location = new Point(604, 177);
+            lstTeachers.Name = "lstTeachers";
+            lstTeachers.Size = new Size(518, 255);
+            lstTeachers.TabIndex = 14;
+            lstTeachers.SelectedIndexChanged += lstTeachers_SelectedIndexChanged;
+            // 
+            // btnUpdateTeacher
+            // 
+            btnUpdateTeacher.BackColor = Color.FromArgb(64, 0, 0);
+            btnUpdateTeacher.Enabled = false;
+            btnUpdateTeacher.FlatAppearance.BorderSize = 0;
+            btnUpdateTeacher.FlatStyle = FlatStyle.Flat;
+            btnUpdateTeacher.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnUpdateTeacher.ForeColor = Color.White;
+            btnUpdateTeacher.Location = new Point(854, 144);
+            btnUpdateTeacher.Name = "btnUpdateTeacher";
+            btnUpdateTeacher.Size = new Size(121, 25);
+            btnUpdateTeacher.TabIndex = 22;
+            btnUpdateTeacher.Text = "Update";
+            btnUpdateTeacher.UseVisualStyleBackColor = false;
+            btnUpdateTeacher.Click += btnUpdateTeacher_Click;
+            // 
+            // btnDeleteTeacher
+            // 
+            btnDeleteTeacher.BackColor = Color.Maroon;
+            btnDeleteTeacher.FlatAppearance.BorderSize = 0;
+            btnDeleteTeacher.FlatStyle = FlatStyle.Flat;
+            btnDeleteTeacher.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnDeleteTeacher.ForeColor = Color.White;
+            btnDeleteTeacher.Location = new Point(983, 143);
+            btnDeleteTeacher.Name = "btnDeleteTeacher";
+            btnDeleteTeacher.Size = new Size(137, 25);
+            btnDeleteTeacher.TabIndex = 21;
+            btnDeleteTeacher.Text = "Delete Selected";
+            btnDeleteTeacher.UseVisualStyleBackColor = false;
+            btnDeleteTeacher.Click += btnDeleteTeacher_Click;
+            // 
+            // btnCancelTeacher
+            // 
+            btnCancelTeacher.BackColor = Color.Maroon;
+            btnCancelTeacher.FlatAppearance.BorderSize = 0;
+            btnCancelTeacher.FlatStyle = FlatStyle.Flat;
+            btnCancelTeacher.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnCancelTeacher.ForeColor = Color.White;
+            btnCancelTeacher.Location = new Point(158, 404);
+            btnCancelTeacher.Name = "btnCancelTeacher";
+            btnCancelTeacher.Size = new Size(309, 25);
+            btnCancelTeacher.TabIndex = 20;
+            btnCancelTeacher.Text = "Cancel";
+            btnCancelTeacher.UseVisualStyleBackColor = false;
+            btnCancelTeacher.Click += btnCancelTeacher_Click;
+            // 
+            // btnAddTeacher
+            // 
+            btnAddTeacher.BackColor = Color.FromArgb(64, 0, 0);
+            btnAddTeacher.FlatAppearance.BorderSize = 0;
+            btnAddTeacher.FlatStyle = FlatStyle.Flat;
+            btnAddTeacher.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnAddTeacher.ForeColor = Color.White;
+            btnAddTeacher.Location = new Point(158, 367);
+            btnAddTeacher.Name = "btnAddTeacher";
+            btnAddTeacher.Size = new Size(309, 25);
+            btnAddTeacher.TabIndex = 19;
+            btnAddTeacher.Text = "Add Teacher";
+            btnAddTeacher.UseVisualStyleBackColor = false;
+            btnAddTeacher.Click += btnAddTeacher_Click;
+            // 
+            // txtTeacherSubjects
+            // 
+            txtTeacherSubjects.Font = new Font("Ebrima", 9.75F);
+            txtTeacherSubjects.Location = new Point(159, 310);
+            txtTeacherSubjects.Name = "txtTeacherSubjects";
+            txtTeacherSubjects.PlaceholderText = "   Separate using comma(s)";
+            txtTeacherSubjects.Size = new Size(308, 25);
+            txtTeacherSubjects.TabIndex = 18;
+            // 
+            // txtTeacherName
+            // 
+            txtTeacherName.Font = new Font("Ebrima", 9.75F);
+            txtTeacherName.Location = new Point(158, 226);
+            txtTeacherName.Name = "txtTeacherName";
+            txtTeacherName.Size = new Size(309, 25);
+            txtTeacherName.TabIndex = 17;
+            // 
+            // label17
+            // 
+            label17.AutoSize = true;
+            label17.BackColor = Color.Transparent;
+            label17.Font = new Font("Ebrima", 9.75F);
+            label17.Location = new Point(160, 199);
+            label17.Name = "label17";
+            label17.Size = new Size(43, 17);
+            label17.TabIndex = 15;
+            label17.Text = "Name";
+            // 
+            // label16
+            // 
+            label16.AutoSize = true;
+            label16.BackColor = Color.Transparent;
+            label16.Font = new Font("Ebrima", 9.75F);
+            label16.Location = new Point(158, 279);
+            label16.Name = "label16";
+            label16.Size = new Size(95, 17);
+            label16.TabIndex = 16;
+            label16.Text = "Subject Course";
+            // 
+            // pnlManageDataNav
+            // 
+            pnlManageDataNav.BackColor = Color.FromArgb(245, 243, 244);
+            pnlManageDataNav.Controls.Add(btnSubNavSections);
+            pnlManageDataNav.Controls.Add(btnSubNavTeachers);
+            pnlManageDataNav.Controls.Add(btnSubNavRooms);
+            pnlManageDataNav.Dock = DockStyle.Top;
+            pnlManageDataNav.Location = new Point(0, 0);
+            pnlManageDataNav.Name = "pnlManageDataNav";
+            pnlManageDataNav.Size = new Size(1280, 56);
+            pnlManageDataNav.TabIndex = 2;
+            // 
+            // btnSubNavSections
+            // 
+            btnSubNavSections.BackColor = Color.Transparent;
+            btnSubNavSections.FlatAppearance.BorderSize = 0;
+            btnSubNavSections.FlatStyle = FlatStyle.Flat;
+            btnSubNavSections.Font = new Font("Ebrima", 12F);
+            btnSubNavSections.ForeColor = Color.Maroon;
+            btnSubNavSections.Location = new Point(560, 13);
+            btnSubNavSections.Name = "btnSubNavSections";
+            btnSubNavSections.Size = new Size(172, 29);
+            btnSubNavSections.TabIndex = 2;
+            btnSubNavSections.Text = "Sections and Subjects";
+            btnSubNavSections.UseVisualStyleBackColor = false;
+            btnSubNavSections.Click += btnSubNavSections_Click;
+            // 
+            // btnSubNavTeachers
+            // 
+            btnSubNavTeachers.BackColor = Color.Transparent;
+            btnSubNavTeachers.FlatAppearance.BorderSize = 0;
+            btnSubNavTeachers.FlatStyle = FlatStyle.Flat;
+            btnSubNavTeachers.Font = new Font("Ebrima", 12F);
+            btnSubNavTeachers.ForeColor = Color.Maroon;
+            btnSubNavTeachers.Location = new Point(766, 14);
+            btnSubNavTeachers.Name = "btnSubNavTeachers";
+            btnSubNavTeachers.Size = new Size(106, 26);
+            btnSubNavTeachers.TabIndex = 1;
+            btnSubNavTeachers.Text = "Teachers";
+            btnSubNavTeachers.UseVisualStyleBackColor = false;
+            btnSubNavTeachers.Click += btnSubNavTeachers_Click;
+            // 
+            // btnSubNavRooms
+            // 
+            btnSubNavRooms.BackColor = Color.Transparent;
+            btnSubNavRooms.FlatAppearance.BorderSize = 0;
+            btnSubNavRooms.FlatStyle = FlatStyle.Flat;
+            btnSubNavRooms.Font = new Font("Ebrima", 12F);
+            btnSubNavRooms.ForeColor = Color.Maroon;
+            btnSubNavRooms.Location = new Point(448, 13);
+            btnSubNavRooms.Name = "btnSubNavRooms";
+            btnSubNavRooms.Size = new Size(78, 29);
+            btnSubNavRooms.TabIndex = 0;
+            btnSubNavRooms.Text = "Room";
+            btnSubNavRooms.UseVisualStyleBackColor = false;
+            btnSubNavRooms.Click += btnSubNavRooms_Click;
             // 
             // pnlViewPending
             // 
@@ -906,12 +1068,13 @@
             btnFindSlots.FlatStyle = FlatStyle.Popup;
             btnFindSlots.Font = new Font("Ebrima", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
             btnFindSlots.ForeColor = Color.White;
-            btnFindSlots.Location = new Point(84, 24);
+            btnFindSlots.Location = new Point(84, 29);
             btnFindSlots.Name = "btnFindSlots";
-            btnFindSlots.Size = new Size(169, 32);
+            btnFindSlots.Size = new Size(1098, 32);
             btnFindSlots.TabIndex = 3;
             btnFindSlots.Text = "Find Valid Slots";
             btnFindSlots.UseVisualStyleBackColor = false;
+            btnFindSlots.Click += btnFindSlots_Click;
             // 
             // dgvPending
             // 
@@ -942,25 +1105,6 @@
             Reason.HeaderText = "Reason";
             Reason.Name = "Reason";
             Reason.ReadOnly = true;
-            // 
-            // pnlViewMaster
-            // 
-            pnlViewMaster.Controls.Add(dgvMaster);
-            pnlViewMaster.Dock = DockStyle.Fill;
-            pnlViewMaster.Location = new Point(0, 0);
-            pnlViewMaster.Name = "pnlViewMaster";
-            pnlViewMaster.Size = new Size(1280, 656);
-            pnlViewMaster.TabIndex = 1;
-            // 
-            // dgvMaster
-            // 
-            dgvMaster.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dgvMaster.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvMaster.Location = new Point(84, 40);
-            dgvMaster.Name = "dgvMaster";
-            dgvMaster.ReadOnly = true;
-            dgvMaster.Size = new Size(1098, 568);
-            dgvMaster.TabIndex = 1;
             // 
             // btnLogout
             // 
@@ -996,11 +1140,11 @@
             // 
             btnNavPending.FlatAppearance.BorderSize = 0;
             btnNavPending.FlatStyle = FlatStyle.Flat;
-            btnNavPending.Font = new Font("Ebrima", 9.75F);
+            btnNavPending.Font = new Font("Ebrima", 12F);
             btnNavPending.ForeColor = Color.White;
-            btnNavPending.Location = new Point(576, 19);
+            btnNavPending.Location = new Point(654, 19);
             btnNavPending.Name = "btnNavPending";
-            btnNavPending.Size = new Size(99, 23);
+            btnNavPending.Size = new Size(113, 29);
             btnNavPending.TabIndex = 3;
             btnNavPending.Text = "Pending";
             btnNavPending.UseVisualStyleBackColor = true;
@@ -1010,11 +1154,11 @@
             // 
             btnNavManage.FlatAppearance.BorderSize = 0;
             btnNavManage.FlatStyle = FlatStyle.Flat;
-            btnNavManage.Font = new Font("Ebrima", 9.75F);
+            btnNavManage.Font = new Font("Ebrima", 12F);
             btnNavManage.ForeColor = Color.White;
-            btnNavManage.Location = new Point(408, 19);
+            btnNavManage.Location = new Point(455, 19);
             btnNavManage.Name = "btnNavManage";
-            btnNavManage.Size = new Size(99, 23);
+            btnNavManage.Size = new Size(113, 29);
             btnNavManage.TabIndex = 2;
             btnNavManage.Text = "Manage Data";
             btnNavManage.UseVisualStyleBackColor = true;
@@ -1024,11 +1168,11 @@
             // 
             btnNavMaster.FlatAppearance.BorderSize = 0;
             btnNavMaster.FlatStyle = FlatStyle.Flat;
-            btnNavMaster.Font = new Font("Ebrima", 9.75F);
+            btnNavMaster.Font = new Font("Ebrima", 12F);
             btnNavMaster.ForeColor = Color.White;
-            btnNavMaster.Location = new Point(242, 19);
+            btnNavMaster.Location = new Point(262, 19);
             btnNavMaster.Name = "btnNavMaster";
-            btnNavMaster.Size = new Size(99, 23);
+            btnNavMaster.Size = new Size(113, 29);
             btnNavMaster.TabIndex = 1;
             btnNavMaster.Text = "Master List";
             btnNavMaster.UseVisualStyleBackColor = true;
@@ -1038,11 +1182,11 @@
             // 
             btnNavSchedule.FlatAppearance.BorderSize = 0;
             btnNavSchedule.FlatStyle = FlatStyle.Flat;
-            btnNavSchedule.Font = new Font("Ebrima", 9.75F);
+            btnNavSchedule.Font = new Font("Ebrima", 12F);
             btnNavSchedule.ForeColor = Color.White;
             btnNavSchedule.Location = new Point(84, 19);
             btnNavSchedule.Name = "btnNavSchedule";
-            btnNavSchedule.Size = new Size(99, 23);
+            btnNavSchedule.Size = new Size(113, 29);
             btnNavSchedule.TabIndex = 0;
             btnNavSchedule.Text = "Schedule View";
             btnNavSchedule.UseVisualStyleBackColor = true;
@@ -1061,26 +1205,22 @@
             Text = "Admin Dashboard";
             Load += Form1_Load_1;
             pnlContent.ResumeLayout(false);
-            pnlViewManage.ResumeLayout(false);
-            tabDataManagers.ResumeLayout(false);
-            tabTeachers.ResumeLayout(false);
-            tabTeachers.PerformLayout();
-            tabRooms.ResumeLayout(false);
-            tabRooms.PerformLayout();
-            tabSections.ResumeLayout(false);
-            groupBox8.ResumeLayout(false);
-            groupBox8.PerformLayout();
-            groupBox6.ResumeLayout(false);
-            groupBox7.ResumeLayout(false);
-            groupBox3.ResumeLayout(false);
-            groupBox3.PerformLayout();
             pnlViewSchedule.ResumeLayout(false);
             pnlViewSchedule.PerformLayout();
+            panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvTimetable).EndInit();
-            pnlViewPending.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)dgvPending).EndInit();
             pnlViewMaster.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvMaster).EndInit();
+            pnlViewManage.ResumeLayout(false);
+            pnlViewRooms.ResumeLayout(false);
+            pnlViewRooms.PerformLayout();
+            pnlViewSections.ResumeLayout(false);
+            pnlViewSections.PerformLayout();
+            pnlViewTeachers.ResumeLayout(false);
+            pnlViewTeachers.PerformLayout();
+            pnlManageDataNav.ResumeLayout(false);
+            pnlViewPending.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgvPending).EndInit();
             pnlNavBar.ResumeLayout(false);
             ResumeLayout(false);
         }
@@ -1092,38 +1232,56 @@
         private Panel pnlViewSchedule;
         private Panel pnlViewManage;
         private Panel pnlViewPending;
-        private Button btnRestoreDatabase;
-        private Button btnExportPdf;
         private Button btnLogout;
         private ComboBox cmbFilterType;
         private Button btnGenerate;
         private DataGridView dgvTimetable;
-        private Button btnBackupDatabase;
         private ComboBox cmbScheduleView;
-        private TabControl tabDataManagers;
-        private TabPage tabTeachers;
         private TabPage tabRooms;
-        private ListBox lstRooms;
+        private DataGridView dgvMaster;
+        private Button btnFindSlots;
+        private DataGridView dgvPending;
+        private DataGridViewTextBoxColumn Section;
+        private DataGridViewTextBoxColumn Subject;
+        private DataGridViewTextBoxColumn Reason;
+        private Panel pnlNavBar;
+        private Button btnNavMaster;
+        private Button btnNavSchedule;
+        private Button btnNavManage;
+        private Button btnNavPending;
+        private Label label15;
+        private Panel pnlManageDataNav;
+        private Button btnSubNavRooms;
+        private Button btnSubNavTeachers;
+        private Button btnSubNavSections;
+        private Panel pnlViewRooms;
+        private Panel pnlViewTeachers;
         private Button btnDeleteRoom;
-        private TabPage tabSections;
-        private GroupBox groupBox8;
+        private Button btnUpdateRoom;
+        private Label label2;
+        private ListBox lstRooms;
+        private Button btnCancelRoom;
+        private Button btnAddRoom;
+        private TextBox txtRoomName;
+        private ComboBox cmbRoomType;
+        private Button btnUpdateTeacher;
+        private Button btnDeleteTeacher;
+        private Button btnCancelTeacher;
+        private ListBox lstTeachers;
+        private Button btnAddTeacher;
+        private TextBox txtTeacherSubjects;
+        private TextBox txtTeacherName;
+        private Label label17;
+        private Label label16;
+        private Panel pnlViewSections;
         private Button btnBatchAdd;
-        private CheckBox chkBatchLab;
-        private TextBox txtBatchUnits;
-        private Label label12;
-        private TextBox txtBatchCode;
-        private Label label11;
         private ComboBox cmbBatchYear;
         private Label label10;
         private ComboBox cmbBatchProgram;
         private Label label9;
-        private GroupBox groupBox6;
         private Button btnRemoveSubject;
         private ListBox lstSectionSubjects;
-        private GroupBox groupBox7;
-        private ListBox lstSections;
         private Button btnDeleteSection;
-        private GroupBox groupBox3;
         private ComboBox cmbSectionYear;
         private Label label14;
         private ComboBox cmbSectionProgram;
@@ -1140,34 +1298,18 @@
         private Label label6;
         private Button btnCreateSection;
         private TextBox txtSectionName;
+        private ListBox lstSections;
+        private Label label4;
+        private Label label3;
         private Label label5;
-        private DataGridView dgvMaster;
-        private Button btnFindSlots;
-        private DataGridView dgvPending;
-        private DataGridViewTextBoxColumn Section;
-        private DataGridViewTextBoxColumn Subject;
-        private DataGridViewTextBoxColumn Reason;
-        private Panel pnlNavBar;
-        private Button btnNavMaster;
-        private Button btnNavSchedule;
-        private Button btnNavManage;
-        private Button btnNavPending;
-        private Label label15;
-        private Button btnCancelTeacher;
-        private Button btnDeleteTeacher;
-        private Button btnUpdateTeacher;
-        private ListBox lstTeachers;
-        private Button btnAddTeacher;
-        private TextBox txtTeacherSubjects;
-        private TextBox txtTeacherName;
-        private Label label17;
-        private Label label16;
-        private Button btnCancelRoom;
-        private Button btnUpdateRoom;
-        private Button btnAddRoom;
+        private Label label11;
         private Label label1;
-        private TextBox txtRoomName;
-        private ComboBox cmbRoomType;
-        private Label label2;
+        private Label label12;
+        private Label label18;
+        private Label label19;
+        private Panel panel1;
+        private Button btnExportPdf;
+        private Button btnBackupDatabase;
+        private Button btnRestoreDatabase;
     }
 }

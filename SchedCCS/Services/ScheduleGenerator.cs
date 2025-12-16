@@ -4,14 +4,20 @@ using System.Linq;
 
 namespace SchedCCS
 {
+    /// <summary>
+    /// Core engine responsible for generating automated schedules.
+    /// Utilizes a heuristic greedy approach with institutional constraint validation.
+    /// </summary>
     public class ScheduleGenerator
     {
         #region Fields & Properties
 
-        private List<Room> rooms;
-        private List<Teacher> teachers;
-        private List<Section> sections;
+        // Data repositories for system resources
+        private readonly List<Room> _rooms;
+        private readonly List<Teacher> _teachers;
+        private readonly List<Section> _sections;
 
+        // Public output collections
         public List<ScheduleItem> GeneratedSchedule { get; private set; } = new List<ScheduleItem>();
         public List<FailedEntry> FailedAssignments { get; private set; } = new List<FailedEntry>();
 
@@ -21,27 +27,32 @@ namespace SchedCCS
 
         public ScheduleGenerator(List<Room> r, List<Teacher> t, List<Section> s)
         {
-            rooms = r;
-            teachers = t;
-            sections = s;
+            _rooms = r;
+            _teachers = t;
+            _sections = s;
         }
 
         #endregion
 
         #region 1. Main Execution Flow
 
+        /// <summary>
+        /// Initiates the schedule generation process.
+        /// Sorts resources by workload weight to optimize allocation success.
+        /// </summary>
         public void Generate()
         {
+            // Clear previous results and reset resource availability
             GeneratedSchedule.Clear();
             FailedAssignments.Clear();
             ResetResourceStates();
 
-            // Process sections with heaviest loads first
-            var sortedSections = sections.OrderByDescending(s => s.SubjectsToTake.Count).ToList();
+            // Sort sections by subject volume to handle complex requirements early
+            var sortedSections = _sections.OrderByDescending(s => s.SubjectsToTake.Count).ToList();
 
             foreach (var section in sortedSections)
             {
-                // Prioritize Labs, then heavy subjects
+                // Prioritize Laboratory sessions and subjects with higher unit values
                 var sortedSubjects = section.SubjectsToTake
                     .OrderByDescending(s => s.IsLab)
                     .ThenByDescending(s => s.Units)
@@ -49,8 +60,10 @@ namespace SchedCCS
 
                 foreach (var subject in sortedSubjects)
                 {
+                    // Execute assignment based on subject type
                     bool success = subject.IsLab ? AssignLabSlot(section, subject) : AssignLectureSlot(section, subject);
 
+                    // Record failures for manual optimization in the dashboard
                     if (!success)
                     {
                         FailedAssignments.Add(new FailedEntry
@@ -68,15 +81,19 @@ namespace SchedCCS
 
         #region 2. Assignment Strategies
 
-        // STRATEGY A: LAB ASSIGNMENT (Priority: Saturday -> Weekdays)
+        /// <summary>
+        /// Assigns lab subjects with a strategy favoring Saturdays and randomized weekdays.
+        /// </summary>
         private bool AssignLabSlot(Section section, Subject subject)
         {
-            var qualifiedTeachers = teachers
+            // Gather teachers qualified for this specific subject code
+            var qualifiedTeachers = _teachers
                 .Where(t => t.QualifiedSubjects.Contains(CleanSubjectName(subject.Code)))
                 .OrderBy(x => Guid.NewGuid())
                 .ToList();
 
-            List<int> daysToCheck = new List<int> { 6 }; // Saturday first
+            // Set search priority: Saturday first, then randomized weekdays
+            List<int> daysToCheck = new List<int> { 6 };
             var weekdays = new List<int> { 1, 2, 3, 4, 5 };
             var rng = new Random();
             daysToCheck.AddRange(weekdays.OrderBy(x => rng.Next()));
@@ -85,21 +102,24 @@ namespace SchedCCS
             {
                 foreach (int d in daysToCheck)
                 {
+                    // Calculate start hours that accommodate the subject's total unit duration
                     List<int> possibleStartHours = Enumerable.Range(0, 12 - subject.Units)
                         .OrderBy(x => rng.Next())
                         .ToList();
 
                     foreach (int startH in possibleStartHours)
                     {
-                        if (IsBlockAvailable(section, teacher, d, startH, subject.Units, subject.IsLab, out Room foundRoom))
+                        // Validate availability for the required block duration
+                        if (IsBlockAvailable(section, teacher, d, startH, subject.Units, subject.IsLab, subject.Code, out Room foundRoom))
                         {
-                            // Enforce Gaps between classes
+                            // Avoid back-to-back scheduling for sections to prevent fatigue
                             if ((startH + subject.Units < 11 && section.IsBusy[d, startH + subject.Units]) ||
                                 (startH > 0 && section.IsBusy[d, startH - 1]))
                             {
                                 continue;
                             }
 
+                            // Persistent booking in schedule collection and resource matrices
                             BookSlot(section, subject, d, startH, subject.Units, foundRoom, teacher);
                             return true;
                         }
@@ -109,18 +129,20 @@ namespace SchedCCS
             return false;
         }
 
-        // STRATEGY B: LECTURE ASSIGNMENT (Fully Randomized)
+        /// <summary>
+        /// Assigns lecture subjects using an incremental randomized slot selection strategy.
+        /// </summary>
         private bool AssignLectureSlot(Section section, Subject subject)
         {
             int unitsNeeded = subject.Units;
-
-            var qualifiedTeachers = teachers
+            var qualifiedTeachers = _teachers
                 .Where(t => t.QualifiedSubjects.Contains(CleanSubjectName(subject.Code)))
                 .OrderBy(x => Guid.NewGuid())
                 .ToList();
 
             foreach (var teacher in qualifiedTeachers)
             {
+                // Track proposed slots to ensure the teacher can cover the full unit load
                 List<(int day, int hour, Room room)> proposedSlots = new List<(int day, int hour, Room room)>();
                 var randomSlots = GetRandomizedSlots();
 
@@ -128,12 +150,14 @@ namespace SchedCCS
                 {
                     if (proposedSlots.Count >= unitsNeeded) break;
 
-                    if (IsSingleSlotAvailable(section, teacher, slot.day, slot.hour, subject.IsLab, out Room foundRoom))
+                    // Verify single-hour availability per slot
+                    if (IsSingleSlotAvailable(section, teacher, slot.day, slot.hour, subject.IsLab, subject.Code, out Room foundRoom))
                     {
                         proposedSlots.Add((slot.day, slot.hour, foundRoom));
                     }
                 }
 
+                // Finalize assignment only if all required units are fulfilled
                 if (proposedSlots.Count == unitsNeeded)
                 {
                     foreach (var s in proposedSlots)
@@ -148,22 +172,26 @@ namespace SchedCCS
 
         #region 3. Constraint Checkers
 
-        private bool IsBlockAvailable(Section section, Teacher teacher, int day, int startHour, int duration, bool isLab, out Room foundRoom)
+        /// <summary>
+        /// Evaluates multi-hour availability considering teacher load and facility rules.
+        /// </summary>
+        private bool IsBlockAvailable(Section section, Teacher teacher, int day, int startHour, int duration, bool isLab, string subjectCode, out Room foundRoom)
         {
             foundRoom = null;
 
-            // Check Teacher & Section availability
+            // Check resource matrix conflicts
             for (int i = 0; i < duration; i++)
             {
                 int h = startHour + i;
                 if (section.IsBusy[day, h] || teacher.IsBusy[day, h]) return false;
             }
 
+            // Enforce teacher workload cap (9 hours per day)
             if (GetTeacherDailyLoad(teacher, day) + duration > 9) return false;
 
-            // Find best room (Load Balancing)
+            // Filter rooms by pedagogical type and balance load based on usage
             var correctRoomType = isLab ? RoomType.Laboratory : RoomType.Lecture;
-            var candidateRooms = rooms
+            var candidateRooms = _rooms
                 .Where(r => r.Type == correctRoomType)
                 .OrderBy(r => CountRoomUsage(r))
                 .ThenBy(x => Guid.NewGuid())
@@ -171,6 +199,11 @@ namespace SchedCCS
 
             foreach (var room in candidateRooms)
             {
+                // Facility Rule: Restrict academic subjects from sports fields/gyms
+                if (IsOutdoorRoom(room.Name) && !IsSportSubject(subjectCode)) continue;
+                if (IsSportSubject(subjectCode) && !IsOutdoorRoom(room.Name)) continue;
+
+                // Validate room availability across the entire duration
                 bool roomIsFree = true;
                 for (int i = 0; i < duration; i++)
                 {
@@ -190,19 +223,22 @@ namespace SchedCCS
             return false;
         }
 
-        private bool IsSingleSlotAvailable(Section section, Teacher teacher, int day, int hour, bool isLab, out Room foundRoom)
+        /// <summary>
+        /// Evaluates single-hour availability including fatigue and facility constraints.
+        /// </summary>
+        private bool IsSingleSlotAvailable(Section section, Teacher teacher, int day, int hour, bool isLab, string subjectCode, out Room foundRoom)
         {
             foundRoom = null;
 
-            if (section.IsBusy[day, hour]) return false;
-            if (teacher.IsBusy[day, hour]) return false;
-            if (GetTeacherDailyLoad(teacher, day) >= 9) return false;
-            if (IsTeacherFatigued(teacher, day, hour)) return false;
-            if (IsSectionFatigued(section, day, hour)) return false;
+            // Basic busy-state check
+            if (section.IsBusy[day, hour] || teacher.IsBusy[day, hour]) return false;
 
-            // Room Load Balancing
+            // Basic fatigue checks: max daily load and max consecutive activity
+            if (GetTeacherDailyLoad(teacher, day) >= 9) return false;
+            if (IsTeacherFatigued(teacher, day, hour) || IsSectionFatigued(section, day, hour)) return false;
+
             var correctRoomType = isLab ? RoomType.Laboratory : RoomType.Lecture;
-            var candidateRooms = rooms
+            var candidateRooms = _rooms
                 .Where(r => r.Type == correctRoomType)
                 .OrderBy(r => CountRoomUsage(r))
                 .ThenBy(x => Guid.NewGuid())
@@ -210,6 +246,10 @@ namespace SchedCCS
 
             foreach (var room in candidateRooms)
             {
+                // Apply outdoor facility restrictions
+                if (IsOutdoorRoom(room.Name) && !IsSportSubject(subjectCode)) continue;
+                if (IsSportSubject(subjectCode) && !IsOutdoorRoom(room.Name)) continue;
+
                 if (!room.IsBusy[day, hour])
                 {
                     foundRoom = room;
@@ -221,8 +261,11 @@ namespace SchedCCS
 
         #endregion
 
-        #region 4. Utilities & Helpers
+        #region 4. Internal Logic & Utilities
 
+        /// <summary>
+        /// Updates the global schedule and resource matrices to mark slots as occupied.
+        /// </summary>
         private void BookSlot(Section section, Subject subject, int day, int startHour, int duration, Room room, Teacher teacher)
         {
             for (int i = 0; i < duration; i++)
@@ -247,6 +290,7 @@ namespace SchedCCS
             }
         }
 
+        // Returns total hours occupied for a specific room
         private int CountRoomUsage(Room r)
         {
             int count = 0;
@@ -256,6 +300,7 @@ namespace SchedCCS
             return count;
         }
 
+        // Generates a randomized list of standard academic time slots
         private List<(int day, int hour)> GetRandomizedSlots()
         {
             var slots = new List<(int, int)>();
@@ -267,6 +312,7 @@ namespace SchedCCS
             return slots.OrderBy(x => rng.Next()).ToList();
         }
 
+        // Returns total assigned hours for a teacher on a specific day
         private int GetTeacherDailyLoad(Teacher t, int day)
         {
             int hours = 0;
@@ -274,33 +320,28 @@ namespace SchedCCS
             return hours;
         }
 
-        private bool IsTeacherFatigued(Teacher t, int day, int hour)
+        private bool IsTeacherFatigued(Teacher t, int day, int hour) => CheckConsecutiveHours(t.IsBusy, day, hour);
+
+        private bool IsSectionFatigued(Section s, int day, int hour) => CheckConsecutiveHours(s.IsBusy, day, hour);
+
+        // Validates if an entity has exceeded 4 consecutive hours of activity
+        private bool CheckConsecutiveHours(bool[,] busyMatrix, int day, int hour)
         {
             int consecutive = 0;
             for (int i = 1; i <= 4; i++)
             {
-                if (hour - i >= 0 && t.IsBusy[day, hour - i]) consecutive++;
+                if (hour - i >= 0 && busyMatrix[day, hour - i]) consecutive++;
                 else break;
             }
             return consecutive >= 4;
         }
 
-        private bool IsSectionFatigued(Section s, int day, int hour)
-        {
-            int consecutive = 0;
-            for (int i = 1; i <= 4; i++)
-            {
-                if (hour - i >= 0 && s.IsBusy[day, hour - i]) consecutive++;
-                else break;
-            }
-            return consecutive >= 4;
-        }
-
+        // Resets availability matrices for a fresh generation attempt
         private void ResetResourceStates()
         {
-            foreach (var r in rooms) r.IsBusy = new bool[7, 13];
-            foreach (var t in teachers) t.IsBusy = new bool[7, 13];
-            foreach (var s in sections) s.IsBusy = new bool[7, 13];
+            foreach (var r in _rooms) r.IsBusy = new bool[7, 13];
+            foreach (var t in _teachers) t.IsBusy = new bool[7, 13];
+            foreach (var s in _sections) s.IsBusy = new bool[7, 13];
         }
 
         private string CleanSubjectName(string raw) => raw.Replace(" (Lec)", "").Replace(" (Lab)", "").Trim();
@@ -310,6 +351,21 @@ namespace SchedCCS
             : "Err";
 
         private string GetTimeLabel(int t) => $"{7 + t}:00 - {8 + t}:00";
+
+        // Logic to identify sports-related subjects
+        private bool IsSportSubject(string subjectCode)
+        {
+            string code = subjectCode.ToUpper();
+            return code.Contains("PE") || code.Contains("PATHFIT") ||
+                   code.Contains("NSTP") || code.Contains("GYM");
+        }
+
+        // Logic to identify outdoor facility resources
+        private bool IsOutdoorRoom(string roomName)
+        {
+            string name = roomName.ToUpper();
+            return name.Contains("FIELD") || name.Contains("GYM") || name.Contains("COURT");
+        }
 
         #endregion
     }
