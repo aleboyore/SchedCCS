@@ -39,7 +39,7 @@ namespace SchedCCS
             Rooms.Clear();
             Teachers.Clear();
             Sections.Clear();
-            Users.Clear();
+            //Users.Clear(); //
 
             try
             {
@@ -57,8 +57,15 @@ namespace SchedCCS
             catch (Exception ex)
             {
                 System.Windows.Forms.MessageBox.Show("Database Error: " + ex.Message + "\n\nSwitching to Offline Mode.");
-                LoadUsers_Hardcoded();
-                LoadRooms_Hardcoded();
+                if (Users.Count == 0)
+                {
+                    LoadUsers_Hardcoded();
+                }
+
+                if (Rooms.Count == 0)
+                {
+                    LoadRooms_Hardcoded();
+                }
                 // Teachers and Sections start empty in offline mode
             }
 

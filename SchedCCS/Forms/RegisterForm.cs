@@ -165,6 +165,9 @@ namespace SchedCCS
             {
                 MessageBox.Show("Database Error: " + ex.Message);
             }
+
+            DataManager.Users.Add(newUser);
+            this.Close();
         }
 
         // Standard Hashing Helper

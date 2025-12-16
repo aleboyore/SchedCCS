@@ -385,8 +385,8 @@ namespace SchedCCS
             txtEditName.Text = currentUser.FullName;
 
             // 4. Force "Hidden" text state
-            txtEditPass.UseSystemPasswordChar = false;
-            txtEditConfirm.UseSystemPasswordChar = false;
+            txtEditPass.PasswordChar = '\0';
+            txtEditConfirm.PasswordChar = '\0';
 
             txtEditPass.Text = "(Hidden)";
             txtEditConfirm.Text = "(Hidden)";
@@ -430,9 +430,13 @@ namespace SchedCCS
                 txtEditPass.ForeColor = System.Drawing.Color.Black;
                 txtEditConfirm.ForeColor = System.Drawing.Color.Black;
 
-                // Turn Masking ON (Dots) and Clear text
-                txtEditPass.UseSystemPasswordChar = true;
-                txtEditConfirm.UseSystemPasswordChar = true;
+                // Disable the System dots so we have full control
+                txtEditPass.UseSystemPasswordChar = false;
+                txtEditConfirm.UseSystemPasswordChar = false;
+
+                // Force the Asterisk (*) mask immediately
+                txtEditPass.PasswordChar = '*';
+                txtEditConfirm.PasswordChar = '*';
 
                 txtEditPass.Clear();
                 txtEditConfirm.Clear();
@@ -447,8 +451,18 @@ namespace SchedCCS
 
         private void chkShowPass_CheckedChanged(object sender, EventArgs e)
         {
-            txtEditPass.UseSystemPasswordChar = !chkShowPass.Checked;
-            txtEditConfirm.UseSystemPasswordChar = !chkShowPass.Checked;
+            if (chkShowPass.Checked)
+            {
+                // SHOW PASSWORD: Set the mask to "null" (nothing)
+                txtEditPass.PasswordChar = '\0';
+                txtEditConfirm.PasswordChar = '\0';
+            }
+            else
+            {
+                // HIDE PASSWORD: Set the mask back to '*'
+                txtEditPass.PasswordChar = '*';
+                txtEditConfirm.PasswordChar = '*';
+            }
         }
 
         private void btnSaveChanges_Click(object sender, EventArgs e)
