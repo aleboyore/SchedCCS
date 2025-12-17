@@ -64,6 +64,19 @@ namespace SchedCCS
             btnClose.ForeColor = System.Drawing.Color.Black;
         }
 
+        private void chkShowLoginPass_CheckedChanged(object sender, EventArgs e)
+        {
+            // LOGIC: If checked, remove the mask char ('\0'). If unchecked, use asterisk ('*').
+            if (chkShowLoginPass.Checked)
+            {
+                txtPassword.PasswordChar = '\0'; // Show Text
+            }
+            else
+            {
+                txtPassword.PasswordChar = '*';  // Hide Text
+            }
+        }
+
         #endregion
 
         #region 3. Authentication Logic

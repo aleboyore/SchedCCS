@@ -45,6 +45,7 @@
             btnClose = new Button();
             lnkBackToLogin = new LinkLabel();
             txtSection = new TextBox();
+            chkShowRegPass = new CheckBox();
             SuspendLayout();
             // 
             // label1
@@ -86,7 +87,7 @@
             label4.AutoSize = true;
             label4.BackColor = Color.Transparent;
             label4.Font = new Font("Ebrima", 9.75F);
-            label4.Location = new Point(478, 294);
+            label4.Location = new Point(478, 291);
             label4.Name = "label4";
             label4.Size = new Size(68, 17);
             label4.TabIndex = 3;
@@ -97,7 +98,7 @@
             label5.AutoSize = true;
             label5.BackColor = Color.Transparent;
             label5.Font = new Font("Ebrima", 9.75F);
-            label5.Location = new Point(478, 360);
+            label5.Location = new Point(478, 354);
             label5.Name = "label5";
             label5.Size = new Size(50, 17);
             label5.TabIndex = 4;
@@ -108,7 +109,7 @@
             label6.AutoSize = true;
             label6.BackColor = Color.Transparent;
             label6.Font = new Font("Ebrima", 9.75F);
-            label6.Location = new Point(478, 424);
+            label6.Location = new Point(478, 416);
             label6.Name = "label6";
             label6.Size = new Size(64, 17);
             label6.TabIndex = 5;
@@ -119,7 +120,7 @@
             label7.AutoSize = true;
             label7.BackColor = Color.Transparent;
             label7.Font = new Font("Ebrima", 9.75F);
-            label7.Location = new Point(478, 490);
+            label7.Location = new Point(478, 478);
             label7.Name = "label7";
             label7.Size = new Size(114, 17);
             label7.TabIndex = 6;
@@ -144,7 +145,7 @@
             // txtStudentID
             // 
             txtStudentID.Font = new Font("Ebrima", 9F);
-            txtStudentID.Location = new Point(478, 314);
+            txtStudentID.Location = new Point(478, 311);
             txtStudentID.Name = "txtStudentID";
             txtStudentID.Size = new Size(329, 24);
             txtStudentID.TabIndex = 3;
@@ -152,7 +153,7 @@
             // txtPassword
             // 
             txtPassword.Font = new Font("Ebrima", 9F);
-            txtPassword.Location = new Point(478, 444);
+            txtPassword.Location = new Point(478, 436);
             txtPassword.Name = "txtPassword";
             txtPassword.PasswordChar = '*';
             txtPassword.Size = new Size(329, 24);
@@ -161,7 +162,7 @@
             // txtConfirm
             // 
             txtConfirm.Font = new Font("Ebrima", 9F);
-            txtConfirm.Location = new Point(478, 510);
+            txtConfirm.Location = new Point(478, 498);
             txtConfirm.Name = "txtConfirm";
             txtConfirm.PasswordChar = '*';
             txtConfirm.Size = new Size(329, 24);
@@ -174,7 +175,7 @@
             btnRegister.FlatStyle = FlatStyle.Flat;
             btnRegister.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnRegister.ForeColor = Color.White;
-            btnRegister.Location = new Point(478, 559);
+            btnRegister.Location = new Point(478, 582);
             btnRegister.Name = "btnRegister";
             btnRegister.Size = new Size(329, 34);
             btnRegister.TabIndex = 13;
@@ -209,7 +210,7 @@
             lnkBackToLogin.LinkArea = new LinkArea(25, 31);
             lnkBackToLogin.LinkBehavior = LinkBehavior.HoverUnderline;
             lnkBackToLogin.LinkColor = Color.FromArgb(0, 0, 64);
-            lnkBackToLogin.Location = new Point(547, 605);
+            lnkBackToLogin.Location = new Point(547, 628);
             lnkBackToLogin.Name = "lnkBackToLogin";
             lnkBackToLogin.Size = new Size(196, 23);
             lnkBackToLogin.TabIndex = 16;
@@ -220,12 +221,23 @@
             // 
             // txtSection
             // 
-            txtSection.Location = new Point(478, 380);
+            txtSection.Location = new Point(478, 374);
             txtSection.Name = "txtSection";
             txtSection.Size = new Size(329, 23);
             txtSection.TabIndex = 17;
-            txtSection.MouseEnter += TxtSection_Enter;
-            txtSection.MouseLeave += TxtSection_Leave;
+            // 
+            // chkShowRegPass
+            // 
+            chkShowRegPass.AutoSize = true;
+            chkShowRegPass.BackColor = Color.Transparent;
+            chkShowRegPass.Font = new Font("Ebrima", 9.75F);
+            chkShowRegPass.Location = new Point(478, 543);
+            chkShowRegPass.Name = "chkShowRegPass";
+            chkShowRegPass.Size = new Size(118, 21);
+            chkShowRegPass.TabIndex = 18;
+            chkShowRegPass.Text = "Show Password";
+            chkShowRegPass.UseVisualStyleBackColor = false;
+            chkShowRegPass.CheckedChanged += chkShowRegPass_CheckedChanged;
             // 
             // RegisterForm
             // 
@@ -234,6 +246,7 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1280, 720);
+            Controls.Add(chkShowRegPass);
             Controls.Add(txtSection);
             Controls.Add(lnkBackToLogin);
             Controls.Add(btnClose);
@@ -277,5 +290,6 @@
         private Button btnClose;
         private LinkLabel lnkBackToLogin;
         private TextBox txtSection;
+        private CheckBox chkShowRegPass;
     }
 }

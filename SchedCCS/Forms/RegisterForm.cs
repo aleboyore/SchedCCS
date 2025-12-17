@@ -4,198 +4,200 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace SchedCCS
 {
     public partial class RegisterForm : Form
     {
-        // Placeholder text constant
-        private const string SectionPlaceholder = "Format: PROGRAM-YEAR-SECTION (e.g., BSCS 1A)";
-
-        #region 1. Initialization
+        #region 1. Initialization & UI Setup
 
         public RegisterForm()
         {
             InitializeComponent();
+            SetDoubleBuffered(this);
 
-            // --- DOUBLE BUFFERING (Anti-Flicker) ---
-            SetDoubleBuffered(this); // Buffer the Form itself
-
-            // If you have a main layout panel (like a sidebar), buffer it here too:
-            // if (this.Controls.ContainsKey("pnlSidebar")) SetDoubleBuffered(this.Controls["pnlSidebar"]);
-
-            InitializePlaceholder();
+            // Use the built-in PlaceholderText property (Available in .NET 8)
+            // This provides a native placeholder that doesn't interfere with the Text property
+            txtSection.PlaceholderText = "Ex: 'BSCS 1A' or '3GAV1'";
+            txtStudentID.PlaceholderText = "03XX-XXXX";
+            txtPassword.PlaceholderText = "Min 8 chars, 1 letter, 1 number";
         }
 
-        private void InitializePlaceholder()
+        public static void SetDoubleBuffered(Control control)
         {
-            // Set the initial state of the Section text box
-            txtSection.Text = SectionPlaceholder;
-            txtSection.ForeColor = Color.Gray;
-
-            // Wire up the events manually
-            txtSection.Enter += TxtSection_Enter;
-            txtSection.Leave += TxtSection_Leave;
+            if (SystemInformation.TerminalServerSession) return;
+            typeof(Control).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
+                null, control, new object[] { true });
         }
 
         #endregion
 
-        #region 2. Placeholder Logic (Ghost Text)
-
-        private void TxtSection_Enter(object sender, EventArgs e)
-        {
-            // When user clicks the box, if it has the placeholder, clear it
-            if (txtSection.Text == SectionPlaceholder)
-            {
-                txtSection.Text = "";
-                txtSection.ForeColor = Color.Black;
-            }
-        }
-
-        private void TxtSection_Leave(object sender, EventArgs e)
-        {
-            // When user leaves the box, if empty, put placeholder back
-            if (string.IsNullOrWhiteSpace(txtSection.Text))
-            {
-                txtSection.Text = SectionPlaceholder;
-                txtSection.ForeColor = Color.Gray;
-            }
-        }
-
-        #endregion
-
-        #region 3. UI Event Handlers
+        #region 2. User Interaction Logic
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
             RegisterStudent();
         }
 
-        private void lnkBackToLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void chkShowRegPass_CheckedChanged(object sender, EventArgs e)
         {
-            this.Close();
+            char mask = chkShowRegPass.Checked ? '\0' : '*';
+            txtPassword.PasswordChar = mask;
+            txtConfirm.PasswordChar = mask;
         }
+
+        private void lnkBackToLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) => this.Close();
 
         private void btnClose_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            if (MessageBox.Show("Exit application?", "Confirm Exit", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                Application.Exit();
         }
 
-        private void btnClose_MouseEnter(object sender, EventArgs e)
-        {
-            btnClose.BackColor = Color.Red;
-            btnClose.ForeColor = Color.White;
-        }
+        private void btnClose_MouseEnter(object sender, EventArgs e) { btnClose.BackColor = Color.Red; btnClose.ForeColor = Color.White; }
+        private void btnClose_MouseLeave(object sender, EventArgs e) { btnClose.BackColor = Color.Transparent; btnClose.ForeColor = Color.Black; }
 
-        private void btnClose_MouseLeave(object sender, EventArgs e)
+        #endregion
+
+        #region 3. Core Registration Logic
+
+        private void RegisterStudent()
         {
-            btnClose.BackColor = Color.Transparent;
-            btnClose.ForeColor = Color.Black;
+            // 1. Validate Basic Fields
+            // Removed checks against placeholder text since we use PlaceholderText property now
+            if (string.IsNullOrWhiteSpace(txtFirstName.Text) || 
+                string.IsNullOrWhiteSpace(txtLastName.Text) ||
+                string.IsNullOrWhiteSpace(txtStudentID.Text) || 
+                string.IsNullOrWhiteSpace(txtPassword.Text))
+            {
+                MessageBox.Show("All fields are required.", "Missing Info", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Check Password Match
+            if (txtPassword.Text != txtConfirm.Text)
+            {
+                MessageBox.Show("Passwords do not match.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Check Student ID Format
+            string studentID = txtStudentID.Text.Trim();
+            if (!IsValidStudentId(studentID))
+            {
+                MessageBox.Show("Invalid Student ID Format.\n\nMust follow the college format: 03xx-xxxx\n(e.g., 0323-1234)",
+                                "ID Format Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Check Password Strength
+            if (!IsValidPassword(txtPassword.Text))
+            {
+                MessageBox.Show("Password is too weak.\n\nRequirements:\n- Minimum 8 characters\n- At least 1 Letter\n- At least 1 Number",
+                                "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Check Section Format
+            string sectionInput = txtSection.Text.Trim();
+            if (string.IsNullOrWhiteSpace(sectionInput))
+            {
+                MessageBox.Show("Please enter your section.", "Missing Info", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!IsValidSectionFormat(sectionInput))
+            {
+                MessageBox.Show("Invalid Section Format.\n\nUse: 'BSCS 1A' (1st/2nd Yr) or '3GAV1' (3rd/4th Yr)",
+                                "Format Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtSection.Focus();
+                return;
+            }
+
+            // Check Duplicates (RAM Check for Speed/Offline Safety)
+            if (DataManager.Users.Any(u => u.Username == studentID))
+            {
+                MessageBox.Show("Student ID is already registered.", "Duplicate ID", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                return;
+            }
+
+            // Sync Section (Auto-Uppercase)
+            try { DataManager.EnsureSectionExists(sectionInput.ToUpper()); }
+            catch (Exception ex) { Console.WriteLine("Section sync warning: " + ex.Message); }
+
+            // Create Object
+            User newUser = new User
+            {
+                Username = studentID,
+                Password = ComputeSha256Hash(txtPassword.Text),
+                FullName = $"{txtFirstName.Text.Trim()} {txtLastName.Text.Trim()}",
+                Role = "Student",
+                StudentSection = sectionInput.ToUpper()
+            };
+
+            // Save Logic (Database First, RAM Fallback)
+            bool dbSuccess = false;
+            try
+            {
+                DatabaseHelper.SaveUser(newUser);
+                dbSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Database unavailable (" + ex.Message + ").\nRegistering in Offline Mode (RAM only).",
+                                "Offline Registration", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            if (!DataManager.Users.Any(u => u.Username == newUser.Username))
+            {
+                DataManager.Users.Add(newUser);
+            }
+
+            if (dbSuccess)
+                MessageBox.Show("Account created successfully! You can now login.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            this.Close();
         }
 
         #endregion
 
-        #region 4. Core Registration Logic
+        #region 4. Helper Utilities (Regex Validators)
 
-        private void RegisterStudent()
+        private bool IsValidStudentId(string id)
         {
-            // 1. Validate Fields
-            if (string.IsNullOrWhiteSpace(txtFirstName.Text) ||
-                string.IsNullOrWhiteSpace(txtLastName.Text) ||
-                string.IsNullOrWhiteSpace(txtStudentID.Text) ||
-                string.IsNullOrWhiteSpace(txtPassword.Text))
-            {
-                MessageBox.Show("All fields are required.");
-                return;
-            }
-
-            // Validate Section (Check if it's empty OR still has the placeholder)
-            string sectionInput = txtSection.Text.Trim();
-            if (string.IsNullOrWhiteSpace(sectionInput) || sectionInput == SectionPlaceholder)
-            {
-                MessageBox.Show("Please enter your section.");
-                return;
-            }
-
-            if (txtPassword.Text != txtConfirm.Text)
-            {
-                MessageBox.Show("Passwords do not match.");
-                return;
-            }
-
-            // 2. Check for Duplicate ID (RAM check)
-            if (DataManager.Users.Any(u => u.Username == txtStudentID.Text))
-            {
-                MessageBox.Show("Student ID is already registered.");
-                return;
-            }
-
-            // 3. CRITICAL: Ensure the Section Exists (Create if missing)
-            // This solves the "Empty Database" problem
-            try
-            {
-                DataManager.EnsureSectionExists(sectionInput);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error processing section: " + ex.Message);
-                return;
-            }
-
-            // 4. Create User Object
-            User newUser = new User
-            {
-                Username = txtStudentID.Text.Trim(),
-                Password = ComputeSha256Hash(txtPassword.Text), // Hash locally
-                FullName = $"{txtFirstName.Text.Trim()} {txtLastName.Text.Trim()}",
-                Role = "Student",
-                StudentSection = sectionInput.ToUpper() // Standardize to uppercase
-            };
-
-            // 5. Save to Database AND Memory
-            try
-            {
-                DatabaseHelper.SaveUser(newUser); // Save to SQL
-                DataManager.Users.Add(newUser);   // Update RAM immediately
-
-                MessageBox.Show("Account created successfully! You can now login.");
-                this.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Database Error: " + ex.Message);
-            }
-
-            DataManager.Users.Add(newUser);
-            this.Close();
+            return Regex.IsMatch(id, @"^03\d{2}-\d{4}$");
         }
 
-        // Standard Hashing Helper
+        private bool IsValidPassword(string password)
+        {
+            if (password.Length < 8) return false;
+            if (!password.Any(char.IsLetter)) return false;
+            if (!password.Any(char.IsDigit)) return false;
+            return true;
+        }
+
+        private bool IsValidSectionFormat(string input)
+        {
+            string section = input.Trim().ToUpper();
+            string patternBase = @"^(BSCS|BSINFO)\s[1-2][A-Z]$";
+            string patternMajor = @"^[3-4](GAV|IS|SMP|WMAD|NA)[0-9]$";
+
+            return Regex.IsMatch(section, patternBase) || Regex.IsMatch(section, patternMajor);
+        }
+
         private string ComputeSha256Hash(string rawData)
         {
             using (SHA256 sha256Hash = SHA256.Create())
             {
                 byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
                 StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++) builder.Append(bytes[i].ToString("x2"));
+                foreach (byte b in bytes) builder.Append(b.ToString("x2"));
                 return builder.ToString();
             }
-        }
-
-        #endregion
-
-        #region 5. Helpers
-
-        // Helper to enable Double Buffering
-        public static void SetDoubleBuffered(Control control)
-        {
-            if (System.Windows.Forms.SystemInformation.TerminalServerSession) return;
-
-            typeof(Control).InvokeMember("DoubleBuffered",
-                System.Reflection.BindingFlags.SetProperty |
-                System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.NonPublic,
-                null, control, new object[] { true });
         }
 
         #endregion

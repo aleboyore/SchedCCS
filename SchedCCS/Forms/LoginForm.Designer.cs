@@ -37,6 +37,7 @@
             btnClose = new Button();
             lnkCreateAccount = new LinkLabel();
             label3 = new Label();
+            chkShowLoginPass = new CheckBox();
             SuspendLayout();
             // 
             // label1
@@ -85,7 +86,7 @@
             btnLogin.FlatStyle = FlatStyle.Flat;
             btnLogin.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnLogin.ForeColor = Color.White;
-            btnLogin.Location = new Point(479, 456);
+            btnLogin.Location = new Point(479, 484);
             btnLogin.Name = "btnLogin";
             btnLogin.Size = new Size(319, 34);
             btnLogin.TabIndex = 3;
@@ -108,6 +109,8 @@
             btnClose.Text = "✕";
             btnClose.UseVisualStyleBackColor = false;
             btnClose.Click += btnClose_Click;
+            btnClose.MouseEnter += btnClose_MouseEnter;
+            btnClose.MouseLeave += btnClose_MouseLeave;
             // 
             // lnkCreateAccount
             // 
@@ -118,7 +121,7 @@
             lnkCreateAccount.LinkArea = new LinkArea(23, 33);
             lnkCreateAccount.LinkBehavior = LinkBehavior.HoverUnderline;
             lnkCreateAccount.LinkColor = Color.FromArgb(0, 0, 64);
-            lnkCreateAccount.Location = new Point(536, 510);
+            lnkCreateAccount.Location = new Point(536, 531);
             lnkCreateAccount.Name = "lnkCreateAccount";
             lnkCreateAccount.Size = new Size(211, 23);
             lnkCreateAccount.TabIndex = 4;
@@ -140,6 +143,18 @@
             label3.TabIndex = 8;
             label3.Text = "Welcome to LetSched Started\r\n";
             // 
+            // chkShowLoginPass
+            // 
+            chkShowLoginPass.AutoSize = true;
+            chkShowLoginPass.BackColor = Color.Transparent;
+            chkShowLoginPass.Font = new Font("Ebrima", 9.75F);
+            chkShowLoginPass.Location = new Point(480, 444);
+            chkShowLoginPass.Name = "chkShowLoginPass";
+            chkShowLoginPass.Size = new Size(118, 21);
+            chkShowLoginPass.TabIndex = 9;
+            chkShowLoginPass.Text = "Show Password";
+            chkShowLoginPass.UseVisualStyleBackColor = false;
+            // 
             // LoginForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -147,6 +162,7 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1280, 720);
+            Controls.Add(chkShowLoginPass);
             Controls.Add(label3);
             Controls.Add(lnkCreateAccount);
             Controls.Add(btnClose);
@@ -174,5 +190,6 @@
         private Button btnClose;
         private LinkLabel lnkCreateAccount;
         private Label label3;
+        private CheckBox chkShowLoginPass;
     }
 }
