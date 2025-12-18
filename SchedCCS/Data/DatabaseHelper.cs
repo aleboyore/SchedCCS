@@ -8,22 +8,22 @@ using Dapper;
 namespace SchedCCS
 {
     /// <summary>
-    /// Static utility class for MySQL database operations using the Dapper ORM.
-    /// Manages data persistence, resource synchronization, and transactional integrity.
+    /// Static utility class for MySQL database operations using Dapper.
+    /// Handles data persistence, resource synchronization, and transactions.
     /// </summary>
     public static class DatabaseHelper
     {
         private const string ConnectionString = "Server=localhost;Database=sched_ccs_db;User=root;Password=;";
 
         /// <summary>
-        /// Initializes and returns a new IDbConnection instance using the configured connection string.
+        /// Creates and returns a new database connection.
         /// </summary>
         public static IDbConnection GetConnection() => new MySqlConnection(ConnectionString);
 
         #region 1. Identity & Access Management
 
         /// <summary>
-        /// Retrieves all registered users from the persistence layer.
+        /// Loads all users from the database.
         /// </summary>
         public static List<User> LoadUsers()
         {
@@ -35,20 +35,20 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Persists a new user record to the database.
+        /// Saves a new user to the database.
         /// </summary>
         public static void SaveUser(User user)
         {
             using (IDbConnection db = GetConnection())
             {
                 const string sql = @"INSERT INTO users (username, password_hash, full_name, role, student_section) 
-                               VALUES (@Username, @Password, @FullName, @Role, @StudentSection)";
+                                     VALUES (@Username, @Password, @FullName, @Role, @StudentSection)";
                 db.Execute(sql, user);
             }
         }
 
         /// <summary>
-        /// Removes a user record. Prevents deletion of the primary administrator for system safety.
+        /// Deletes a user by username. Prevents deletion of the 'admin' account.
         /// </summary>
         public static bool DeleteUser(string username)
         {
@@ -63,7 +63,7 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Updates the password hash for the root administrator account.
+        /// Updates the password for the root administrator.
         /// </summary>
         public static void UpdateAdminPassword(string newHash)
         {
@@ -79,7 +79,7 @@ namespace SchedCCS
         #region 2. Institutional Resource Loading
 
         /// <summary>
-        /// Retrieves physical room resources and parses their respective types.
+        /// Loads all rooms and parses their types.
         /// </summary>
         public static List<Room> LoadRooms()
         {
@@ -104,7 +104,7 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Loads faculty members and populates their qualification lists from the bridge table.
+        /// Loads teachers and their qualified subjects.
         /// </summary>
         public static List<Teacher> LoadTeachers()
         {
@@ -123,7 +123,7 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Loads academic sections and their associated curriculum subjects.
+        /// Loads sections and their required subjects.
         /// </summary>
         public static List<Section> LoadSections()
         {
@@ -153,6 +153,9 @@ namespace SchedCCS
 
         #region 3. Resource Creation
 
+        /// <summary>
+        /// Creates a new room record.
+        /// </summary>
         public static void CreateRoom(string name, string type)
         {
             using (IDbConnection db = GetConnection())
@@ -161,6 +164,9 @@ namespace SchedCCS
             }
         }
 
+        /// <summary>
+        /// Creates a new section record.
+        /// </summary>
         public static void CreateSection(string sectionName)
         {
             using (IDbConnection db = GetConnection())
@@ -174,7 +180,7 @@ namespace SchedCCS
         #region 4. Transactional Deletion Logic
 
         /// <summary>
-        /// Deletes a teacher and maintains data integrity by cascading removal to qualifications and the schedule.
+        /// Deletes a teacher and cascades deletion to related records.
         /// </summary>
         public static bool DeleteTeacher(int teacherId, string teacherName)
         {
@@ -197,7 +203,7 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Deletes a room resource and maintains integrity by removing associated schedule assignments.
+        /// Deletes a room and cascades deletion to related records.
         /// </summary>
         public static bool DeleteRoom(int roomId, string roomName)
         {
@@ -219,7 +225,7 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Deletes a section and cascades removal to scheduled classes and curriculum definitions.
+        /// Deletes a section and cascades deletion to related records.
         /// </summary>
         public static bool DeleteSection(int sectionId, string sectionName)
         {
@@ -246,7 +252,7 @@ namespace SchedCCS
         #region 5. Administrative Utilities
 
         /// <summary>
-        /// Executes a raw SQL query with provided parameters.
+        /// Executes a raw SQL command.
         /// </summary>
         public static void ExecuteQuery(string sql, object parameters)
         {
@@ -257,7 +263,7 @@ namespace SchedCCS
         }
 
         /// <summary>
-        /// Replaces the current master schedule with a newly generated collection within a transaction.
+        /// Replaces the master schedule with a new set of items within a transaction.
         /// </summary>
         public static void SaveMasterSchedule(List<ScheduleItem> schedule)
         {
@@ -270,9 +276,9 @@ namespace SchedCCS
                     {
                         db.Execute("DELETE FROM master_schedule", transaction: trans);
                         const string sql = @"INSERT INTO master_schedule 
-                                       (section_name, subject_code, teacher_name, room_name, day, start_time, day_index, time_index) 
-                                       VALUES 
-                                       (@Section, @Subject, @Teacher, @Room, @Day, @Time, @DayIndex, @TimeIndex)";
+                                             (section_name, subject_code, teacher_name, room_name, day, start_time, day_index, time_index) 
+                                             VALUES 
+                                             (@Section, @Subject, @Teacher, @Room, @Day, @Time, @DayIndex, @TimeIndex)";
                         db.Execute(sql, schedule, transaction: trans);
                         trans.Commit();
                     }

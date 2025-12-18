@@ -7,7 +7,7 @@ namespace SchedCCS
     #region 1. Foundation Interfaces & Enums
 
     /// <summary>
-    /// Contract for entities requiring unique identification and basic detail reporting.
+    /// Defines the contract for entities requiring unique identification and detail reporting.
     /// </summary>
     public interface IIdentifiable
     {
@@ -25,7 +25,7 @@ namespace SchedCCS
     #region 2. Base & Person Entities
 
     /// <summary>
-    /// Abstract representation of a person within the system.
+    /// Represents the abstract base class for a person in the system.
     /// </summary>
     public abstract class Person : IIdentifiable
     {
@@ -36,22 +36,23 @@ namespace SchedCCS
     }
 
     /// <summary>
-    /// Represents faculty members, including subject specializations and availability.
+    /// Represents a faculty member with subject qualifications and schedule availability.
     /// </summary>
     public class Teacher : Person
     {
         public List<string> QualifiedSubjects { get; set; }
 
         /// <summary>
-        /// Availability Matrix: [7 Days, 13 Hours] representing 7:00 AM to 7:00 PM.
-        /// Excluded from JSON serialization to optimize storage.
+        /// Gets or sets the availability matrix [7 Days, 13 Hours].
         /// </summary>
+        // Excluded from JSON serialization
         [JsonIgnore]
         public bool[,] IsBusy { get; set; }
 
         public Teacher()
         {
             QualifiedSubjects = new List<string>();
+            // Initialize matrix for 7 days x 13 hours (7:00 AM - 7:00 PM)
             IsBusy = new bool[7, 13];
         }
 
@@ -66,7 +67,7 @@ namespace SchedCCS
     #region 3. Infrastructure & Academic Entities
 
     /// <summary>
-    /// Represents a physical classroom or laboratory resource.
+    /// Represents a physical room resource (Lecture or Laboratory).
     /// </summary>
     public class Room : IIdentifiable
     {
@@ -88,13 +89,14 @@ namespace SchedCCS
         public RoomType Type { get; set; }
 
         /// <summary>
-        /// Availability Matrix: [7 Days, 13 Hours].
+        /// Gets or sets the availability matrix [7 Days, 13 Hours].
         /// </summary>
         [JsonIgnore]
         public bool[,] IsBusy { get; set; }
 
         public Room()
         {
+            // Initialize matrix for 7 days x 13 hours
             IsBusy = new bool[7, 13];
         }
 
@@ -105,7 +107,7 @@ namespace SchedCCS
     }
 
     /// <summary>
-    /// Represents a student section, including its assigned curriculum and occupied slots.
+    /// Represents a class section with assigned program, year level, and subjects.
     /// </summary>
     public class Section : IIdentifiable
     {
@@ -117,7 +119,7 @@ namespace SchedCCS
         public List<Subject> SubjectsToTake { get; set; }
 
         /// <summary>
-        /// Availability Matrix: [7 Days, 13 Hours].
+        /// Gets or sets the availability matrix [7 Days, 13 Hours].
         /// </summary>
         [JsonIgnore]
         public bool[,] IsBusy { get; set; }
@@ -125,6 +127,7 @@ namespace SchedCCS
         public Section()
         {
             SubjectsToTake = new List<Subject>();
+            // Initialize matrix for 7 days x 13 hours
             IsBusy = new bool[7, 13];
         }
 
@@ -135,7 +138,7 @@ namespace SchedCCS
     }
 
     /// <summary>
-    /// Defines a course subject, its credit units, and facility requirements.
+    /// Represents a course subject with code, units, and laboratory requirements.
     /// </summary>
     public class Subject
     {
@@ -149,7 +152,7 @@ namespace SchedCCS
     #region 4. Data Transfer Objects (DTOs)
 
     /// <summary>
-    /// Flat structure optimized for UI display, database persistence, and exports.
+    /// Represents a flattened schedule item optimized for UI display and persistence.
     /// </summary>
     public class ScheduleItem
     {
@@ -164,13 +167,13 @@ namespace SchedCCS
         public int TimeIndex { get; set; }
 
         /// <summary>
-        /// Associated Room object for conflict validation.
+        /// Gets or sets the associated Room object for conflict validation.
         /// </summary>
         public Room? RoomObj { get; set; }
     }
 
     /// <summary>
-    /// Represents a subject assignment that failed validation during schedule generation.
+    /// Represents a failed schedule assignment entry with a reason.
     /// </summary>
     public class FailedEntry
     {

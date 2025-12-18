@@ -17,13 +17,11 @@ namespace SchedCCS
             InitializeComponent();
             SetDoubleBuffered(this);
 
-            // Use the built-in PlaceholderText property (Available in .NET 8)
-            // This provides a native placeholder that doesn't interfere with the Text property
             txtFirstName.PlaceholderText = "Letters only";
             txtLastName.PlaceholderText = "Letters only";
             txtSection.PlaceholderText = "Ex: 'BSCS 1A' or '3GAV1'";
             txtStudentID.PlaceholderText = "03XX-XXXX";
-            txtPassword.PlaceholderText = "Min 8 chars, 1 letter, 1 number, 1 symbol";
+            txtPassword.PlaceholderText = "At least 8 characters with a mix of letters, numbers & symbols";
         }
 
         public static void SetDoubleBuffered(Control control)
