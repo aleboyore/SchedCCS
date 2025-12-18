@@ -154,6 +154,7 @@
             chkShowLoginPass.TabIndex = 9;
             chkShowLoginPass.Text = "Show Password";
             chkShowLoginPass.UseVisualStyleBackColor = false;
+            chkShowLoginPass.CheckedChanged += chkShowLoginPass_CheckedChanged;
             // 
             // LoginForm
             // 

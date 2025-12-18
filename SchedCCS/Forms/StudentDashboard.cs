@@ -552,20 +552,90 @@ namespace SchedCCS
         private Table GenerateStudentInfoTable()
         {
             string section = currentUser.StudentSection;
-            string program = section.Contains("-") ? section.Split('-')[0] : section;
-            string yearLevel = section.Length > 5 ? section.Substring(5, 1) : "N/A";
 
-            Table infoTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1, 1 }));
+            // --- LOGIC 1: Extract Program Name ---
+            string rawCode = ExtractProgramFromSection(section);
+            string fullProgramName = GetFullDegreeName(rawCode);
+
+            // --- LOGIC 2: Extract Year Level ---
+            string yearDigit = "1"; // Default
+            var yearMatch = System.Text.RegularExpressions.Regex.Match(section, @"\d");
+            if (yearMatch.Success) yearDigit = yearMatch.Value;
+
+            string formattedYear = GetOrdinalYear(yearDigit);
+
+            // Changed column ratio from { 2, 1, 1 } to { 2, 1, 2 } (40% - 20% - 40%)
+            // This ensures the middle column is exactly in the center of the page.
+            Table infoTable = new Table(UnitValue.CreatePercentArray(new float[] { 2, 1, 2 }));
             infoTable.SetWidth(UnitValue.CreatePercentValue(100));
             infoTable.SetBorder(iText.Layout.Borders.Border.NO_BORDER);
             infoTable.SetMarginTop(5);
             infoTable.SetMarginBottom(5);
 
-            infoTable.AddCell(new Cell().Add(new Paragraph($"Program: {program}").SetBold()).SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetFontSize(10));
-            infoTable.AddCell(new Cell().Add(new Paragraph($"Year: {yearLevel}nd Year").SetBold()).SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetTextAlignment(TextAlignment.CENTER).SetFontSize(10));
-            infoTable.AddCell(new Cell().Add(new Paragraph($"Section: {section}").SetBold()).SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetTextAlignment(TextAlignment.RIGHT).SetFontSize(10));
+            // Cell 1: Program Name
+            infoTable.AddCell(new Cell().Add(new Paragraph($"Program: {fullProgramName}").SetBold())
+                .SetBorder(iText.Layout.Borders.Border.NO_BORDER)
+                .SetFontSize(9));
+
+            // Cell 2: Year Level (Formatted)
+            infoTable.AddCell(new Cell().Add(new Paragraph($"Year Level: {formattedYear}").SetBold())
+                .SetBorder(iText.Layout.Borders.Border.NO_BORDER)
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetFontSize(10));
+
+            // Cell 3: Section
+            infoTable.AddCell(new Cell().Add(new Paragraph($"Section: {section}").SetBold())
+                .SetBorder(iText.Layout.Borders.Border.NO_BORDER)
+                .SetTextAlignment(TextAlignment.RIGHT)
+                .SetFontSize(10));
 
             return infoTable;
+        }
+
+        // --- NEW HELPER METHODS (Copied from AdminDashboard & Enhanced) ---
+
+        private string ExtractProgramFromSection(string sectionName)
+        {
+            if (string.IsNullOrWhiteSpace(sectionName)) return "N/A";
+            string upperName = sectionName.ToUpper();
+
+            string[] knownCodes = { "BSCS", "BSINFO", "WMAD", "GAV", "SMP", "INFO", "IS", "CS", "NA" };
+            foreach (var code in knownCodes) { if (upperName.Contains(code)) return code; }
+
+            var match = System.Text.RegularExpressions.Regex.Match(sectionName, @"[A-Za-z]+");
+            if (match.Success) return match.Value.ToUpper();
+
+            return "N/A";
+        }
+
+        private string GetFullDegreeName(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return "N/A";
+            code = code.ToUpper().Trim();
+
+            if (code == "BSCS" || code == "GAV" || code == "IS" || code == "CS")
+                return "Bachelor of Science in Computer Science";
+
+            if (code == "BSINFO" || code == "INFO" || code == "WMAD" || code == "SMP" || code == "NA")
+                return "Bachelor of Science in Information Technology";
+
+            return code;
+        }
+
+        private string GetOrdinalYear(string year)
+        {
+            if (int.TryParse(year, out int y))
+            {
+                switch (y)
+                {
+                    case 1: return "1st Year";
+                    case 2: return "2nd Year";
+                    case 3: return "3rd Year";
+                    case 4: return "4th Year";
+                    default: return $"{y}th Year";
+                }
+            }
+            return $"{year} Year";
         }
 
         private Table GenerateScheduleTable()

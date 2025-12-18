@@ -19,9 +19,11 @@ namespace SchedCCS
 
             // Use the built-in PlaceholderText property (Available in .NET 8)
             // This provides a native placeholder that doesn't interfere with the Text property
+            txtFirstName.PlaceholderText = "Letters only";
+            txtLastName.PlaceholderText = "Letters only";
             txtSection.PlaceholderText = "Ex: 'BSCS 1A' or '3GAV1'";
             txtStudentID.PlaceholderText = "03XX-XXXX";
-            txtPassword.PlaceholderText = "Min 8 chars, 1 letter, 1 number";
+            txtPassword.PlaceholderText = "Min 8 chars, 1 letter, 1 number, 1 symbol";
         }
 
         public static void SetDoubleBuffered(Control control)
@@ -68,13 +70,20 @@ namespace SchedCCS
         private void RegisterStudent()
         {
             // 1. Validate Basic Fields
-            // Removed checks against placeholder text since we use PlaceholderText property now
             if (string.IsNullOrWhiteSpace(txtFirstName.Text) || 
                 string.IsNullOrWhiteSpace(txtLastName.Text) ||
                 string.IsNullOrWhiteSpace(txtStudentID.Text) || 
                 string.IsNullOrWhiteSpace(txtPassword.Text))
             {
                 MessageBox.Show("All fields are required.", "Missing Info", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // NEW: Validate Names (No symbols/numbers)
+            if (!IsValidName(txtFirstName.Text) || !IsValidName(txtLastName.Text))
+            {
+                MessageBox.Show("First and Last Name must contain letters only (no numbers or symbols).", 
+                                "Name Format Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -97,7 +106,7 @@ namespace SchedCCS
             // Check Password Strength
             if (!IsValidPassword(txtPassword.Text))
             {
-                MessageBox.Show("Password is too weak.\n\nRequirements:\n- Minimum 8 characters\n- At least 1 Letter\n- At least 1 Number",
+                MessageBox.Show("Password is too weak.\n\nRequirements:\n- Minimum 8 characters\n- At least 1 Letter\n- At least 1 Number\n- At least 1 Symbol (e.g., @, #, $)",
                                 "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -167,6 +176,12 @@ namespace SchedCCS
 
         #region 4. Helper Utilities (Regex Validators)
 
+        private bool IsValidName(string name)
+        {
+            // Allows only letters and spaces (No numbers or symbols)
+            return Regex.IsMatch(name, @"^[a-zA-Z\s]+$");
+        }
+
         private bool IsValidStudentId(string id)
         {
             return Regex.IsMatch(id, @"^03\d{2}-\d{4}$");
@@ -177,6 +192,8 @@ namespace SchedCCS
             if (password.Length < 8) return false;
             if (!password.Any(char.IsLetter)) return false;
             if (!password.Any(char.IsDigit)) return false;
+            // Check for at least one special character (anything that is not a letter or digit)
+            if (!password.Any(ch => !char.IsLetterOrDigit(ch))) return false;
             return true;
         }
 

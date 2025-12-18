@@ -1562,6 +1562,8 @@ namespace SchedCCS
 
         private Paragraph GeneratePdfHeader()
         {
+            var term = GetCurrentAcademicTerm();
+
             return new Paragraph()
                 .SetTextAlignment(TextAlignment.CENTER)
                 .SetFontSize(9)
@@ -1571,13 +1573,69 @@ namespace SchedCCS
                 .Add("Province of Laguna\n")
                 .Add("College of Computer Studies\n\n")
                 .Add(new Text("CLASS SCHEDULE\n").SetFontSize(13).SetBold())
-                .Add("First Semester, Academic Year 2025-2026");
+                .Add($"{term.Semester}, Academic Year {term.AcadYear}");
+        }
+
+        /// <summary>
+        /// Extracts the program code (letters) from a section name (e.g., "3GAV1" -> "GAV").
+        /// </summary>
+        private string ExtractProgramFromSection(string sectionName)
+        {
+            if (string.IsNullOrWhiteSpace(sectionName)) return "N/A";
+
+            string upperName = sectionName.ToUpper();
+
+            // Priority 1: Check for known Program Codes explicitly
+            // This ensures we capture the correct code even if the section name format varies (e.g. "BSCS 2A" or "2A BSCS")
+            string[] knownCodes = { "BSCS", "BSINFO", "WMAD", "GAV", "SMP", "INFO", "IS", "CS", "NA" };
+
+            foreach (var code in knownCodes)
+            {
+                if (upperName.Contains(code))
+                {
+                    return code;
+                }
+            }
+
+            // Priority 2: Fallback to Regex (First sequence of letters)
+            var match = System.Text.RegularExpressions.Regex.Match(sectionName, @"[A-Za-z]+");
+            if (match.Success)
+            {
+                return match.Value.ToUpper();
+            }
+
+            return "N/A";
+        }
+
+        /// <summary>
+        /// Maps short codes to full degree titles based on college structure.
+        /// </summary>
+        private string GetFullDegreeName(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return "N/A";
+
+            code = code.ToUpper().Trim();
+
+            // Computer Science Group
+            if (code == "BSCS" || code == "GAV" || code == "IS" || code == "CS")
+            {
+                return "Bachelor of Science in Computer Science";
+            }
+
+            // Info Tech Group
+            if (code == "BSINFO" || code == "INFO" || code == "WMAD" || code == "SMP" || code == "NA")
+            {
+                return "Bachelor of Science in Information Technology";
+            }
+
+            return code; // Default if unknown
         }
 
         private Table GenerateContextInfoTable(string mode, string value)
         {
-            // Create a table that fills the width
-            Table table = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1, 1 }));
+            // Changed column ratio from { 2, 1, 1 } to { 2, 1, 2 } (40% - 20% - 40%)
+            // This ensures the middle column is exactly in the center of the page.
+            Table table = new Table(UnitValue.CreatePercentArray(new float[] { 2, 1, 2 }));
             table.SetWidth(UnitValue.CreatePercentValue(100));
             table.SetBorder(iText.Layout.Borders.Border.NO_BORDER);
             table.SetMarginTop(5);
@@ -1585,51 +1643,71 @@ namespace SchedCCS
 
             if (mode == "Section")
             {
-                // Logic: Fetch Section Details to fill Program/Year
-                var sec = DataManager.Sections.FirstOrDefault(s => s.Name == value);
-                string prog = sec?.Program ?? "N/A";
-                string year = sec?.YearLevel.ToString() ?? "N/A";
+                string rawCode = ExtractProgramFromSection(value);
+                string fullProgramName = GetFullDegreeName(rawCode);
 
-                // Left: Program
-                table.AddCell(new Cell().Add(new Paragraph($"Program: {prog}").SetBold())
-                    .SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetFontSize(10));
+                string year = "N/A";
+                if (char.IsDigit(value[0])) year = value[0].ToString();
+                else
+                {
+                    var yearMatch = System.Text.RegularExpressions.Regex.Match(value, @"\d");
+                    if (yearMatch.Success) year = yearMatch.Value;
+                }
 
-                // Center: Year
-                table.AddCell(new Cell().Add(new Paragraph($"Year Level: {year}").SetBold())
-                    .SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetTextAlignment(TextAlignment.CENTER).SetFontSize(10));
+                string formattedYear = GetOrdinalYear(year);
 
-                // Right: Section
+                table.AddCell(new Cell().Add(new Paragraph($"Program: {fullProgramName}").SetBold())
+                    .SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetFontSize(9));
+
+                table.AddCell(new Cell().Add(new Paragraph($"Year Level: {formattedYear}").SetBold())
+                    .SetBorder(iText.Layout.Borders.Border.NO_BORDER)
+                    .SetTextAlignment(TextAlignment.CENTER).SetFontSize(10));
+
                 table.AddCell(new Cell().Add(new Paragraph($"Section: {value}").SetBold())
-                    .SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetTextAlignment(TextAlignment.RIGHT).SetFontSize(10));
+                    .SetBorder(iText.Layout.Borders.Border.NO_BORDER)
+                    .SetTextAlignment(TextAlignment.RIGHT).SetFontSize(10));
             }
             else if (mode == "Room")
             {
                 var room = DataManager.Rooms.FirstOrDefault(r => r.Name == value);
                 string type = room?.Type.ToString() ?? "Lecture";
 
-                // Left: Room Name
                 table.AddCell(new Cell().Add(new Paragraph($"Room: {value}").SetBold())
                     .SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetFontSize(10));
 
-                // Center: Type
                 table.AddCell(new Cell().Add(new Paragraph($"Type: {type}").SetBold())
-                    .SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetTextAlignment(TextAlignment.CENTER).SetFontSize(10));
+                    .SetBorder(iText.Layout.Borders.Border.NO_BORDER)
+                    .SetTextAlignment(TextAlignment.CENTER).SetFontSize(10));
 
-                // Right: Empty
                 table.AddCell(new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER));
             }
             else // Teacher
             {
-                // Left: Instructor Name
                 table.AddCell(new Cell().Add(new Paragraph($"Instructor: {value}").SetBold())
                     .SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetFontSize(10));
 
-                // Center & Right: Empty (or add Department if you have it)
                 table.AddCell(new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER));
                 table.AddCell(new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER));
             }
 
             return table;
+        }
+
+        // Add this helper to AdminDashboard.cs as well
+        private string GetOrdinalYear(string year)
+        {
+            if (int.TryParse(year, out int y))
+            {
+                switch (y)
+                {
+                    case 1: return "1st Year";
+                    case 2: return "2nd Year";
+                    case 3: return "3rd Year";
+                    case 4: return "4th Year";
+                    default: return $"{y}th Year";
+                }
+            }
+            return $"{year} Year";
         }
 
         private Table GenerateAdminScheduleTable(string filterMode, string filterValue)
@@ -1721,6 +1799,40 @@ namespace SchedCCS
             footerTable.AddCell(right);
             return footerTable;
         }
+
+        private (string Semester, string AcadYear) GetCurrentAcademicTerm()
+        {
+            DateTime now = DateTime.Now;
+            int month = now.Month; // 1 = Jan, 12 = Dec
+            int year = now.Year;
+
+            string semester;
+            string acadYear;
+
+            // Logic based on LSPU Calendar 2025-2026
+            if (month >= 8) // Aug (8) to Dec (12) -> First Semester
+            {
+                semester = "First Semester";
+                // If today is Aug 2025, AY is "2025-2026"
+                acadYear = $"{year}-{year + 1}";
+            }
+            else if (month <= 5) // Jan (1) to May (5) -> Second Semester
+            {
+                semester = "Second Semester";
+                // If today is Jan 2026, AY is still "2025-2026" (Started prev year)
+                acadYear = $"{year - 1}-{year}";
+            }
+            else // June (6) to July (7) -> Inter-Semester
+            {
+                semester = "Inter-Semester";
+                // If today is June 2026, AY is still "2025-2026"
+                acadYear = $"{year - 1}-{year}";
+            }
+
+            return (semester, acadYear);
+        }
+
+        
 
         #endregion
     }

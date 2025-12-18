@@ -31,17 +31,6 @@
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(StudentDashboard));
             pnlContent = new Panel();
-            pnlViewSettings = new Panel();
-            btnEdit = new Button();
-            chkShowPass = new CheckBox();
-            btnSaveChanges = new Button();
-            label4 = new Label();
-            label3 = new Label();
-            txtEditConfirm = new TextBox();
-            txtEditPass = new TextBox();
-            txtEditName = new TextBox();
-            label2 = new Label();
-            label1 = new Label();
             pnlViewHome = new Panel();
             cmbBuilding = new ComboBox();
             lblSelectBuilding = new Label();
@@ -74,6 +63,17 @@
             btnExportPdf = new Button();
             dgvStudentSchedule = new DataGridView();
             lblNoSchedule = new Label();
+            pnlViewSettings = new Panel();
+            btnEdit = new Button();
+            chkShowPass = new CheckBox();
+            btnSaveChanges = new Button();
+            label4 = new Label();
+            label3 = new Label();
+            txtEditConfirm = new TextBox();
+            txtEditPass = new TextBox();
+            txtEditName = new TextBox();
+            label2 = new Label();
+            label1 = new Label();
             lblPageTitle = new Label();
             toolTip1 = new ToolTip(components);
             pnlNavBar = new Panel();
@@ -88,7 +88,6 @@
             lblStudentName = new Label();
             picLogo = new PictureBox();
             pnlContent.SuspendLayout();
-            pnlViewSettings.SuspendLayout();
             pnlViewHome.SuspendLayout();
             pnlBuildingA.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pic_OCTA).BeginInit();
@@ -117,6 +116,7 @@
             ((System.ComponentModel.ISupportInitialize)pic_LAB1).BeginInit();
             pnlViewSchedule.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvStudentSchedule).BeginInit();
+            pnlViewSettings.SuspendLayout();
             pnlNavBar.SuspendLayout();
             pnlNavCenter.SuspendLayout();
             pnlNavRight.SuspendLayout();
@@ -127,156 +127,15 @@
             // pnlContent
             // 
             pnlContent.BackColor = Color.White;
-            pnlContent.Controls.Add(pnlViewSettings);
             pnlContent.Controls.Add(pnlViewHome);
             pnlContent.Controls.Add(pnlViewSchedule);
+            pnlContent.Controls.Add(pnlViewSettings);
             pnlContent.Controls.Add(lblPageTitle);
             pnlContent.Dock = DockStyle.Fill;
             pnlContent.Location = new Point(0, 60);
             pnlContent.Name = "pnlContent";
             pnlContent.Size = new Size(1280, 660);
             pnlContent.TabIndex = 1;
-            // 
-            // pnlViewSettings
-            // 
-            pnlViewSettings.BackgroundImage = (Image)resources.GetObject("pnlViewSettings.BackgroundImage");
-            pnlViewSettings.Controls.Add(btnEdit);
-            pnlViewSettings.Controls.Add(chkShowPass);
-            pnlViewSettings.Controls.Add(btnSaveChanges);
-            pnlViewSettings.Controls.Add(label4);
-            pnlViewSettings.Controls.Add(label3);
-            pnlViewSettings.Controls.Add(txtEditConfirm);
-            pnlViewSettings.Controls.Add(txtEditPass);
-            pnlViewSettings.Controls.Add(txtEditName);
-            pnlViewSettings.Controls.Add(label2);
-            pnlViewSettings.Controls.Add(label1);
-            pnlViewSettings.Dock = DockStyle.Fill;
-            pnlViewSettings.Font = new Font("Ebrima", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            pnlViewSettings.Location = new Point(0, 50);
-            pnlViewSettings.Name = "pnlViewSettings";
-            pnlViewSettings.Size = new Size(1280, 610);
-            pnlViewSettings.TabIndex = 3;
-            pnlViewSettings.Visible = false;
-            // 
-            // btnEdit
-            // 
-            btnEdit.BackColor = Color.PaleGoldenrod;
-            btnEdit.FlatStyle = FlatStyle.Flat;
-            btnEdit.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnEdit.ForeColor = Color.FromArgb(64, 0, 0);
-            btnEdit.Location = new Point(742, 122);
-            btnEdit.Name = "btnEdit";
-            btnEdit.Size = new Size(72, 26);
-            btnEdit.TabIndex = 9;
-            btnEdit.Text = "Edit Info";
-            btnEdit.UseVisualStyleBackColor = false;
-            btnEdit.Click += btnEdit_Click;
-            // 
-            // chkShowPass
-            // 
-            chkShowPass.AutoSize = true;
-            chkShowPass.BackColor = Color.Transparent;
-            chkShowPass.Font = new Font("Ebrima", 9.75F);
-            chkShowPass.Location = new Point(465, 454);
-            chkShowPass.Name = "chkShowPass";
-            chkShowPass.Size = new Size(118, 21);
-            chkShowPass.TabIndex = 8;
-            chkShowPass.Text = "Show Password";
-            chkShowPass.UseVisualStyleBackColor = false;
-            chkShowPass.Click += chkShowPass_CheckedChanged;
-            // 
-            // btnSaveChanges
-            // 
-            btnSaveChanges.BackColor = Color.FromArgb(64, 0, 0);
-            btnSaveChanges.FlatStyle = FlatStyle.Flat;
-            btnSaveChanges.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnSaveChanges.ForeColor = Color.White;
-            btnSaveChanges.Location = new Point(465, 497);
-            btnSaveChanges.Name = "btnSaveChanges";
-            btnSaveChanges.Size = new Size(355, 32);
-            btnSaveChanges.TabIndex = 7;
-            btnSaveChanges.Text = "UPDATE INFO";
-            btnSaveChanges.UseVisualStyleBackColor = false;
-            btnSaveChanges.Visible = false;
-            btnSaveChanges.Click += btnSaveChanges_Click;
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.BackColor = Color.Transparent;
-            label4.Font = new Font("Ebrima", 9.75F);
-            label4.Location = new Point(465, 393);
-            label4.Name = "label4";
-            label4.Size = new Size(114, 17);
-            label4.TabIndex = 6;
-            label4.Text = "Confirm Password";
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.BackColor = Color.Transparent;
-            label3.Font = new Font("Ebrima", 9.75F);
-            label3.Location = new Point(465, 329);
-            label3.Name = "label3";
-            label3.Size = new Size(64, 17);
-            label3.TabIndex = 5;
-            label3.Text = "Password";
-            // 
-            // txtEditConfirm
-            // 
-            txtEditConfirm.Font = new Font("Ebrima", 9.75F);
-            txtEditConfirm.Location = new Point(465, 411);
-            txtEditConfirm.Multiline = true;
-            txtEditConfirm.Name = "txtEditConfirm";
-            txtEditConfirm.Size = new Size(355, 30);
-            txtEditConfirm.TabIndex = 4;
-            txtEditConfirm.Text = "Hidden";
-            txtEditConfirm.TextAlign = HorizontalAlignment.Center;
-            txtEditConfirm.UseSystemPasswordChar = true;
-            // 
-            // txtEditPass
-            // 
-            txtEditPass.Font = new Font("Ebrima", 9.75F);
-            txtEditPass.Location = new Point(465, 347);
-            txtEditPass.Multiline = true;
-            txtEditPass.Name = "txtEditPass";
-            txtEditPass.Size = new Size(355, 30);
-            txtEditPass.TabIndex = 3;
-            txtEditPass.Text = "Hidden";
-            txtEditPass.TextAlign = HorizontalAlignment.Center;
-            txtEditPass.UseSystemPasswordChar = true;
-            // 
-            // txtEditName
-            // 
-            txtEditName.Font = new Font("Ebrima", 9.75F);
-            txtEditName.Location = new Point(465, 280);
-            txtEditName.Multiline = true;
-            txtEditName.Name = "txtEditName";
-            txtEditName.Size = new Size(355, 30);
-            txtEditName.TabIndex = 2;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.BackColor = Color.Transparent;
-            label2.Font = new Font("Ebrima", 9.75F);
-            label2.Location = new Point(465, 262);
-            label2.Name = "label2";
-            label2.Size = new Size(66, 17);
-            label2.TabIndex = 1;
-            label2.Text = "Full Name";
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.BackColor = Color.Transparent;
-            label1.Font = new Font("Ebrima", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.ForeColor = Color.FromArgb(64, 0, 0);
-            label1.Location = new Point(465, 229);
-            label1.Name = "label1";
-            label1.Size = new Size(207, 21);
-            label1.TabIndex = 0;
-            label1.Text = "User Account Information";
             // 
             // pnlViewHome
             // 
@@ -645,6 +504,147 @@
             lblNoSchedule.Text = "The Schedule is not yet available.\r\n\r\nPlease wait for the Admin to generate it.";
             lblNoSchedule.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // pnlViewSettings
+            // 
+            pnlViewSettings.BackgroundImage = (Image)resources.GetObject("pnlViewSettings.BackgroundImage");
+            pnlViewSettings.Controls.Add(btnEdit);
+            pnlViewSettings.Controls.Add(chkShowPass);
+            pnlViewSettings.Controls.Add(btnSaveChanges);
+            pnlViewSettings.Controls.Add(label4);
+            pnlViewSettings.Controls.Add(label3);
+            pnlViewSettings.Controls.Add(txtEditConfirm);
+            pnlViewSettings.Controls.Add(txtEditPass);
+            pnlViewSettings.Controls.Add(txtEditName);
+            pnlViewSettings.Controls.Add(label2);
+            pnlViewSettings.Controls.Add(label1);
+            pnlViewSettings.Dock = DockStyle.Fill;
+            pnlViewSettings.Font = new Font("Ebrima", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            pnlViewSettings.Location = new Point(0, 50);
+            pnlViewSettings.Name = "pnlViewSettings";
+            pnlViewSettings.Size = new Size(1280, 610);
+            pnlViewSettings.TabIndex = 3;
+            pnlViewSettings.Visible = false;
+            // 
+            // btnEdit
+            // 
+            btnEdit.BackColor = Color.PaleGoldenrod;
+            btnEdit.FlatStyle = FlatStyle.Flat;
+            btnEdit.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnEdit.ForeColor = Color.FromArgb(64, 0, 0);
+            btnEdit.Location = new Point(742, 122);
+            btnEdit.Name = "btnEdit";
+            btnEdit.Size = new Size(72, 26);
+            btnEdit.TabIndex = 9;
+            btnEdit.Text = "Edit Info";
+            btnEdit.UseVisualStyleBackColor = false;
+            btnEdit.Click += btnEdit_Click;
+            // 
+            // chkShowPass
+            // 
+            chkShowPass.AutoSize = true;
+            chkShowPass.BackColor = Color.Transparent;
+            chkShowPass.Font = new Font("Ebrima", 9.75F);
+            chkShowPass.Location = new Point(465, 454);
+            chkShowPass.Name = "chkShowPass";
+            chkShowPass.Size = new Size(118, 21);
+            chkShowPass.TabIndex = 8;
+            chkShowPass.Text = "Show Password";
+            chkShowPass.UseVisualStyleBackColor = false;
+            chkShowPass.Click += chkShowPass_CheckedChanged;
+            // 
+            // btnSaveChanges
+            // 
+            btnSaveChanges.BackColor = Color.FromArgb(64, 0, 0);
+            btnSaveChanges.FlatStyle = FlatStyle.Flat;
+            btnSaveChanges.Font = new Font("Ebrima", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnSaveChanges.ForeColor = Color.White;
+            btnSaveChanges.Location = new Point(465, 497);
+            btnSaveChanges.Name = "btnSaveChanges";
+            btnSaveChanges.Size = new Size(355, 32);
+            btnSaveChanges.TabIndex = 7;
+            btnSaveChanges.Text = "UPDATE INFO";
+            btnSaveChanges.UseVisualStyleBackColor = false;
+            btnSaveChanges.Visible = false;
+            btnSaveChanges.Click += btnSaveChanges_Click;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.BackColor = Color.Transparent;
+            label4.Font = new Font("Ebrima", 9.75F);
+            label4.Location = new Point(465, 393);
+            label4.Name = "label4";
+            label4.Size = new Size(114, 17);
+            label4.TabIndex = 6;
+            label4.Text = "Confirm Password";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.BackColor = Color.Transparent;
+            label3.Font = new Font("Ebrima", 9.75F);
+            label3.Location = new Point(465, 329);
+            label3.Name = "label3";
+            label3.Size = new Size(64, 17);
+            label3.TabIndex = 5;
+            label3.Text = "Password";
+            // 
+            // txtEditConfirm
+            // 
+            txtEditConfirm.Font = new Font("Ebrima", 9.75F);
+            txtEditConfirm.Location = new Point(465, 411);
+            txtEditConfirm.Multiline = true;
+            txtEditConfirm.Name = "txtEditConfirm";
+            txtEditConfirm.Size = new Size(355, 30);
+            txtEditConfirm.TabIndex = 4;
+            txtEditConfirm.Text = "Hidden";
+            txtEditConfirm.TextAlign = HorizontalAlignment.Center;
+            txtEditConfirm.UseSystemPasswordChar = true;
+            // 
+            // txtEditPass
+            // 
+            txtEditPass.Font = new Font("Ebrima", 9.75F);
+            txtEditPass.Location = new Point(465, 347);
+            txtEditPass.Multiline = true;
+            txtEditPass.Name = "txtEditPass";
+            txtEditPass.Size = new Size(355, 30);
+            txtEditPass.TabIndex = 3;
+            txtEditPass.Text = "Hidden";
+            txtEditPass.TextAlign = HorizontalAlignment.Center;
+            txtEditPass.UseSystemPasswordChar = true;
+            // 
+            // txtEditName
+            // 
+            txtEditName.Font = new Font("Ebrima", 9.75F);
+            txtEditName.Location = new Point(465, 280);
+            txtEditName.Multiline = true;
+            txtEditName.Name = "txtEditName";
+            txtEditName.Size = new Size(355, 30);
+            txtEditName.TabIndex = 2;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.BackColor = Color.Transparent;
+            label2.Font = new Font("Ebrima", 9.75F);
+            label2.Location = new Point(465, 262);
+            label2.Name = "label2";
+            label2.Size = new Size(66, 17);
+            label2.TabIndex = 1;
+            label2.Text = "Full Name";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.BackColor = Color.Transparent;
+            label1.Font = new Font("Ebrima", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = Color.FromArgb(64, 0, 0);
+            label1.Location = new Point(465, 229);
+            label1.Name = "label1";
+            label1.Size = new Size(207, 21);
+            label1.TabIndex = 0;
+            label1.Text = "User Account Information";
+            // 
             // lblPageTitle
             // 
             lblPageTitle.AutoSize = true;
@@ -826,8 +826,6 @@
             Text = "Student Dashboard";
             pnlContent.ResumeLayout(false);
             pnlContent.PerformLayout();
-            pnlViewSettings.ResumeLayout(false);
-            pnlViewSettings.PerformLayout();
             pnlViewHome.ResumeLayout(false);
             pnlViewHome.PerformLayout();
             pnlBuildingA.ResumeLayout(false);
@@ -857,6 +855,8 @@
             ((System.ComponentModel.ISupportInitialize)pic_LAB1).EndInit();
             pnlViewSchedule.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvStudentSchedule).EndInit();
+            pnlViewSettings.ResumeLayout(false);
+            pnlViewSettings.PerformLayout();
             pnlNavBar.ResumeLayout(false);
             pnlNavCenter.ResumeLayout(false);
             pnlNavRight.ResumeLayout(false);
